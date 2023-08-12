@@ -14,6 +14,8 @@ namespace Natrium
     {
         public MovementType movementType = MovementType.Free;
         public float speed = 2.0f;
+        public bool autoDistance = false;
+        public float minDistanceInput = 0.1f; 
     }
 
     public class LocalActivePlayerAuthoringBaker : Baker<LocalActivePlayerAuthoring>
@@ -23,7 +25,9 @@ namespace Natrium
             Entity entity = this.GetEntity(TransformUsageFlags.Dynamic);
             AddComponent(entity, new LocalActivePlayerData
             {
-                movementType = authoring.movementType
+                movementType = authoring.movementType,
+                autoDistance = authoring.autoDistance,
+                minDistanceInput = authoring.minDistanceInput
             });
             AddComponent(entity, new SpeedData
             {
@@ -35,6 +39,8 @@ namespace Natrium
     public struct LocalActivePlayerData : IComponentData
     {
         public MovementType movementType;
+        public bool autoDistance;
+        public float minDistanceInput;
     }
 
     public struct SpeedData : IComponentData

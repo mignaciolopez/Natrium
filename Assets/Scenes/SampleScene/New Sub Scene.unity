@@ -224,7 +224,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0.75, z: 0}
-  m_LocalScale: {x: 0.5, y: 1.5, z: 0.5}
+  m_LocalScale: {x: 0.8, y: 1.5, z: 0.8}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 1890413503}
@@ -345,6 +345,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1890413503}
   - component: {fileID: 1890413504}
+  - component: {fileID: 1890413505}
   m_Layer: 0
   m_Name: Player
   m_TagString: Untagged
@@ -380,8 +381,26 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8244c41ca85b71240a6e685019e6c74e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementType: 0
-  speed: 2
+  movementType: 2
+  speed: 2.5
+  autoDistance: 0
+  minDistanceInput: 0.05
+--- !u!114 &1890413505
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1890413502}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f329c796ac230c64a9e55d4d79c2fd16, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  offset:
+    x: 0
+    y: 10
+    z: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

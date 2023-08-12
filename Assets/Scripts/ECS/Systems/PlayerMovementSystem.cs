@@ -2,20 +2,19 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
-using static UnityEngine.GraphicsBuffer;
-using static UnityEngine.Rendering.DebugUI;
 
 namespace Natrium
 {
     public partial class PlayerMovementSystem : SystemBase
     {
-        private float3 mMove;
         private float dt;
+
+        private float3 mPreviousPos;
+        private float3 mNextPos;
 
         protected override void OnCreate()
         {
             base.OnCreate();
-            mMove = float3.zero;
         }
 
         protected override void OnStartRunning()
@@ -43,13 +42,14 @@ namespace Natrium
                 {
                     case MovementType.Free:
                         FreeMovement(e);
+
+                        //When in Free Mode needs to keep track for Hot Swapping between modes.
+                        mNextPos = math.round(lt.ValueRW.Position);
                         break;
                     case MovementType.Full_Tile:
-                        Debug.LogError("Movement not handled by " + ToString() + " " + lapd.movementType.ToString());
                         FullTileMovement(e);
                         break;
                     case MovementType.Full_Tile_NoDiagonal:
-                        Debug.LogError("Movement not handled by " + ToString() + " " + lapd.movementType.ToString());
                         FullTileMovementNoDiagonal(e);
                         break;
                     default:
@@ -64,21 +64,83 @@ namespace Natrium
             var speed = SystemAPI.GetComponent<SpeedData>(e);
             var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
 
-            mMove = new float3(Input.GetAxisRaw("Horizontal"), 0.0f, Input.GetAxisRaw("Vertical"));
-            mMove = math.normalizesafe(mMove) * dt * speed.value;
-            lt.ValueRW.Position += mMove;
+            float3 move = new float3(Input.GetAxis("JHorizontal"), 0.0f, Input.GetAxis("JVertical"));
+            if (move.x == 0 && move.z == 0)
+            {
+                move = new float3(Input.GetAxisRaw("Horizontal"), 0.0f, Input.GetAxisRaw("Vertical"));
+                move = math.normalizesafe(move);
+            }
+
+            move *= dt * speed.value;
+
+            lt.ValueRW.Position +=  move;
         }
 
         private void FullTileMovement(Entity e)
         {
             var speed = SystemAPI.GetComponent<SpeedData>(e);
             var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
+            var lapd = SystemAPI.GetComponentRW<LocalActivePlayerData>(e);
+
+            CalculateAutoDistance(e);
+
+            if (math.distance(lt.ValueRO.Position, mNextPos) <= lapd.ValueRO.minDistanceInput)
+            {
+                mPreviousPos = mNextPos;
+
+                float3 move = new float3(Input.GetAxis("JHorizontal"), 0.0f, Input.GetAxis("JVertical"));
+                if (move.x == 0 && move.z == 0)
+                    move = new float3(Input.GetAxisRaw("Horizontal"), 0.0f, Input.GetAxisRaw("Vertical"));
+
+                if (move.x > 0)
+                    mNextPos.x++;
+                else if (move.x < 0)
+                    mNextPos.x--;
+
+                if (move.z > 0)
+                    mNextPos.z++;
+                else if (move.z < 0)
+                    mNextPos.z--;
+            }
+
+            lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, mNextPos, speed.value * dt);
         }
 
         private void FullTileMovementNoDiagonal(Entity e)
         {
             var speed = SystemAPI.GetComponent<SpeedData>(e);
             var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
+            var lapd = SystemAPI.GetComponentRW<LocalActivePlayerData>(e);
+
+            CalculateAutoDistance(e);
+
+            if (math.distance(lt.ValueRO.Position, mNextPos) <= lapd.ValueRO.minDistanceInput)
+            {
+                mPreviousPos = mNextPos;
+
+                float3 move = new float3(Input.GetAxis("JHorizontal"), 0.0f, Input.GetAxis("JVertical"));
+                if (move.x == 0 && move.z == 0)
+                    move = new float3(Input.GetAxisRaw("Horizontal"), 0.0f, Input.GetAxisRaw("Vertical"));
+
+                if (move.z > 0)
+                    mNextPos.z++;
+                else if (move.x > 0)
+                    mNextPos.x++;
+                else if (move.z < 0)
+                    mNextPos.z--;
+                else if (move.x < 0)
+                    mNextPos.x--;
+            }
+
+            lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, mNextPos, speed.value * dt);
+        }
+
+        private void CalculateAutoDistance(Entity e)
+        {
+            var lapd = SystemAPI.GetComponentRW<LocalActivePlayerData>(e);
+
+            if (lapd.ValueRO.autoDistance)
+                lapd.ValueRW.minDistanceInput = 0.05f; //TODO: faking a value for now
         }
     }
 }
