@@ -1,10 +1,12 @@
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
 
 namespace Natrium
 {
+    [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
     public partial class PlayerMovementSystem : SystemBase
     {
         private float dt;
@@ -37,16 +39,15 @@ namespace Natrium
         {
             dt = SystemAPI.Time.DeltaTime;
 
-            foreach ((RefRW<LocalTransform> lt, LocalActivePlayerData lapd, Entity e) in
-                SystemAPI.Query<RefRW<LocalTransform>, LocalActivePlayerData>().WithEntityAccess())
+            foreach (var (lapd, lt, e) in SystemAPI.Query<RefRO<LocalActivePlayerData>, RefRW<LocalTransform>>().WithAll<Simulate>().WithEntityAccess())
             {
-                switch (lapd.movementType)
+                switch (lapd.ValueRO.movementType)
                 {
                     case MovementType.Free:
                         FreeMovement(e);
 
                         //When in Free Mode needs to keep track for Hot Swapping between modes.
-                        mNextPos = math.round(lt.ValueRW.Position);
+                        mNextPos = math.round(lt.ValueRO.Position);
                         break;
                     case MovementType.Full_Tile:
                         FullTileMovement(e);
@@ -55,7 +56,7 @@ namespace Natrium
                         FullTileMovementNoDiagonal(e);
                         break;
                     default:
-                        Debug.LogError("Movement not handled by " + ToString() + " " + lapd.movementType.ToString());
+                        Debug.LogError("Movement not handled by " + ToString() + " " + lapd.ValueRO.movementType.ToString());
                         break;
                 }
             }
@@ -67,40 +68,31 @@ namespace Natrium
         {
             var speed = SystemAPI.GetComponent<SpeedData>(e);
             var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
+            var lapd = SystemAPI.GetComponent<LocalActivePlayerData>(e);
 
-            float3 move = new float3(Input.GetAxis("JHorizontal"), 0.0f, Input.GetAxis("JVertical"));
-            if (move.x == 0 && move.z == 0)
-            {
-                move = new float3(Input.GetAxisRaw("Horizontal"), 0.0f, Input.GetAxisRaw("Vertical"));
-                move = math.normalizesafe(move);
-            }
-
+            float3 move = math.normalizesafe(lapd.InputAxis);
             move *= dt * speed.value;
-
-            lt.ValueRW.Position +=  move;
+            lt.ValueRW.Position += move;
         }
 
         private void FullTileMovement(Entity e)
         {
             var speed = SystemAPI.GetComponent<SpeedData>(e);
             var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
+            var lapd = SystemAPI.GetComponent<LocalActivePlayerData>(e);
 
             if (math.distance(lt.ValueRO.Position, mNextPos) < speed.value * mPreviousDT)
             {
                 mPreviousPos = mNextPos;
 
-                float3 move = new float3(Input.GetAxis("JHorizontal"), 0.0f, Input.GetAxis("JVertical"));
-                if (move.x == 0 && move.z == 0)
-                    move = new float3(Input.GetAxisRaw("Horizontal"), 0.0f, Input.GetAxisRaw("Vertical"));
-
-                if (move.x > 0)
+                if (lapd.InputAxis.x > 0)
                     mNextPos.x++;
-                else if (move.x < 0)
+                else if (lapd.InputAxis.x < 0)
                     mNextPos.x--;
 
-                if (move.z > 0)
+                if (lapd.InputAxis.z > 0)
                     mNextPos.z++;
-                else if (move.z < 0)
+                else if (lapd.InputAxis.z < 0)
                     mNextPos.z--;
             }
 
@@ -111,22 +103,19 @@ namespace Natrium
         {
             var speed = SystemAPI.GetComponent<SpeedData>(e);
             var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
+            var lapd = SystemAPI.GetComponent<LocalActivePlayerData>(e);
 
             if (math.distance(lt.ValueRO.Position, mNextPos) < speed.value * mPreviousDT)
             {
                 mPreviousPos = mNextPos;
 
-                float3 move = new float3(Input.GetAxis("JHorizontal"), 0.0f, Input.GetAxis("JVertical"));
-                if (move.x == 0 && move.z == 0)
-                    move = new float3(Input.GetAxisRaw("Horizontal"), 0.0f, Input.GetAxisRaw("Vertical"));
-
-                if (move.z > 0)
+                if (lapd.InputAxis.z > 0)
                     mNextPos.z++;
-                else if (move.x > 0)
+                else if (lapd.InputAxis.x > 0)
                     mNextPos.x++;
-                else if (move.z < 0)
+                else if (lapd.InputAxis.z < 0)
                     mNextPos.z--;
-                else if (move.x < 0)
+                else if (lapd.InputAxis.x < 0)
                     mNextPos.x--;
             }
 

@@ -1,5 +1,8 @@
 using UnityEngine;
 using Unity.Entities;
+using Unity.NetCode;
+using UnityEditor;
+using Unity.Mathematics;
 
 namespace Natrium
 {
@@ -10,6 +13,7 @@ namespace Natrium
         Full_Tile_NoDiagonal
     }
 
+    [DisallowMultipleComponent]
     public class LocalActivePlayerAuthoring : MonoBehaviour
     {
         public MovementType movementType = MovementType.Free;
@@ -32,9 +36,11 @@ namespace Natrium
         }
     }
 
-    public struct LocalActivePlayerData : IComponentData
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
+    public struct LocalActivePlayerData : IInputComponentData
     {
         public MovementType movementType;
+        public float3 InputAxis;
     }
 
     public struct SpeedData : IComponentData

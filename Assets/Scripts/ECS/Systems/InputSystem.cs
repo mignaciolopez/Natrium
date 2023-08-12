@@ -1,14 +1,14 @@
 using Unity.Entities;
-using Unity.Transforms;
+using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
 
 namespace Natrium
 {
-    [UpdateInGroup(typeof(LateSimulationSystemGroup))]
-    public partial class CameraSystem : SystemBase
+
+    [UpdateInGroup(typeof(GhostInputSystemGroup))]
+    public partial class InputSystem : SystemBase
     {
-        private Camera mCurrentCamera;
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -17,8 +17,6 @@ namespace Natrium
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
-
-            mCurrentCamera = Camera.main;
         }
 
         protected override void OnStopRunning()
@@ -32,9 +30,11 @@ namespace Natrium
         }
         protected override void OnUpdate()
         {
-            foreach((LocalToWorld ltw, CameraData cd) in SystemAPI.Query<LocalToWorld, CameraData>())
+            foreach (var lapd in SystemAPI.Query<RefRW<LocalActivePlayerData>>().WithAll<GhostOwnerIsLocal>())
             {
-                mCurrentCamera.transform.position = ltw.Position + cd.offset;
+                lapd.ValueRW.InputAxis = new float3(Input.GetAxis("JHorizontal"), 0.0f, Input.GetAxis("JVertical"));
+                if (lapd.ValueRW.InputAxis.x == 0 && lapd.ValueRW.InputAxis.z == 0)
+                    lapd.ValueRW.InputAxis = new float3(Input.GetAxisRaw("Horizontal"), 0.0f, Input.GetAxisRaw("Vertical"));
             }
         }
     }

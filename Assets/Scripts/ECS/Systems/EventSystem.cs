@@ -3,6 +3,8 @@ using UnityEngine;
 using Unity.Entities;
 using UnityEngine.Events;
 using System;
+using Unity.VisualScripting;
+using Unity.Transforms;
 
 namespace Natrium
 {
@@ -17,6 +19,8 @@ namespace Natrium
         private static Dictionary<Events, CustomUnityEvent> mHandlers;
         private static Queue<Tuple<Events, CustomStream>> mEventsQueue;
 
+        private static bool mRunning;
+
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -30,26 +34,29 @@ namespace Natrium
         {
             base.OnStartRunning();
 
+            mRunning = true;
             mEventsQueue = new Queue<Tuple<Events, CustomStream>>();
         }
 
         protected override void OnStopRunning()
         {
-            base.OnStopRunning();
-
             mEventsQueue.Clear();
-            mEventsQueue = null;
+            //mEventsQueue = null;
+
+            mRunning = false;
+
+            base.OnStopRunning();
         }
 
         protected override void OnDestroy()
         {
-            base.OnDestroy();
-
-            foreach (var evnt in (Events[])Enum.GetValues(typeof(Events)))
-                mHandlers[evnt] = null;
+            //foreach (var evnt in (Events[])Enum.GetValues(typeof(Events)))
+            //    mHandlers[evnt] = null;
 
             mHandlers.Clear();
-            mHandlers = null;
+            //mHandlers = null;
+            
+            base.OnDestroy();
         }
 
         protected override void OnUpdate()
@@ -75,7 +82,7 @@ namespace Natrium
 
         public static void DispatchEvent(Events evnt, CustomStream stream = null)
         {
-            if (mEventsQueue != null)
+            if (mRunning)
                 mEventsQueue.Enqueue(new Tuple<Events, CustomStream>(evnt, stream));
         }
 
