@@ -1,9 +1,11 @@
 using UnityEngine;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.NetCode;
 
 namespace Natrium
 {
+    [DisallowMultipleComponent]
     public class CameraAuthoring : MonoBehaviour
     {
         public float3 offset;
@@ -21,6 +23,7 @@ namespace Natrium
         }
     }
 
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
     public struct CameraData : IComponentData
     {
         public float3 offset;

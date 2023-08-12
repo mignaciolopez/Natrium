@@ -1,6 +1,5 @@
 using Unity.Entities;
 using Unity.Transforms;
-using Unity.NetCode;
 using UnityEngine;
 
 namespace Natrium
@@ -33,7 +32,7 @@ namespace Natrium
         }
         protected override void OnUpdate()
         {
-            foreach(var (ltw, cd, pd, pid) in SystemAPI.Query<LocalToWorld, CameraData, PlayerData, PlayerInputData>().WithAll<Simulate>())
+            foreach(var (ltw, cd) in SystemAPI.Query<LocalToWorld, CameraData>().WithAll<Simulate>())
             {
                 mCurrentCamera.transform.position = ltw.Position + cd.offset;
             }
