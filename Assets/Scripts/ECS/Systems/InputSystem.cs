@@ -30,11 +30,16 @@ namespace Natrium
         }
         protected override void OnUpdate()
         {
-            foreach (var lapd in SystemAPI.Query<RefRW<LocalActivePlayerData>>().WithAll<GhostOwnerIsLocal>())
+            foreach (var pid in SystemAPI.Query<RefRW<PlayerInputData>>().WithAll<GhostOwnerIsLocal>())
             {
-                lapd.ValueRW.InputAxis = new float3(Input.GetAxis("JHorizontal"), 0.0f, Input.GetAxis("JVertical"));
-                if (lapd.ValueRW.InputAxis.x == 0 && lapd.ValueRW.InputAxis.z == 0)
-                    lapd.ValueRW.InputAxis = new float3(Input.GetAxisRaw("Horizontal"), 0.0f, Input.GetAxisRaw("Vertical"));
+                pid.ValueRW = default;
+                pid.ValueRW.InputAxis = new float3(Input.GetAxis("JHorizontal"), 0.0f, Input.GetAxis("JVertical"));
+
+                if (pid.ValueRW.InputAxis.x == 0 && pid.ValueRW.InputAxis.z == 0)
+                {
+                    pid.ValueRW.InputAxis = new float3(Input.GetAxisRaw("Horizontal"), 0.0f, Input.GetAxisRaw("Vertical"));
+                    pid.ValueRW.InputAxis = math.normalizesafe(pid.ValueRW.InputAxis);
+                }
             }
         }
     }

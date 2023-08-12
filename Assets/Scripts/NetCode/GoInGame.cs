@@ -60,7 +60,7 @@ public partial struct GoInGameServerSystem : ISystem
     [BurstCompile]
     public void OnUpdate(ref SystemState state)
     {
-        var prefab = SystemAPI.GetSingleton<PlayerSpawnerData>().player;
+        var prefab = SystemAPI.GetSingleton<PlayerSpawnerData>().playerPrefab;
         state.EntityManager.GetName(prefab, out var prefabName);
         var worldName = state.WorldUnmanaged.Name;
 

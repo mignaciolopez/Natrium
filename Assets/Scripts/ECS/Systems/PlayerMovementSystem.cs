@@ -39,9 +39,11 @@ namespace Natrium
         {
             dt = SystemAPI.Time.DeltaTime;
 
-            foreach (var (lapd, lt, e) in SystemAPI.Query<RefRO<LocalActivePlayerData>, RefRW<LocalTransform>>().WithAll<Simulate>().WithEntityAccess())
+            foreach (var (pid, lt, e) in SystemAPI.Query<RefRO<PlayerInputData>, RefRW<LocalTransform>>()
+                .WithAll<Simulate>()
+                .WithEntityAccess())
             {
-                switch (lapd.ValueRO.movementType)
+                switch (pid.ValueRO.movementType)
                 {
                     case MovementType.Free:
                         FreeMovement(e);
@@ -56,7 +58,7 @@ namespace Natrium
                         FullTileMovementNoDiagonal(e);
                         break;
                     default:
-                        Debug.LogError("Movement not handled by " + ToString() + " " + lapd.ValueRO.movementType.ToString());
+                        Debug.LogError("Movement not handled by " + ToString() + " " + pid.ValueRO.movementType.ToString());
                         break;
                 }
             }
@@ -68,31 +70,29 @@ namespace Natrium
         {
             var speed = SystemAPI.GetComponent<SpeedData>(e);
             var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
-            var lapd = SystemAPI.GetComponent<LocalActivePlayerData>(e);
+            var pid = SystemAPI.GetComponent<PlayerInputData>(e);
 
-            float3 move = math.normalizesafe(lapd.InputAxis);
-            move *= dt * speed.value;
-            lt.ValueRW.Position += move;
+            lt.ValueRW.Position += pid.InputAxis * speed.value * dt;
         }
 
         private void FullTileMovement(Entity e)
         {
             var speed = SystemAPI.GetComponent<SpeedData>(e);
             var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
-            var lapd = SystemAPI.GetComponent<LocalActivePlayerData>(e);
+            var pid = SystemAPI.GetComponent<PlayerInputData>(e);
 
             if (math.distance(lt.ValueRO.Position, mNextPos) < speed.value * mPreviousDT)
             {
                 mPreviousPos = mNextPos;
 
-                if (lapd.InputAxis.x > 0)
+                if (pid.InputAxis.x > 0)
                     mNextPos.x++;
-                else if (lapd.InputAxis.x < 0)
+                else if (pid.InputAxis.x < 0)
                     mNextPos.x--;
 
-                if (lapd.InputAxis.z > 0)
+                if (pid.InputAxis.z > 0)
                     mNextPos.z++;
-                else if (lapd.InputAxis.z < 0)
+                else if (pid.InputAxis.z < 0)
                     mNextPos.z--;
             }
 
@@ -103,19 +103,19 @@ namespace Natrium
         {
             var speed = SystemAPI.GetComponent<SpeedData>(e);
             var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
-            var lapd = SystemAPI.GetComponent<LocalActivePlayerData>(e);
+            var pid = SystemAPI.GetComponent<PlayerInputData>(e);
 
             if (math.distance(lt.ValueRO.Position, mNextPos) < speed.value * mPreviousDT)
             {
                 mPreviousPos = mNextPos;
 
-                if (lapd.InputAxis.z > 0)
+                if (pid.InputAxis.z > 0)
                     mNextPos.z++;
-                else if (lapd.InputAxis.x > 0)
+                else if (pid.InputAxis.x > 0)
                     mNextPos.x++;
-                else if (lapd.InputAxis.z < 0)
+                else if (pid.InputAxis.z < 0)
                     mNextPos.z--;
-                else if (lapd.InputAxis.x < 0)
+                else if (pid.InputAxis.x < 0)
                     mNextPos.x--;
             }
 
