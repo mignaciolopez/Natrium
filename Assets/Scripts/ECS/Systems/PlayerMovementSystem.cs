@@ -39,11 +39,11 @@ namespace Natrium
         {
             dt = SystemAPI.Time.DeltaTime;
 
-            foreach (var (pid, lt, e) in SystemAPI.Query<RefRO<PlayerInputData>, RefRW<LocalTransform>>()
+            foreach (var (pid, lt, pd, e) in SystemAPI.Query<RefRO<PlayerInputData>, RefRW<LocalTransform>, RefRO<PlayerData>>()
                 .WithAll<Simulate>()
                 .WithEntityAccess())
             {
-                switch (pid.ValueRO.movementType)
+                switch (pd.ValueRO.movementType)
                 {
                     case MovementType.Free:
                         FreeMovement(e);
@@ -58,7 +58,7 @@ namespace Natrium
                         FullTileMovementNoDiagonal(e);
                         break;
                     default:
-                        Debug.LogError("Movement not handled by " + ToString() + " " + pid.ValueRO.movementType.ToString());
+                        Debug.LogError("Movement not handled by " + ToString() + " " + pd.ValueRO.movementType.ToString());
                         break;
                 }
             }

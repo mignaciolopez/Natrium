@@ -27,7 +27,7 @@ namespace Natrium
 
             AddComponent(e, new PlayerData
             {
-                
+                movementType = authoring.movementType
             });
             AddComponent(e, new SpeedData
             {
@@ -35,14 +35,14 @@ namespace Natrium
             });
             AddComponent(e, new PlayerInputData
             {
-                movementType = authoring.movementType
+                
             });
         }
     }
 
     public struct PlayerData : IComponentData
     {
-        
+        public MovementType movementType;
     }
 
     public struct SpeedData : IComponentData
@@ -53,7 +53,6 @@ namespace Natrium
     [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
     public struct PlayerInputData : IInputComponentData
     {
-        public MovementType movementType;
         public float3 InputAxis;
     }
 }
