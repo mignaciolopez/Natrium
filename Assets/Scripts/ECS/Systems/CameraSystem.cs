@@ -32,7 +32,7 @@ namespace Natrium
         }
         protected override void OnUpdate()
         {
-            foreach((LocalToWorld ltw, CameraData cd) in SystemAPI.Query<LocalToWorld, CameraData>())
+            foreach(var (ltw, cd, pd) in SystemAPI.Query<LocalToWorld, CameraData, PlayerData>().WithAll<Simulate>())
             {
                 mCurrentCamera.transform.position = ltw.Position + cd.offset;
             }
