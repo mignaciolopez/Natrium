@@ -8,7 +8,7 @@ namespace Natrium
     public partial class PlayerMovementSystem : SystemBase
     {
         private float dt;
-
+        private float mPreviousDT;
         private float3 mPreviousPos;
         private float3 mNextPos;
 
@@ -20,6 +20,8 @@ namespace Natrium
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
+            dt = SystemAPI.Time.DeltaTime;
+            mPreviousDT = dt;
         }
 
         protected override void OnStopRunning()
@@ -57,6 +59,8 @@ namespace Natrium
                         break;
                 }
             }
+
+            mPreviousDT = dt;
         }
 
         private void FreeMovement(Entity e)
@@ -80,11 +84,8 @@ namespace Natrium
         {
             var speed = SystemAPI.GetComponent<SpeedData>(e);
             var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
-            var lapd = SystemAPI.GetComponentRW<LocalActivePlayerData>(e);
 
-            CalculateAutoDistance(e);
-
-            if (math.distance(lt.ValueRO.Position, mNextPos) <= lapd.ValueRO.minDistanceInput)
+            if (math.distance(lt.ValueRO.Position, mNextPos) < speed.value * mPreviousDT)
             {
                 mPreviousPos = mNextPos;
 
@@ -110,11 +111,8 @@ namespace Natrium
         {
             var speed = SystemAPI.GetComponent<SpeedData>(e);
             var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
-            var lapd = SystemAPI.GetComponentRW<LocalActivePlayerData>(e);
 
-            CalculateAutoDistance(e);
-
-            if (math.distance(lt.ValueRO.Position, mNextPos) <= lapd.ValueRO.minDistanceInput)
+            if (math.distance(lt.ValueRO.Position, mNextPos) < speed.value * mPreviousDT)
             {
                 mPreviousPos = mNextPos;
 
@@ -133,14 +131,6 @@ namespace Natrium
             }
 
             lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, mNextPos, speed.value * dt);
-        }
-
-        private void CalculateAutoDistance(Entity e)
-        {
-            var lapd = SystemAPI.GetComponentRW<LocalActivePlayerData>(e);
-
-            if (lapd.ValueRO.autoDistance)
-                lapd.ValueRW.minDistanceInput = 0.05f; //TODO: faking a value for now
         }
     }
 }
