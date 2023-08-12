@@ -71,8 +71,9 @@ namespace Natrium
             var speed = SystemAPI.GetComponent<SpeedData>(e);
             var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
             var pid = SystemAPI.GetComponent<PlayerInputData>(e);
-
-            lt.ValueRW.Position += pid.InputAxis * speed.value * dt;
+            
+            float3 move = math.normalizesafe(pid.InputAxis);
+            lt.ValueRW.Position += move * speed.value * dt;
         }
 
         private void FullTileMovement(Entity e)
