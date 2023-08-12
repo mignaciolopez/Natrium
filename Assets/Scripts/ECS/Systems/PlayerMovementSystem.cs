@@ -11,8 +11,6 @@ namespace Natrium
     {
         private float dt;
         private float mPreviousDT;
-        private float3 mPreviousPos;
-        private float3 mNextPos;
 
         protected override void OnCreate()
         {
@@ -39,7 +37,7 @@ namespace Natrium
         {
             dt = SystemAPI.Time.DeltaTime;
 
-            foreach (var (pid, lt, pd, e) in SystemAPI.Query<RefRO<PlayerInputData>, RefRW<LocalTransform>, RefRO<PlayerData>>()
+            foreach (var (pid, lt, pd, e) in SystemAPI.Query<RefRW<PlayerInputData>, RefRW<LocalTransform>, RefRO<PlayerData>>()
                 .WithAll<Simulate>()
                 .WithEntityAccess())
             {
@@ -49,7 +47,7 @@ namespace Natrium
                         FreeMovement(e);
 
                         //When in Free Mode needs to keep track for Hot Swapping between modes.
-                        mNextPos = math.round(lt.ValueRO.Position);
+                        pid.ValueRW.NextPos = math.round(lt.ValueRO.Position);
                         break;
                     case MovementType.Full_Tile:
                         FullTileMovement(e);
@@ -82,22 +80,22 @@ namespace Natrium
             var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
             var pid = SystemAPI.GetComponent<PlayerInputData>(e);
 
-            if (math.distance(lt.ValueRO.Position, mNextPos) < speed.value * mPreviousDT)
+            if (math.distance(lt.ValueRO.Position, pid.NextPos) < speed.value * mPreviousDT)
             {
-                mPreviousPos = mNextPos;
+                pid.PreviousPos = pid.NextPos;
 
                 if (pid.InputAxis.x > 0)
-                    mNextPos.x++;
+                    pid.NextPos.x++;
                 else if (pid.InputAxis.x < 0)
-                    mNextPos.x--;
+                    pid.NextPos.x--;
 
                 if (pid.InputAxis.z > 0)
-                    mNextPos.z++;
+                    pid.NextPos.z++;
                 else if (pid.InputAxis.z < 0)
-                    mNextPos.z--;
+                    pid.NextPos.z--;
             }
 
-            lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, mNextPos, speed.value * dt);
+            lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, pid.NextPos, speed.value * dt);
         }
 
         private void FullTileMovementNoDiagonal(Entity e)
@@ -106,21 +104,21 @@ namespace Natrium
             var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
             var pid = SystemAPI.GetComponent<PlayerInputData>(e);
 
-            if (math.distance(lt.ValueRO.Position, mNextPos) < speed.value * mPreviousDT)
+            if (math.distance(lt.ValueRO.Position, pid.NextPos) < speed.value * mPreviousDT)
             {
-                mPreviousPos = mNextPos;
+                pid.PreviousPos = pid.NextPos;
 
                 if (pid.InputAxis.z > 0)
-                    mNextPos.z++;
+                    pid.NextPos.z++;
                 else if (pid.InputAxis.x > 0)
-                    mNextPos.x++;
+                    pid.NextPos.x++;
                 else if (pid.InputAxis.z < 0)
-                    mNextPos.z--;
+                    pid.NextPos.z--;
                 else if (pid.InputAxis.x < 0)
-                    mNextPos.x--;
+                    pid.NextPos.x--;
             }
 
-            lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, mNextPos, speed.value * dt);
+            lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, pid.NextPos, speed.value * dt);
         }
     }
 }
