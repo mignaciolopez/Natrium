@@ -13,6 +13,7 @@ GameObject:
   - component: {fileID: 6982228968545458039}
   - component: {fileID: 8472721446830328808}
   - component: {fileID: 2920929808110160302}
+  - component: {fileID: 7782340733581068645}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -48,8 +49,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8244c41ca85b71240a6e685019e6c74e, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementType: 1
-  speed: 3
+  speed: 4
 --- !u!114 &6982228968545458039
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -99,7 +99,20 @@ MonoBehaviour:
   SupportAutoCommandTarget: 1
   TrackInterpolationDelay: 0
   GhostGroup: 0
-  UsePreSerialization: 0
+  UsePreSerialization: 1
+--- !u!114 &7782340733581068645
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2569002681301233278}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfdaa6c06fe64fbda2b16e07a4ee0b25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ComponentOverrides: []
 --- !u!1 &8212942549574998060
 GameObject:
   m_ObjectHideFlags: 0

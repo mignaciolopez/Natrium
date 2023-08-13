@@ -5,17 +5,9 @@ using Unity.Mathematics;
 
 namespace Natrium
 {
-    public enum MovementType
-    {
-        Free = 0,
-        Full_Tile,
-        Full_Tile_NoDiagonal
-    }
-
     [DisallowMultipleComponent]
     public class PlayerAuthoring : MonoBehaviour
     {
-        public MovementType movementType = MovementType.Free;
         public float speed = 2.0f;
     }
 
@@ -27,7 +19,7 @@ namespace Natrium
 
             AddComponent(e, new PlayerData
             {
-                movementType = authoring.movementType
+
             });
             AddComponent(e, new SpeedData
             {
@@ -42,7 +34,8 @@ namespace Natrium
 
     public struct PlayerData : IComponentData
     {
-        public MovementType movementType;
+        public int3 PreviousPos;
+        public int3 NextPos;
     }
 
     public struct SpeedData : IComponentData
@@ -54,7 +47,5 @@ namespace Natrium
     public struct PlayerInputData : IInputComponentData
     {
         public float3 InputAxis;
-        public float3 PreviousPos;
-        public float3 NextPos;
     }
 }

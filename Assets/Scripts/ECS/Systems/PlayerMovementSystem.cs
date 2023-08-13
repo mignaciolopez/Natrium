@@ -2,6 +2,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Transforms;
+using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Natrium
@@ -9,8 +10,10 @@ namespace Natrium
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
     public partial class PlayerMovementSystem : SystemBase
     {
+        public SystemSettingsData mSettings;
+
         private float dt;
-        private float mPreviousDT;
+        private float fdt;
 
         protected override void OnCreate()
         {
@@ -19,9 +22,8 @@ namespace Natrium
 
         protected override void OnStartRunning()
         {
+            RequireForUpdate<SystemSettingsData>();
             base.OnStartRunning();
-            dt = SystemAPI.Time.DeltaTime;
-            mPreviousDT = dt;
         }
 
         protected override void OnStopRunning()
@@ -36,89 +38,87 @@ namespace Natrium
         protected override void OnUpdate()
         {
             dt = SystemAPI.Time.DeltaTime;
+            fdt = UnityEngine.Time.fixedDeltaTime;
 
-            foreach (var (pid, lt, pd, e) in SystemAPI.Query<RefRW<PlayerInputData>, RefRW<LocalTransform>, RefRO<PlayerData>>()
-                .WithAll<Simulate>()
-                .WithEntityAccess())
+            mSettings = SystemAPI.GetSingleton<SystemSettingsData>();
+
+            switch (mSettings.movementType)
             {
-                switch (pd.ValueRO.movementType)
+                case MovementType.Free:
+                    FreeMovement();
+                    break;
+                case MovementType.Full_Tile:
+                    FullTileMovement();
+                    break;
+                case MovementType.Full_Tile_NoDiagonal:
+                    FullTileMovementNoDiagonal();
+                    break;
+                default:
+                    Debug.LogError("Movement not handled by " + ToString() + " " + mSettings.movementType.ToString());
+                    break;
+            }
+        }
+
+        private void FreeMovement()
+        {
+            foreach (var (lt, pd, pid, s) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<PlayerData>, PlayerInputData, SpeedData>()
+                        .WithAll<Simulate>())
+            {
+                lt.ValueRW.Position += pid.InputAxis * s.value * dt;
+
+                //When in Free Mode needs to keep track for Hot Swapping between modes.
+                pd.ValueRW.NextPos = (int3)math.round(lt.ValueRO.Position);
+            }
+        }
+
+        private void FullTileMovement()
+        {
+            foreach (var (lt, pd, pid, s) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<PlayerData>, PlayerInputData, SpeedData>()
+                        .WithAll<Simulate>())
+            {
+
+                if (math.distance(lt.ValueRO.Position, pd.ValueRO.NextPos) < s.value * fdt)
                 {
-                    case MovementType.Free:
-                        FreeMovement(e);
+                    lt.ValueRW.Position = pd.ValueRO.NextPos;
+                    pd.ValueRW.PreviousPos = pd.ValueRO.NextPos;
 
-                        //When in Free Mode needs to keep track for Hot Swapping between modes.
-                        pid.ValueRW.NextPos = math.round(lt.ValueRO.Position);
-                        break;
-                    case MovementType.Full_Tile:
-                        FullTileMovement(e);
-                        break;
-                    case MovementType.Full_Tile_NoDiagonal:
-                        FullTileMovementNoDiagonal(e);
-                        break;
-                    default:
-                        Debug.LogError("Movement not handled by " + ToString() + " " + pd.ValueRO.movementType.ToString());
-                        break;
+                    if (pid.InputAxis.x > 0)
+                        pd.ValueRW.NextPos.x++;
+                    else if (pid.InputAxis.x < 0)
+                        pd.ValueRW.NextPos.x--;
+
+                    if (pid.InputAxis.z > 0)
+                        pd.ValueRW.NextPos.z++;
+                    else if (pid.InputAxis.z < 0)
+                        pd.ValueRW.NextPos.z--;
                 }
+
+                lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, (float3)pd.ValueRO.NextPos, s.value * fdt);
             }
-
-            mPreviousDT = dt;
         }
 
-        private void FreeMovement(Entity e)
+        private void FullTileMovementNoDiagonal()
         {
-            var speed = SystemAPI.GetComponent<SpeedData>(e);
-            var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
-            var pid = SystemAPI.GetComponent<PlayerInputData>(e);
-            
-            float3 move = math.normalizesafe(pid.InputAxis);
-            lt.ValueRW.Position += move * speed.value * dt;
-        }
-
-        private void FullTileMovement(Entity e)
-        {
-            var speed = SystemAPI.GetComponent<SpeedData>(e);
-            var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
-            var pid = SystemAPI.GetComponent<PlayerInputData>(e);
-
-            if (math.distance(lt.ValueRO.Position, pid.NextPos) < speed.value * mPreviousDT)
+            foreach (var (lt, pd, pid, s) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<PlayerData>, PlayerInputData, SpeedData>()
+                        .WithAll<Simulate>())
             {
-                pid.PreviousPos = pid.NextPos;
+                if (math.distance(lt.ValueRO.Position, pd.ValueRO.NextPos) < s.value * fdt)
+                {
+                    lt.ValueRW.Position = pd.ValueRO.NextPos;
+                    pd.ValueRW.PreviousPos = pd.ValueRO.NextPos;
 
-                if (pid.InputAxis.x > 0)
-                    pid.NextPos.x++;
-                else if (pid.InputAxis.x < 0)
-                    pid.NextPos.x--;
+                    if (pid.InputAxis.z > 0)
+                        pd.ValueRW.NextPos.z++;
+                    else if (pid.InputAxis.x > 0)
+                        pd.ValueRW.NextPos.x++;
+                    else if (pid.InputAxis.z < 0)
+                        pd.ValueRW.NextPos.z--;
+                    else if (pid.InputAxis.x < 0)
+                        pd.ValueRW.NextPos.x--;
+                }
 
-                if (pid.InputAxis.z > 0)
-                    pid.NextPos.z++;
-                else if (pid.InputAxis.z < 0)
-                    pid.NextPos.z--;
+                lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, (float3)pd.ValueRO.NextPos, s.value * fdt);
             }
-
-            lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, pid.NextPos, speed.value * dt);
-        }
-
-        private void FullTileMovementNoDiagonal(Entity e)
-        {
-            var speed = SystemAPI.GetComponent<SpeedData>(e);
-            var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
-            var pid = SystemAPI.GetComponent<PlayerInputData>(e);
-
-            if (math.distance(lt.ValueRO.Position, pid.NextPos) < speed.value * mPreviousDT)
-            {
-                pid.PreviousPos = pid.NextPos;
-
-                if (pid.InputAxis.z > 0)
-                    pid.NextPos.z++;
-                else if (pid.InputAxis.x > 0)
-                    pid.NextPos.x++;
-                else if (pid.InputAxis.z < 0)
-                    pid.NextPos.z--;
-                else if (pid.InputAxis.x < 0)
-                    pid.NextPos.x--;
-            }
-
-            lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, pid.NextPos, speed.value * dt);
         }
     }
 }
