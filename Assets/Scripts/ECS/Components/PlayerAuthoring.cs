@@ -11,7 +11,7 @@ namespace Natrium
         public float speed = 2.0f;
     }
 
-    public class PlayerAuthoringBaker : Baker<PlayerAuthoring>
+    public class PlayerBaker : Baker<PlayerAuthoring>
     {
         public override void Bake(PlayerAuthoring authoring)
         {

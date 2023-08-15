@@ -9,7 +9,7 @@ namespace Natrium
         public GameObject playerPrefab;
     }
 
-    public class PlayerSpawnerAuthoringBaker : Baker<PlayerSpawnerAuthoring>
+    public class PlayerSpawnerBaker : Baker<PlayerSpawnerAuthoring>
     {
         public override void Bake(PlayerSpawnerAuthoring authoring)
         {

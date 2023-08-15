@@ -11,7 +11,7 @@ namespace Natrium
         public float3 offset;
     }
 
-    public class CameraAuthoringBaker : Baker<CameraAuthoring>
+    public class CameraBaker : Baker<CameraAuthoring>
     {
         public override void Bake(CameraAuthoring authoring)
         {

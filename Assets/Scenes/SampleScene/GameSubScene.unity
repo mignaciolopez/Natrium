@@ -124,6 +124,51 @@ NavMeshSettings:
     debug:
       m_Flags: 0
   m_NavMeshData: {fileID: 0}
+--- !u!1 &395158841
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 395158843}
+  - component: {fileID: 395158842}
+  m_Layer: 0
+  m_Name: Execute
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!114 &395158842
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 395158841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5c5c1737850f834988e468435a30b2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  MovementSystem: 1
+--- !u!4 &395158843
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 395158841}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &903655829
 GameObject:
   m_ObjectHideFlags: 0
@@ -285,7 +330,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1731528804}
-  - component: {fileID: 1731528803}
+  - component: {fileID: 1731528805}
   m_Layer: 0
   m_Name: Settings
   m_TagString: Untagged
@@ -293,19 +338,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &1731528803
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1731528802}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: b42a5048583ce524388c3898fd958572, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  movementType: 0
 --- !u!4 &1731528804
 Transform:
   m_ObjectHideFlags: 0
@@ -321,10 +353,47 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1731528805
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1731528802}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: b42a5048583ce524388c3898fd958572, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  movementType: 2
+  AddCustomClientTickRate: 0
+  CommandAgeCorrectionFraction: 0.1
+  InterpolationDelayCorrectionFraction: 0.1
+  InterpolationDelayJitterScale: 1.25
+  InterpolationDelayMaxDeltaTicksFraction: 0.1
+  UseInterpolationTimeMS: 0
+  InterpolationTimeMS: 0
+  UseInterpolationTimeNetTicks: 0
+  InterpolationTimeNetTicks: 0
+  InterpolationTimeScaleMax: 1.1
+  InterpolationTimeScaleMin: 0.85
+  UseMaxExtrapolationTimeSimTicks: 0
+  MaxExtrapolationTimeSimTicks: 0
+  UseMaxPredictAheadTimeMS: 0
+  MaxPredictAheadTimeMS: 0
+  UseMaxPredictionStepBatchSizeFirstTimeTick: 0
+  MaxPredictionStepBatchSizeFirstTimeTick: 0
+  UseMaxPredictionStepBatchSizeRepeatedTick: 0
+  MaxPredictionStepBatchSizeRepeatedTick: 0
+  PredictionTimeScaleMax: 1.1
+  PredictionTimeScaleMin: 0.9
+  UseTargetCommandSlack: 0
+  TargetCommandSlack: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
   m_Roots:
+  - {fileID: 395158843}
+  - {fileID: 1731528804}
   - {fileID: 1627128872}
   - {fileID: 903655831}
-  - {fileID: 1731528804}
