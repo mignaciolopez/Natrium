@@ -14,12 +14,16 @@ namespace Natrium
     {
     }
 
+    [UpdateInGroup(typeof(LateSimulationSystemGroup))]
+    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation)]
     public partial class EventSystem : SystemBase
     {
         private static Dictionary<Events, CustomUnityEvent> mHandlers;
         private static Queue<Tuple<Events, CustomStream>> mEventsQueue;
 
         private static bool mRunning;
+
+        private static string sWorldName;
 
         protected override void OnCreate()
         {
@@ -33,7 +37,7 @@ namespace Natrium
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
-
+            sWorldName = World.Name;
             mRunning = true;
             mEventsQueue = new Queue<Tuple<Events, CustomStream>>();
         }
@@ -68,13 +72,13 @@ namespace Natrium
                     if (e.Item2 != null)
                         e.Item2.Position = 0;
 
-                    Debug.Log("Dispatching Event: " + e.Item1.ToString());
+                    Debug.Log($"'{World.Unmanaged.Name}' Dispatching Event: {e.Item1}");
                     mHandlers[e.Item1]?.Invoke(e.Item2);
                 }
                 else
-                    Debug.LogWarning("There are no mHandlers for the Event: " + e.Item1.ToString());
+                    Debug.Log($"'{World.Unmanaged.Name}' There are no mHandlers for the Event: {e.Item1}");
 
-                e.Item2.Dispose();
+                e.Item2?.Dispose();
             }
 
             mEventsQueue.Clear();
@@ -91,11 +95,11 @@ namespace Natrium
             if (mHandlers.ContainsKey(evnt))
             {
                 mHandlers[evnt].AddListener(ua);
-                Debug.Log(ua.Target.ToString() + " " + ua.Method.ToString() + " Subscribed to " + evnt.ToString());
+                Debug.Log($"'{sWorldName}' {ua.Target} {ua.Method} Subscribed to {evnt}");
                 return true;
             }
 
-            Debug.LogWarning(ua.Target.ToString() + " " + ua.Method.ToString() + " Tried to subscribe to " + evnt.ToString());
+            Debug.LogWarning($"'{sWorldName}' {ua.Target} {ua.Method} Tried to subscribe to {evnt}");
             return false;
         }
 
@@ -104,11 +108,11 @@ namespace Natrium
             if (mHandlers.ContainsKey(evnt))
             {
                 mHandlers[evnt].RemoveListener(ua);
-                Debug.Log(ua.Target.ToString() + " " + ua.Method.ToString() + " Unsubscribed from " + evnt.ToString());
+                Debug.Log($"'{sWorldName}' {ua.Target} {ua.Method} UnSubscribed from {evnt}");
                 return true;
             }
 
-            Debug.LogWarning(ua.Target.ToString() + " " + ua.Method.ToString() + " Tried to Unsubscribe from " + evnt.ToString());
+            Debug.LogWarning($"'{sWorldName}' {ua.Target} {ua.Method} Tried to unsubscribe from {evnt}");
             return false;
         }
     }

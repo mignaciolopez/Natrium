@@ -2,7 +2,7 @@ namespace Natrium
 {
     public enum Events
     {
-        OnResolutionChange = 1,
-        OnCameraSensitivityChange
+        Client_Connect,
+        Client_Disconnect
     }
 }

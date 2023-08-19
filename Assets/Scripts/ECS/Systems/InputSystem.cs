@@ -41,6 +41,12 @@ namespace Natrium
                     pid.ValueRW.InputAxis = math.normalizesafe(pid.ValueRW.InputAxis);
                 }
             }
+
+            if (Input.GetKeyUp(KeyCode.Return))
+                EventSystem.DispatchEvent(Events.Client_Connect);
+            if (Input.GetKeyUp(KeyCode.Escape))
+                EventSystem.DispatchEvent(Events.Client_Disconnect);
+
         }
     }
 }
