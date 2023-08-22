@@ -37,10 +37,7 @@ namespace Natrium
                 ecb.DestroyEntity(e);
                 
                 var hitEntity = ecb.Instantiate(prefab);
-                var lt = new LocalTransform();
-                lt.Position = (float3)td.tile;
-                lt.Position.y = 0.1f;
-                ecb.SetComponent(hitEntity, lt);
+                ecb.SetComponent(hitEntity, LocalTransform.FromPosition(td.tile));
 
                 UnityEngine.Debug.Log($"TouchData Entity: {e}, Instatiating Hit at {td.tile}, Hit Entity {hitEntity}");
             }
