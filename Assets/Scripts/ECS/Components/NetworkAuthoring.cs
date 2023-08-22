@@ -19,15 +19,18 @@ namespace Natrium
             Entity e = GetEntity(TransformUsageFlags.None);
             AddComponent(e, new NetworkData
             {
-
+                
             });
         }
     }
 
     public struct NetworkData : IComponentData
     {
+        
     }
 
     public struct Rpc_Connect : IRpcCommand { }
     public struct Rpc_Disconnect : IRpcCommand { }
+    public struct Rpc_Click : IRpcCommand { }
+    public struct Rpc_Spawn : IRpcCommand { }
 }

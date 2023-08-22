@@ -47,5 +47,6 @@ namespace Natrium
     public struct PlayerInputData : IInputComponentData
     {
         public float3 InputAxis;
+        public float3 LastScreenCoordinates;
     }
 }

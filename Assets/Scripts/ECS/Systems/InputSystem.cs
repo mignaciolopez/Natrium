@@ -40,13 +40,18 @@ namespace Natrium
                     pid.ValueRW.InputAxis = new float3(Input.GetAxisRaw("Horizontal"), 0.0f, Input.GetAxisRaw("Vertical"));
                     pid.ValueRW.InputAxis = math.normalizesafe(pid.ValueRW.InputAxis);
                 }
+
+                if (Input.GetMouseButtonUp(0))
+                {
+                    pid.ValueRW.LastScreenCoordinates = Input.mousePosition;
+                    EventSystem.DispatchEvent(Events.OnPrimaryClick);
+                }
             }
 
             if (Input.GetKeyUp(KeyCode.Return))
                 EventSystem.DispatchEvent(Events.Client_Connect);
             if (Input.GetKeyUp(KeyCode.Escape))
                 EventSystem.DispatchEvent(Events.Client_Disconnect);
-
         }
     }
 }

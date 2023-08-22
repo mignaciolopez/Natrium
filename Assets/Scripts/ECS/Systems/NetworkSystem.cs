@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using Unity.Collections;
 using Unity.Entities;
@@ -52,6 +53,7 @@ namespace Natrium
                 UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Connecting... Found Entity: {e} NetworkId: {nId.Value}");
 
                 ecb.AddComponent<NetworkStreamInGame>(e);
+                ecb.AddComponent<GhostOwnerIsLocal>(e);
 
                 var req = ecb.CreateEntity();
                 ecb.AddComponent(req, new Rpc_Connect { });
@@ -60,16 +62,7 @@ namespace Natrium
 
             if (!found)
             {
-                GameBootstrap.instance.Initialize("Default World");
                 UnityEngine.Debug.LogWarning($"'{World.Unmanaged.Name}' Entity Not Found");
-
-                var e = ecb.CreateEntity();
-                ecb.AddComponent<NetworkId>(e);
-                ecb.AddComponent<NetworkStreamInGame>(e);
-
-                var req = ecb.CreateEntity();
-                ecb.AddComponent(req, new Rpc_Connect { });
-                ecb.AddComponent(req, new SendRpcCommandRequest { TargetConnection = e });
             }
 
             ecb.Playback(EntityManager);
@@ -86,7 +79,7 @@ namespace Natrium
                 UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Disconecting... Entity: {e}, NetowrkId: {nid}");
                 found = true;
                 //var req = ecb.CreateEntity();
-                ecb.AddComponent<NetworkStreamRequestDisconnect>(e);
+                //ecb.AddComponent<NetworkStreamRequestDisconnect>(e);
             }
 
             if(!found)
@@ -99,9 +92,11 @@ namespace Natrium
     }
 
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
-    public partial class NetworkServertSystem : SystemBase
+    public partial class NetworkServerSystem : SystemBase
     {
-        private ComponentLookup<NetworkId> mNetworkIdFromEntity;
+        public static ComponentLookup<NetworkId> mNetworkIdFromEntity;
+
+        public static Dictionary<int, Entity> sPlayers;
 
         protected override void OnCreate()
         {
@@ -111,6 +106,7 @@ namespace Natrium
             RequireForUpdate(GetEntityQuery(builder));
 
             mNetworkIdFromEntity = GetComponentLookup<NetworkId>(true);
+            sPlayers = new Dictionary<int, Entity>();
 
             base.OnCreate();
         }
@@ -149,8 +145,10 @@ namespace Natrium
                 ecb.AddComponent<NetworkStreamInGame>(reqSrc.ValueRO.SourceConnection);
                 var networkId = mNetworkIdFromEntity[reqSrc.ValueRO.SourceConnection];
 
+
                 var player = ecb.Instantiate(prefab);
                 ecb.SetComponent(player, new GhostOwner { NetworkId = networkId.Value });
+                sPlayers.Add(networkId.Value, player);
 
                 // Add the player to the linked entity group so it is destroyed automatically on disconnect
                 ecb.AppendToBuffer(reqSrc.ValueRO.SourceConnection, new LinkedEntityGroup { Value = player });
