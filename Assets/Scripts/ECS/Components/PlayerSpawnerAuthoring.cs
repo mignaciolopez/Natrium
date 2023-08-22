@@ -7,7 +7,6 @@ namespace Natrium
     public class PlayerSpawnerAuthoring : MonoBehaviour
     {
         public GameObject playerPrefab;
-        public GameObject hitTilePrefab;
     }
 
     public class PlayerSpawnerBaker : Baker<PlayerSpawnerAuthoring>
@@ -17,8 +16,7 @@ namespace Natrium
             Entity entity = this.GetEntity(TransformUsageFlags.Dynamic);
             AddComponent(entity, new PlayerSpawnerData
             {
-                playerPrefab = GetEntity(authoring.playerPrefab, TransformUsageFlags.Dynamic),
-                hitTilePrefab = GetEntity(authoring.hitTilePrefab, TransformUsageFlags.Dynamic)
+                playerPrefab = GetEntity(authoring.playerPrefab, TransformUsageFlags.Dynamic)
             });
         }
     }
@@ -26,6 +24,5 @@ namespace Natrium
     public struct PlayerSpawnerData : IComponentData
     {
         public Entity playerPrefab;
-        public Entity hitTilePrefab;
     }
 }

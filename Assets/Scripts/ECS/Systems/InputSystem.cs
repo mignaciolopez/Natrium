@@ -1,3 +1,4 @@
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
@@ -30,6 +31,8 @@ namespace Natrium
         }
         protected override void OnUpdate()
         {
+            var ecb = new EntityCommandBuffer(Allocator.Temp);
+
             foreach (var pid in SystemAPI.Query<RefRW<PlayerInputData>>().WithAll<GhostOwnerIsLocal>())
             {
                 pid.ValueRW = default;
@@ -42,16 +45,15 @@ namespace Natrium
                 }
 
                 if (Input.GetMouseButtonUp(0))
-                {
-                    pid.ValueRW.LastScreenCoordinates = Input.mousePosition;
                     EventSystem.DispatchEvent(Events.OnPrimaryClick);
-                }
             }
 
             if (Input.GetKeyUp(KeyCode.Return))
                 EventSystem.DispatchEvent(Events.Client_Connect);
             if (Input.GetKeyUp(KeyCode.Escape))
                 EventSystem.DispatchEvent(Events.Client_Disconnect);
+
+            ecb.Playback(EntityManager);
         }
     }
 }

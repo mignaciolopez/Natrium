@@ -46,7 +46,6 @@ namespace Natrium
     [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
     public struct PlayerInputData : IInputComponentData
     {
-        public float3 InputAxis;
-        public float3 LastScreenCoordinates;
+        [GhostField(Quantization = 10)] public float3 InputAxis;
     }
 }

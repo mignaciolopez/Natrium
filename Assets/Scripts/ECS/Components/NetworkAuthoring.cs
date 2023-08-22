@@ -2,6 +2,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using Unity.Entities;
+using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
 
@@ -31,5 +32,8 @@ namespace Natrium
 
     public struct Rpc_Connect : IRpcCommand { }
     public struct Rpc_Disconnect : IRpcCommand { }
-    public struct Rpc_Click : IRpcCommand { }
+    public struct Rpc_Click : IRpcCommand
+    {
+        [GhostField (Quantization = 10)] public float3 mousePosition;
+    }
 }
