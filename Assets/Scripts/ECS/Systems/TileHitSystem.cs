@@ -18,11 +18,13 @@ namespace Natrium
         protected override void OnStartRunning()
         {
             EventSystem.Subscribe(Events.OnPrimaryClick, On_Click);
+            Gizmo.s_OnDrawGizmos.AddListener(DrawGizmos);
             base.OnStartRunning();
         }
 
         protected override void OnStopRunning()
         {
+            Gizmo.s_OnDrawGizmos.RemoveListener(DrawGizmos);
             EventSystem.UnSubscribe(Events.OnPrimaryClick, On_Click);
             base.OnStopRunning();
         }
@@ -30,16 +32,14 @@ namespace Natrium
         protected override void OnUpdate()
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
-            var prefab = SystemAPI.GetSingleton<PlayerSpawnerData>().hitTilePrefab;
 
-            foreach (var (td, e) in SystemAPI.Query<TouchData>().WithEntityAccess())
+            foreach (var (reqSrc, td, reqEntity) in SystemAPI.Query<ReceiveRpcCommandRequest, TouchData>().WithEntityAccess())
             {
-                ecb.DestroyEntity(e);
-                
-                var hitEntity = ecb.Instantiate(prefab);
-                ecb.SetComponent(hitEntity, LocalTransform.FromPosition(td.tile));
+                var e = ecb.CreateEntity();
+                ecb.AddComponent(e, new TouchData { tile = td.tile });
 
-                UnityEngine.Debug.Log($"TouchData Entity: {e}, Instatiating Hit at {td.tile}, Hit Entity {hitEntity}");
+                UnityEngine.Debug.Log($"TouchData Entity: {reqEntity}, Drawing Gizmoz Hit at {td.tile}");
+                ecb.DestroyEntity(reqEntity);
             }
 
             ecb.Playback(EntityManager);
@@ -48,6 +48,11 @@ namespace Natrium
         private void On_Click(CustomStream stream = null)
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
+
+            foreach (var (td, e) in SystemAPI.Query<TouchData>().WithNone<ReceiveRpcCommandRequest>().WithEntityAccess())
+            {
+                ecb.DestroyEntity(e);
+            }
 
             foreach (var (nid, e) in SystemAPI.Query<NetworkId>().WithAll<GhostOwnerIsLocal, NetworkStreamInGame>().WithEntityAccess())
             {
@@ -59,6 +64,14 @@ namespace Natrium
             }
 
             ecb.Playback(EntityManager);
+        }
+
+        private void DrawGizmos()
+        {
+            foreach (var td in SystemAPI.Query<TouchData>().WithNone<ReceiveRpcCommandRequest>())
+            {
+                Gizmos.DrawCube((float3)td.tile, new float3(1, 0.1f, 1));
+            }
         }
     }
 
@@ -92,6 +105,12 @@ namespace Natrium
 
                 float3 origin = lt.Position + new float3(0, 6, 0);
                 Camera.main.transform.position = origin;
+
+                if(pid.LastScreenCoordinates.x == 0 && pid.LastScreenCoordinates.y == 0)
+                {
+                    UnityEngine.Debug.LogError($"PlayerInputData.LastScreenCoordinates: {pid.LastScreenCoordinates}");
+                    continue;
+                }
 
                 Ray ray = Camera.main.ScreenPointToRay(pid.LastScreenCoordinates);
                 if (Physics.Raycast(ray, out RaycastHit hit, 10.0f))
