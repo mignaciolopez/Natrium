@@ -38,7 +38,7 @@ namespace Natrium
 
             foreach (var (reqSrc, td, reqEntity) in SystemAPI.Query<ReceiveRpcCommandRequest, TouchData>().WithEntityAccess())
             {
-                UnityEngine.Debug.Log($"Drawing Gizmoz Hit at {td.tile}");
+                UnityEngine.Debug.Log($"{World.Unmanaged.Name} Drawing Gizmoz Hit at {td.tile}");
                 ecb.RemoveComponent<ReceiveRpcCommandRequest>(reqEntity);
             }
 
@@ -94,6 +94,8 @@ namespace Natrium
 
             foreach (var (reqSrc, rpcClick, reqEntity) in SystemAPI.Query<ReceiveRpcCommandRequest, Rpc_Click>().WithEntityAccess())
             {
+                UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' ReceiveRpcCommandRequest rpcClick.mousePosition: {rpcClick.mousePosition}");
+
                 Entity e = EntityManager.GetBuffer<LinkedEntityGroup>(reqSrc.SourceConnection, true)[1].Value;
                 var lt = EntityManager.GetComponentData<LocalTransform>(e);
 
@@ -109,11 +111,20 @@ namespace Natrium
                 Ray ray = Camera.main.ScreenPointToRay(rpcClick.mousePosition);
                 if (Physics.Raycast(ray, out RaycastHit hit, 10.0f))
                 {
-                    UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' HIT! rpcClick.mousePosition: {rpcClick.mousePosition}");
-
-                    var req = ecb.CreateEntity();
-                    ecb.AddComponent(req, new TouchData { tile = (int3)math.round(hit.point) });
-                    ecb.AddComponent(req, new SendRpcCommandRequest { TargetConnection = reqSrc.SourceConnection });
+                    if (hit.collider.gameObject.CompareTag("Player"))
+                    {
+                        UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Hit Entity");
+                        //var req = ecb.CreateEntity();
+                        //ecb.AddComponent(req, new HitEntity { entity =  });
+                        //ecb.AddComponent(req, new SendRpcCommandRequest { TargetConnection = reqSrc.SourceConnection });
+                    }
+                    else 
+                    {
+                        UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Hit Floot at: {hit.point}");
+                        var req = ecb.CreateEntity();
+                        ecb.AddComponent(req, new TouchData { tile = (int3)math.round(hit.point) });
+                        ecb.AddComponent(req, new SendRpcCommandRequest { TargetConnection = reqSrc.SourceConnection });
+                    }
                 }
                 else
                     UnityEngine.Debug.LogWarning($"'{World.Unmanaged.Name}' rpcClick.mousePosition: {rpcClick.mousePosition}");

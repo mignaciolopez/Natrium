@@ -36,4 +36,13 @@ namespace Natrium
     {
         [GhostField (Quantization = 10)] public float3 mousePosition;
     }
+    public struct TouchData : IRpcCommand
+    {
+        public int3 tile;
+    }
+
+    public struct HitEntity : IRpcCommand
+    {
+        public Entity entity;
+    }
 }
