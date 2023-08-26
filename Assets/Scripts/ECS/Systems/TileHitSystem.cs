@@ -8,7 +8,7 @@ using Unity.Burst.CompilerServices;
 
 namespace Natrium
 {
-    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation)]
+    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial class TileHitSystemClient : SystemBase
     {
         protected override void OnCreate()
@@ -84,11 +84,14 @@ namespace Natrium
             foreach (var td in SystemAPI.Query<TouchData>().WithNone<ReceiveRpcCommandRequest>())
             {
                 Gizmos.DrawCube(math.round(td.end), new float3(1, 0.1f, 1));
-                //Vector3 direction = math.normalizesafe(td.end - td.start) * math.distance(td.start, td.end);
-                //Debug.DrawRay(td.start, direction, Color.red); //Real Ray
 
+                //Real Ray
+                //Vector3 direction = math.normalizesafe(td.end - td.start) * math.distance(td.start, td.end);
+                //Debug.DrawRay(td.start, direction, Color.red);
+
+                //Fake Ray, just used to see it in Game
                 Vector3 direction = math.normalizesafe((Vector3)td.end - Camera.main.transform.position) * math.distance(Camera.main.transform.position, td.end);
-                Debug.DrawRay(Camera.main.transform.position + new Vector3(0, -0.1f, 0), direction, Color.red); //Fake Ray, just used to see it in Game
+                Debug.DrawRay(Camera.main.transform.position + new Vector3(0, -0.1f, 0), direction, Color.red);
             }
         }
     }

@@ -6,22 +6,6 @@ using Unity.Physics.Systems;
 
 namespace Natrium
 {
-    public struct RaycastCommand : IComponentData
-    {
-        public Entity reqE;
-        public float3 Start;
-        public float3 End;
-        public float MaxDistance;
-    }
-
-    public struct RaycastOutput : IComponentData
-    {
-        public Entity reqE;
-        public float3 start;
-        public float3 end;
-        public Unity.Physics.RaycastHit hit;
-    }
-
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial class RaycastSystem : SystemBase
     {

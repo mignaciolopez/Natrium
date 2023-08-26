@@ -96,7 +96,14 @@ namespace Natrium
     {
         public static ComponentLookup<NetworkId> mNetworkIdFromEntity;
 
-        public static Dictionary<int, Entity> sPlayers;
+        private struct LinkedEntities
+        {
+            public int networkID;
+            public Entity entity;
+            public Entity playerPrefabEntity;
+        }
+
+        private Dictionary<int, LinkedEntities> m_ConnectedClients;
 
         protected override void OnCreate()
         {
@@ -106,18 +113,19 @@ namespace Natrium
             RequireForUpdate(GetEntityQuery(builder));
 
             mNetworkIdFromEntity = GetComponentLookup<NetworkId>(true);
-            sPlayers = new Dictionary<int, Entity>();
 
             base.OnCreate();
         }
 
         protected override void OnStartRunning()
         {
+            m_ConnectedClients = new Dictionary<int, LinkedEntities>();
             base.OnStartRunning();
         }
 
         protected override void OnStopRunning()
         {
+            m_ConnectedClients = null;
             base.OnStopRunning();
         }
 
@@ -148,7 +156,6 @@ namespace Natrium
 
                 var player = ecb.Instantiate(prefab);
                 ecb.SetComponent(player, new GhostOwner { NetworkId = networkId.Value });
-                sPlayers.Add(networkId.Value, player);
 
                 // Add the player to the linked entity group so it is destroyed automatically on disconnect
                 ecb.AppendToBuffer(reqSrc.ValueRO.SourceConnection, new LinkedEntityGroup { Value = player });

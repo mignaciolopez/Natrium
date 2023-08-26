@@ -35,13 +35,27 @@ namespace Natrium
     public struct Rpc_Disconnect : IRpcCommand { }
     public struct Rpc_Click : IRpcCommand
     {
-        [GhostField(Quantization = 0)]
         public float3 mouseWorldPosition;
     }
     public struct TouchData : IRpcCommand
     {
-        [GhostField(Quantization = 0)]
         public float3 start;
         public float3 end;
+    }
+
+    public struct RaycastCommand : IComponentData
+    {
+        public Entity reqE;
+        public float3 Start;
+        public float3 End;
+        public float MaxDistance;
+    }
+
+    public struct RaycastOutput : IComponentData
+    {
+        public Entity reqE;
+        public float3 start;
+        public float3 end;
+        public Unity.Physics.RaycastHit hit;
     }
 }
