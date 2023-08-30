@@ -52,7 +52,7 @@ namespace Natrium
                 };
 
                 if (m_CollisionWorld.CastRay(input, out var hit))
-                    ecb.AddComponent(e, new RaycastOutput { hit = hit, reqE = rc.reqE, start = rc.Start, end = rc.End });
+                    ecb.AddComponent(e, new RaycastOutput { Hit = hit, ReqE = rc.ReqE, Start = rc.Start, End = rc.End });
             }
 
             ecb.Playback(EntityManager);

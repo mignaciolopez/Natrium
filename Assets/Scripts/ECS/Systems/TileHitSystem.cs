@@ -19,7 +19,7 @@ namespace Natrium
         protected override void OnStartRunning()
         {
             EventSystem.Subscribe(Events.OnPrimaryClick, OnPrimaryClick);
-            Gizmo.s_OnDrawGizmos.AddListener(DrawGizmos);
+            Gizmo.SOnDrawGizmos.AddListener(DrawGizmos);
 
             base.OnStartRunning();
         }
@@ -27,7 +27,7 @@ namespace Natrium
         protected override void OnStopRunning()
         {
             EventSystem.UnSubscribe(Events.OnPrimaryClick, OnPrimaryClick);
-            Gizmo.s_OnDrawGizmos.RemoveListener(DrawGizmos);
+            Gizmo.SOnDrawGizmos.RemoveListener(DrawGizmos);
 
             base.OnStopRunning();
         }
@@ -38,7 +38,7 @@ namespace Natrium
 
             foreach (var (reqSrc, td, reqEntity) in SystemAPI.Query<ReceiveRpcCommandRequest, TouchData>().WithEntityAccess())
             {
-                UnityEngine.Debug.Log($"{World.Unmanaged.Name} Drawing Gizmoz Hit at {td.end}");
+                UnityEngine.Debug.Log($"{World.Unmanaged.Name} Drawing Gizmos Hit at {td.End}");
 
                 ecb.RemoveComponent<ReceiveRpcCommandRequest>(reqEntity);
             }
@@ -46,22 +46,22 @@ namespace Natrium
             ecb.Playback(EntityManager);
         }
 
-        public void OnPrimaryClick(CustomStream strem)
+        private void OnPrimaryClick(CustomStream stream)
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (td2, e) in SystemAPI.Query<TouchData>().WithNone<ReceiveRpcCommandRequest>().WithEntityAccess())
+            foreach (var (td, e) in SystemAPI.Query<TouchData>().WithNone<ReceiveRpcCommandRequest>().WithEntityAccess())
             {
                 ecb.DestroyEntity(e);
             }
 
-            var req = ecb.CreateEntity();
             var mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition + new Vector3(0, 0, Camera.main.transform.position.y));
 
             Debug.Log($"{World.Unmanaged.Name} Input.mousePosition {Input.mousePosition}");
             Debug.Log($"{World.Unmanaged.Name} mouseWorldPosition {mouseWorldPosition}");
 
-            ecb.AddComponent(req, new Rpc_Click { mouseWorldPosition = mouseWorldPosition });
+            var req = ecb.CreateEntity();
+            ecb.AddComponent(req, new RpcClick { MouseWorldPosition = mouseWorldPosition });
             ecb.AddComponent<SendRpcCommandRequest>(req);
 
             ecb.Playback(EntityManager);
@@ -71,7 +71,7 @@ namespace Natrium
         {
             //var mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition + new Vector3(0,0, Camera.main.transform.position.y));
             //var ray = Camera.main.ScreenPointToRay(Input.mousePosition + new Vector3(0, 0, Camera.main.transform.position.y));
-            //Debug.Log($"Input.mousePosition {Input.mousePosition}");
+            //Debug.Log($"OnDrawGizmos");
             //Debug.Log($"mouseWorldPosition {mouseWorldPosition}");
             //Debug.Log($"ray {ray.origin}, {ray.GetPoint(Camera.main.transform.position.y)}");
 
@@ -83,15 +83,64 @@ namespace Natrium
 
             foreach (var td in SystemAPI.Query<TouchData>().WithNone<ReceiveRpcCommandRequest>())
             {
-                Gizmos.DrawCube(math.round(td.end), new float3(1, 0.1f, 1));
+                Gizmos.DrawCube(math.round(td.End), new float3(1, 0.1f, 1));
+
+                var entSource = Entity.Null;
+                var entTarget = Entity.Null;
+
+                foreach (var (nid, lt, e) in SystemAPI.Query<NetworkId, LocalTransform>().WithEntityAccess())
+                {
+                    if (td.NetworkIDSource != 0)
+                    {
+                        if (nid.Value == td.NetworkIDSource)
+                        {
+                            entSource = e;
+                            continue;
+                        }
+                    }
+                    if (td.NetworkIDTarget != 0)
+                    {
+                        if (nid.Value == td.NetworkIDTarget)
+                        {
+                            entTarget = e;
+                            continue;
+                        }
+                    }
+                }
+
+                //Fake Ray, just used to see it in Game
+                float3 ltSrc = float3.zero;
+                float3 ltTarget = float3.zero;
+
+                if (EntityManager.Exists(entSource))
+                {
+                    ltSrc = EntityManager.GetComponentData<LocalTransform>(entSource).Position;
+                }
+                else
+                {
+                    //Warning
+                }
+
+                if (EntityManager.Exists(entTarget))
+                {
+                    ltTarget = EntityManager.GetComponentData<LocalTransform>(entTarget).Position;
+                }
+                else
+                {
+                    ltTarget = td.End;
+                }
+                
+
+                Vector3 direction = math.normalizesafe(ltTarget - ltSrc) * math.distance(ltSrc, ltTarget);
+                Debug.DrawRay(ltSrc, direction, Color.red);
 
                 //Real Ray
                 //Vector3 direction = math.normalizesafe(td.end - td.start) * math.distance(td.start, td.end);
                 //Debug.DrawRay(td.start, direction, Color.red);
 
                 //Fake Ray, just used to see it in Game
-                Vector3 direction = math.normalizesafe((Vector3)td.end - Camera.main.transform.position) * math.distance(Camera.main.transform.position, td.end);
-                Debug.DrawRay(Camera.main.transform.position + new Vector3(0, -0.1f, 0), direction, Color.red);
+                //Vector3 direction = math.normalizesafe((Vector3)td.end - Camera.main.transform.position) * math.distance(Camera.main.transform.position, td.end);
+                //Debug.DrawRay(Camera.main.transform.position + new Vector3(0, -0.1f, 0), direction, Color.red);
             }
         }
     }
@@ -118,24 +167,24 @@ namespace Natrium
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (reqSrc, rpcClick, reqEntity) in SystemAPI.Query<ReceiveRpcCommandRequest, Rpc_Click>().WithEntityAccess())
+            foreach (var (reqSrc, rpcClick, reqEntity) in SystemAPI.Query<ReceiveRpcCommandRequest, RpcClick>().WithEntityAccess())
             {
-                if (rpcClick.mouseWorldPosition.x == 0 && rpcClick.mouseWorldPosition.y == 0)
+                if (rpcClick.MouseWorldPosition is { x: 0, y: 0 })
                 {
-                    UnityEngine.Debug.LogError($"rpcClick.mouseWorldPosition: {rpcClick.mouseWorldPosition}");
+                    UnityEngine.Debug.LogError($"RpcClick.MouseWorldPosition: {rpcClick.MouseWorldPosition}");
                     continue;
                 }
 
-                UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' ReceiveRpcCommandRequest rpcClick.mousePosition: {rpcClick.mouseWorldPosition}");
+                UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' ReceiveRpcCommandRequest RpcClick.MouseWorldPosition: {rpcClick.MouseWorldPosition}");
 
-                Entity e = EntityManager.GetBuffer<LinkedEntityGroup>(reqSrc.SourceConnection, true)[1].Value;
+                var e = EntityManager.GetBuffer<LinkedEntityGroup>(reqSrc.SourceConnection, true)[1].Value;
 
-                var mouseWorldPosition = rpcClick.mouseWorldPosition;
-                mouseWorldPosition.y = 10.0f; //ToDo: The plust 10 on y axis, comes from the offset of the camara
-                float3 start = mouseWorldPosition;
-                float3 end = rpcClick.mouseWorldPosition;
+                var mouseWorldPosition = rpcClick.MouseWorldPosition;
+                mouseWorldPosition.y = 10.0f; //ToDo: The plus 10 on y axis, comes from the offset of the camara
+                var start = mouseWorldPosition;
+                var end = rpcClick.MouseWorldPosition;
 
-                ecb.AddComponent(e, new RaycastCommand { Start = start, End = end, MaxDistance = 11, reqE = reqSrc.SourceConnection });
+                ecb.AddComponent(e, new RaycastCommand { Start = start, End = end, MaxDistance = 11, ReqE = reqSrc.SourceConnection });
 
                 /*Ray ray = Camera.main.ScreenPointToRay(rpcClick.mouseWorldPosition);
 
@@ -150,7 +199,7 @@ namespace Natrium
                     }
                     else 
                     {
-                        UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Hit Floot at: {hit.point}");
+                        UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Hit Float at: {hit.point}");
                         var req = ecb.CreateEntity();
                         ecb.AddComponent(req, new TouchData { tile = (int3)math.round(hit.point) });
                         ecb.AddComponent(req, new SendRpcCommandRequest { TargetConnection = reqSrc.SourceConnection });
@@ -161,24 +210,6 @@ namespace Natrium
 
                 ecb.DestroyEntity(reqEntity);
 
-            }
-
-            foreach (var (ro, e) in SystemAPI.Query<RaycastOutput>().WithEntityAccess())
-            {
-                UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Entity {e} hit {ro.hit.Entity}");
-
-                {
-                    Entity reqE0 = EntityManager.GetBuffer<LinkedEntityGroup>(ro.reqE, true)[1].Value;
-                    UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Sending TouchData to {ro.reqE}  linked with {reqE0}");
-                    Entity reqE1 = EntityManager.GetBuffer<LinkedEntityGroup>(e, true)[1].Value;
-                    UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' {e} is linked with {reqE1}");
-                }
-
-                var req = ecb.CreateEntity();
-                ecb.AddComponent(req, new TouchData { start = ro.start, end = ro.end });
-                ecb.AddComponent(req, new SendRpcCommandRequest { TargetConnection = ro.reqE });
-
-                ecb.RemoveComponent<RaycastOutput>(e);
             }
 
             ecb.Playback(EntityManager);

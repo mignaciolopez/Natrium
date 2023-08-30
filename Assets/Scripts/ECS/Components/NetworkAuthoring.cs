@@ -1,10 +1,6 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
-using Unity.VisualScripting;
 using UnityEngine;
 
 namespace Natrium
@@ -31,21 +27,23 @@ namespace Natrium
         
     }
 
-    public struct Rpc_Connect : IRpcCommand { }
-    public struct Rpc_Disconnect : IRpcCommand { }
-    public struct Rpc_Click : IRpcCommand
+    public struct RpcConnect : IRpcCommand { }
+    public struct RpcDisconnect : IRpcCommand { }
+    public struct RpcClick : IRpcCommand
     {
-        public float3 mouseWorldPosition;
+        public float3 MouseWorldPosition;
     }
     public struct TouchData : IRpcCommand
     {
-        public float3 start;
-        public float3 end;
+        public float3 Start;
+        public float3 End;
+        public int NetworkIDSource;
+        public int NetworkIDTarget;
     }
 
     public struct RaycastCommand : IComponentData
     {
-        public Entity reqE;
+        public Entity ReqE;
         public float3 Start;
         public float3 End;
         public float MaxDistance;
@@ -53,9 +51,9 @@ namespace Natrium
 
     public struct RaycastOutput : IComponentData
     {
-        public Entity reqE;
-        public float3 start;
-        public float3 end;
-        public Unity.Physics.RaycastHit hit;
+        public Entity ReqE;
+        public float3 Start;
+        public float3 End;
+        public Unity.Physics.RaycastHit Hit;
     }
 }

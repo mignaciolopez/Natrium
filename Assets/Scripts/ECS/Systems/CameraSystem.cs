@@ -5,7 +5,7 @@ using UnityEngine;
 namespace Natrium
 {
     [UpdateInGroup(typeof(LateSimulationSystemGroup))]
-    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation)]
+    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial class CameraSystem : SystemBase
     {
         private Camera mCurrentCamera;

@@ -3,6 +3,7 @@ using System.Security.Cryptography;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
+using Unity.Scenes;
 
 namespace Natrium
 {
@@ -56,7 +57,7 @@ namespace Natrium
                 ecb.AddComponent<GhostOwnerIsLocal>(e);
 
                 var req = ecb.CreateEntity();
-                ecb.AddComponent(req, new Rpc_Connect { });
+                ecb.AddComponent(req, new RpcConnect { });
                 ecb.AddComponent(req, new SendRpcCommandRequest { TargetConnection = e });
             }
 
@@ -107,10 +108,10 @@ namespace Natrium
 
         protected override void OnCreate()
         {
-            RequireForUpdate<PlayerSpawnerData>();
+            //RequireForUpdate<PlayerSpawnerData>();
 
-            var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<Rpc_Connect>().WithAll<ReceiveRpcCommandRequest>();
-            RequireForUpdate(GetEntityQuery(builder));
+            //var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<Rpc_Connect>().WithAll<ReceiveRpcCommandRequest>();
+            //RequireForUpdate(GetEntityQuery(builder));
 
             mNetworkIdFromEntity = GetComponentLookup<NetworkId>(true);
 
@@ -136,8 +137,39 @@ namespace Natrium
 
         protected override void OnUpdate()
         {
+            var ecb = new EntityCommandBuffer(Allocator.Temp);
+
             mNetworkIdFromEntity.Update(this);
             RPC_Connect();
+
+            foreach (var (ro, e) in SystemAPI.Query<RaycastOutput>().WithEntityAccess())
+            {
+                UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Entity {e} hit {ro.Hit.Entity}");
+
+                {
+                    Entity reqE0 = EntityManager.GetBuffer<LinkedEntityGroup>(ro.ReqE, true)[1].Value;
+                    UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Sending TouchData to {ro.ReqE}  linked with {reqE0}");
+                    Entity reqE1 = EntityManager.GetBuffer<LinkedEntityGroup>(e, true)[1].Value;
+                    UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' {e} is linked with {reqE1}");
+                }
+
+
+                int nidSource = 0;
+                if (EntityManager.HasComponent<NetworkId>(ro.ReqE))
+                    nidSource = mNetworkIdFromEntity[ro.ReqE].Value;
+
+                int nidTarget = 0;
+                if (EntityManager.HasComponent<NetworkId>(ro.Hit.Entity))
+                    nidTarget = mNetworkIdFromEntity[ro.Hit.Entity].Value;
+
+                var req = ecb.CreateEntity();
+                ecb.AddComponent(req, new TouchData { Start = ro.Start, End = ro.End, NetworkIDSource = nidSource, NetworkIDTarget = nidTarget });
+                ecb.AddComponent(req, new SendRpcCommandRequest { });
+
+                ecb.RemoveComponent<RaycastOutput>(e);
+            }
+
+            ecb.Playback(EntityManager);
         }
 
         private void RPC_Connect()
@@ -148,7 +180,7 @@ namespace Natrium
 
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (reqSrc, reqEntity) in SystemAPI.Query<RefRO<ReceiveRpcCommandRequest>>().WithAll<Rpc_Connect>().WithEntityAccess())
+            foreach (var (reqSrc, reqEntity) in SystemAPI.Query<RefRO<ReceiveRpcCommandRequest>>().WithAll<RpcConnect>().WithEntityAccess())
             {
                 ecb.AddComponent<NetworkStreamInGame>(reqSrc.ValueRO.SourceConnection);
                 var networkId = mNetworkIdFromEntity[reqSrc.ValueRO.SourceConnection];

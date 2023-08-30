@@ -1,6 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -8,16 +5,16 @@ namespace Natrium
 {
     public class Gizmo : MonoBehaviour
     {
-        public static UnityEvent s_OnDrawGizmos;
+        public static UnityEvent SOnDrawGizmos;
 
         private void Awake()
         {
-            s_OnDrawGizmos = new UnityEvent();
+            SOnDrawGizmos = new UnityEvent();
         }
 
         private void OnDrawGizmos()
         {
-            s_OnDrawGizmos?.Invoke();
+            SOnDrawGizmos?.Invoke();
         }
     }
 }
