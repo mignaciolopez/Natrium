@@ -1,15 +1,18 @@
+using Natrium.Ecs.Components;
+using Natrium.Ecs.Systems;
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
 
-namespace Natrium
+namespace Natrium.ECS.Systems
 {
     [UpdateInGroup(typeof(LateSimulationSystemGroup))]
     public partial class CameraSystem : SystemBase
     {
-        private Camera mCurrentCamera;
+        private Camera _mCurrentCamera;
         protected override void OnCreate()
         {
+            
             base.OnCreate();
         }
 
@@ -17,7 +20,8 @@ namespace Natrium
         {
             base.OnStartRunning();
 
-            mCurrentCamera = Camera.main;
+            _mCurrentCamera = Camera.main;
+            EventSystem.DispatchEvent(Events.OnResolutionChange);
         }
 
         protected override void OnStopRunning()
@@ -31,9 +35,9 @@ namespace Natrium
         }
         protected override void OnUpdate()
         {
-            foreach((LocalToWorld ltw, CameraData cd) in SystemAPI.Query<LocalToWorld, CameraData>())
+            foreach( var (ltw, cd) in SystemAPI.Query<LocalToWorld, CameraOffset>())
             {
-                mCurrentCamera.transform.position = ltw.Position + cd.offset;
+                _mCurrentCamera.transform.position = ltw.Position + cd.Value;
             }
         }
     }

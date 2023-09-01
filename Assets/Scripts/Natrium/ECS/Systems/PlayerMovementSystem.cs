@@ -2,15 +2,16 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.Transforms;
 using UnityEngine;
+using Natrium.ECS.Components;
 
-namespace Natrium
+namespace Natrium.Ecs.Systems
 {
     public partial class PlayerMovementSystem : SystemBase
     {
-        private float dt;
-        private float mPreviousDT;
-        private float3 mPreviousPos;
-        private float3 mNextPos;
+        private float _dt;
+        private float _previousDT;
+        private float3 _previousPos;
+        private float3 _nextPos;
 
         protected override void OnCreate()
         {
@@ -20,8 +21,8 @@ namespace Natrium
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
-            dt = SystemAPI.Time.DeltaTime;
-            mPreviousDT = dt;
+            _dt = SystemAPI.Time.DeltaTime;
+            _previousDT = _dt;
         }
 
         protected override void OnStopRunning()
@@ -35,10 +36,9 @@ namespace Natrium
         }
         protected override void OnUpdate()
         {
-            dt = SystemAPI.Time.DeltaTime;
+            _dt = SystemAPI.Time.DeltaTime;
 
-            foreach ((RefRW<LocalTransform> lt, LocalActivePlayerData lapd, Entity e) in
-                SystemAPI.Query<RefRW<LocalTransform>, LocalActivePlayerData>().WithEntityAccess())
+            foreach (var ( lt, lapd, e) in SystemAPI.Query<RefRW<LocalTransform>, LocalActivePlayerData>().WithEntityAccess())
             {
                 switch (lapd.movementType)
                 {
@@ -46,21 +46,21 @@ namespace Natrium
                         FreeMovement(e);
 
                         //When in Free Mode needs to keep track for Hot Swapping between modes.
-                        mNextPos = math.round(lt.ValueRW.Position);
+                        _nextPos = math.round(lt.ValueRW.Position);
                         break;
-                    case MovementType.Full_Tile:
+                    case MovementType.FullTile:
                         FullTileMovement(e);
                         break;
-                    case MovementType.Full_Tile_NoDiagonal:
+                    case MovementType.FullTileNoDiagonal:
                         FullTileMovementNoDiagonal(e);
                         break;
                     default:
-                        Debug.LogError("Movement not handled by " + ToString() + " " + lapd.movementType.ToString());
+                        Debug.LogError($"Movement not handled by {this} {lapd.movementType}");
                         break;
                 }
             }
 
-            mPreviousDT = dt;
+            _previousDT = _dt;
         }
 
         private void FreeMovement(Entity e)
@@ -68,14 +68,14 @@ namespace Natrium
             var speed = SystemAPI.GetComponent<SpeedData>(e);
             var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
 
-            float3 move = new float3(Input.GetAxis("JHorizontal"), 0.0f, Input.GetAxis("JVertical"));
-            if (move.x == 0 && move.z == 0)
+            var move = new float3(Input.GetAxis("JHorizontal"), 0.0f, Input.GetAxis("JVertical"));
+            if (move is { x: 0, z: 0 })
             {
                 move = new float3(Input.GetAxisRaw("Horizontal"), 0.0f, Input.GetAxisRaw("Vertical"));
                 move = math.normalizesafe(move);
             }
 
-            move *= dt * speed.value;
+            move *= _dt * speed.value;
 
             lt.ValueRW.Position +=  move;
         }
@@ -85,26 +85,36 @@ namespace Natrium
             var speed = SystemAPI.GetComponent<SpeedData>(e);
             var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
 
-            if (math.distance(lt.ValueRO.Position, mNextPos) < speed.value * mPreviousDT)
+            if (math.distance(lt.ValueRO.Position, _nextPos) < speed.value * _previousDT)
             {
-                mPreviousPos = mNextPos;
+                _previousPos = _nextPos;
 
-                float3 move = new float3(Input.GetAxis("JHorizontal"), 0.0f, Input.GetAxis("JVertical"));
-                if (move.x == 0 && move.z == 0)
+                var move = new float3(Input.GetAxis("JHorizontal"), 0.0f, Input.GetAxis("JVertical"));
+                if (move is { x: 0, z: 0 })
                     move = new float3(Input.GetAxisRaw("Horizontal"), 0.0f, Input.GetAxisRaw("Vertical"));
 
-                if (move.x > 0)
-                    mNextPos.x++;
-                else if (move.x < 0)
-                    mNextPos.x--;
+                switch (move.x)
+                {
+                    case > 0:
+                        _nextPos.x++;
+                        break;
+                    case < 0:
+                        _nextPos.x--;
+                        break;
+                }
 
-                if (move.z > 0)
-                    mNextPos.z++;
-                else if (move.z < 0)
-                    mNextPos.z--;
+                switch (move.z)
+                {
+                    case > 0:
+                        _nextPos.z++;
+                        break;
+                    case < 0:
+                        _nextPos.z--;
+                        break;
+                }
             }
 
-            lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, mNextPos, speed.value * dt);
+            lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, _nextPos, speed.value * _dt);
         }
 
         private void FullTileMovementNoDiagonal(Entity e)
@@ -112,25 +122,25 @@ namespace Natrium
             var speed = SystemAPI.GetComponent<SpeedData>(e);
             var lt = SystemAPI.GetComponentRW<LocalTransform>(e);
 
-            if (math.distance(lt.ValueRO.Position, mNextPos) < speed.value * mPreviousDT)
+            if (math.distance(lt.ValueRO.Position, _nextPos) < speed.value * _previousDT)
             {
-                mPreviousPos = mNextPos;
+                _previousPos = _nextPos;
 
-                float3 move = new float3(Input.GetAxis("JHorizontal"), 0.0f, Input.GetAxis("JVertical"));
-                if (move.x == 0 && move.z == 0)
+                var move = new float3(Input.GetAxis("JHorizontal"), 0.0f, Input.GetAxis("JVertical"));
+                if (move is { x: 0, z: 0 })
                     move = new float3(Input.GetAxisRaw("Horizontal"), 0.0f, Input.GetAxisRaw("Vertical"));
 
                 if (move.z > 0)
-                    mNextPos.z++;
+                    _nextPos.z++;
                 else if (move.x > 0)
-                    mNextPos.x++;
+                    _nextPos.x++;
                 else if (move.z < 0)
-                    mNextPos.z--;
+                    _nextPos.z--;
                 else if (move.x < 0)
-                    mNextPos.x--;
+                    _nextPos.x--;
             }
 
-            lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, mNextPos, speed.value * dt);
+            lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, _nextPos, speed.value * _dt);
         }
     }
 }

@@ -1,13 +1,13 @@
 using UnityEngine;
 using Unity.Entities;
 
-namespace Natrium
+namespace Natrium.ECS.Components
 {
     public enum MovementType
     {
         Free = 0,
-        Full_Tile,
-        Full_Tile_NoDiagonal
+        FullTile,
+        FullTileNoDiagonal
     }
 
     public class LocalActivePlayerAuthoring : MonoBehaviour
