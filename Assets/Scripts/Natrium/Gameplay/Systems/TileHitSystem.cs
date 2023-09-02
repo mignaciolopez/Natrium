@@ -4,7 +4,6 @@ using UnityEngine;
 using Unity.Mathematics;
 using Unity.Collections;
 using Natrium.Gameplay.Components;
-using Natrium.Shared;
 using Natrium.Shared.Systems;
 
 namespace Natrium.Gameplay.Systems
@@ -14,7 +13,7 @@ namespace Natrium.Gameplay.Systems
     {
         protected override void OnStartRunning()
         {
-            EventSystem.Subscribe(Events.OnPrimaryClick, OnPrimaryClick);
+            EventSystem.Subscribe(Shared.Events.OnPrimaryClick, OnPrimaryClick);
             Shared.Gizmos.OnEcsGizmos.AddListener(DrawGizmos);
 
             base.OnStartRunning();
@@ -22,7 +21,7 @@ namespace Natrium.Gameplay.Systems
 
         protected override void OnStopRunning()
         {
-            EventSystem.UnSubscribe(Events.OnPrimaryClick, OnPrimaryClick);
+            EventSystem.UnSubscribe(Shared.Events.OnPrimaryClick, OnPrimaryClick);
             Shared.Gizmos.OnEcsGizmos.RemoveListener(DrawGizmos);
 
             base.OnStopRunning();
@@ -42,13 +41,13 @@ namespace Natrium.Gameplay.Systems
             ecb.Playback(EntityManager);
         }
 
-        private void OnPrimaryClick(Stream stream)
+        private void OnPrimaryClick(Shared.Stream stream)
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
             foreach (var (td, e) in SystemAPI.Query<TouchData>().WithNone<ReceiveRpcCommandRequest>().WithEntityAccess())
             {
-                Debug.Log($"Buffering Destroy of Entity:{e}, to remove TouchData{td} from screen.");
+                Debug.Log($"Buffering Destroy of Entity:{e}, to remove {td} from screen.");
                 ecb.DestroyEntity(e);
             }
 

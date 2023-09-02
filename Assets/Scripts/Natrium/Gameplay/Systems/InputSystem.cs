@@ -4,7 +4,6 @@ using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
 using Natrium.Gameplay.Components;
-using Natrium.Shared;
 using Natrium.Shared.Systems;
 
 namespace Natrium.Gameplay.Systems
@@ -29,13 +28,13 @@ namespace Natrium.Gameplay.Systems
                 }
 
                 if (Input.GetMouseButtonUp(0))
-                    EventSystem.DispatchEvent(Events.OnPrimaryClick);
+                    EventSystem.DispatchEvent(Shared.Events.OnPrimaryClick);
             }
 
             if (Input.GetKeyUp(KeyCode.Return))
-                EventSystem.DispatchEvent(Events.ClientConnect);
+                EventSystem.DispatchEvent(Shared.Events.ClientConnect);
             if (Input.GetKeyUp(KeyCode.Escape))
-                EventSystem.DispatchEvent(Events.ClientDisconnect);
+                EventSystem.DispatchEvent(Shared.Events.ClientDisconnect);
 
             ecb.Playback(EntityManager);
         }

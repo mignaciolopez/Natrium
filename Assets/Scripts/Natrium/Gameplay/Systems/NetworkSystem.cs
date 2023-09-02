@@ -2,7 +2,6 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 using Natrium.Gameplay.Components;
-using Natrium.Shared;
 using Natrium.Shared.Systems;
 
 namespace Natrium.Gameplay.Systems
@@ -12,15 +11,15 @@ namespace Natrium.Gameplay.Systems
     {
         protected override void OnStartRunning()
         {
-            EventSystem.Subscribe(Events.ClientConnect, Connect);
-            EventSystem.Subscribe(Events.ClientDisconnect, Disconnect);
+            EventSystem.Subscribe(Shared.Events.ClientConnect, Connect);
+            EventSystem.Subscribe(Shared.Events.ClientDisconnect, Disconnect);
             base.OnStartRunning();
         }
 
         protected override void OnStopRunning()
         {
-            EventSystem.UnSubscribe(Events.ClientConnect, Connect);
-            EventSystem.UnSubscribe(Events.ClientDisconnect, Disconnect);
+            EventSystem.UnSubscribe(Shared.Events.ClientConnect, Connect);
+            EventSystem.UnSubscribe(Shared.Events.ClientDisconnect, Disconnect);
             base.OnStopRunning();
         }
 
@@ -29,7 +28,7 @@ namespace Natrium.Gameplay.Systems
             
         }
 
-        private void Connect(Stream stream)
+        private void Connect(Shared.Stream stream)
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
@@ -56,7 +55,7 @@ namespace Natrium.Gameplay.Systems
             ecb.Playback(EntityManager);
         }
 
-        private void Disconnect(Stream stream)
+        private void Disconnect(Shared.Stream stream)
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
