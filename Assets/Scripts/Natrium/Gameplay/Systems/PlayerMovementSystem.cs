@@ -2,10 +2,10 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Transforms;
-using Unity.VisualScripting;
 using UnityEngine;
+using Natrium.Gameplay.Components;
 
-namespace Natrium
+namespace Natrium.Gameplay.Systems
 {
     /*[UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation)]
@@ -138,60 +138,44 @@ namespace Natrium
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial class PlayerMovementSystemServer : SystemBase
     {
-        public SystemSettingsData mSettings;
+        private SystemSettingsData _settings;
 
-        private float dt;
-        private float fdt;
+        private float _dt;
 
-        private bool mLogOnce;
+        private bool _logOnce;
 
         protected override void OnCreate()
         {
+            RequireForUpdate<MovementSystemExecute>();
             RequireForUpdate<SystemSettingsData>();
-            RequireForUpdate<MovementSystemExecuteData>();
 
-            mLogOnce = true;
+            _logOnce = true;
 
             base.OnCreate();
         }
-
-        protected override void OnStartRunning()
-        {
-            base.OnStartRunning();
-        }
-
-        protected override void OnStopRunning()
-        {
-            base.OnStopRunning();
-        }
-
-        protected override void OnDestroy()
-        {
-            base.OnDestroy();
-        }
+        
         protected override void OnUpdate()
         {
-            dt = SystemAPI.Time.DeltaTime;
-            fdt = UnityEngine.Time.fixedDeltaTime;
+            _dt = SystemAPI.Time.DeltaTime;
 
-            mSettings = SystemAPI.GetSingleton<SystemSettingsData>();
+            _settings = SystemAPI.GetSingleton<SystemSettingsData>();
 
-            switch (mSettings.movementType)
+            switch (_settings.MovementType)
             {
                 case MovementType.Free:
                     FreeMovement();
-                    mLogOnce = true;
+                    _logOnce = true;
                     break;
-                case MovementType.Full_Tile:
+                case MovementType.FullTile:
                     FullTileMovement();
                     break;
-                case MovementType.Full_Tile_NoDiagonal:
+                case MovementType.FullTileNoDiagonal:
                     FullTileMovementNoDiagonal();
                     break;
                 default:
-                    if (mLogOnce)
-                        Debug.LogError("Movement not handled by " + ToString() + " " + mSettings.movementType.ToString());
-                    mLogOnce = false;
+                    if (_logOnce)
+                        Debug.LogError("Movement not handled by " + ToString() + " " + _settings.MovementType.ToString());
+                    _logOnce = false;
                     break;
             }
         }
@@ -201,7 +185,7 @@ namespace Natrium
             foreach (var (lt, pd, pid, s) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<PlayerData>, PlayerInputData, SpeedData>()
                         .WithAll<Simulate>())
             {
-                lt.ValueRW.Position += pid.InputAxis * s.value * dt;
+                lt.ValueRW.Position += pid.InputAxis * s.Value * _dt;
 
                 //When in Free Mode needs to keep track for Hot Swapping between modes.
                 pd.ValueRW.NextPos = (int3)math.round(lt.ValueRO.Position);
@@ -214,7 +198,7 @@ namespace Natrium
                         .WithAll<Simulate>())
             {
 
-                if (math.distance(lt.ValueRO.Position, pd.ValueRO.NextPos) < s.value * dt)
+                if (math.distance(lt.ValueRO.Position, pd.ValueRO.NextPos) < s.Value * _dt)
                 {
                     lt.ValueRW.Position = pd.ValueRO.NextPos;
                     pd.ValueRW.PreviousPos = pd.ValueRO.NextPos;
@@ -230,7 +214,7 @@ namespace Natrium
                         pd.ValueRW.NextPos.z--;
                 }
 
-                lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, (float3)pd.ValueRO.NextPos, s.value * dt);
+                lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, (float3)pd.ValueRO.NextPos, s.Value * _dt);
             }
         }
 
@@ -239,7 +223,7 @@ namespace Natrium
             foreach (var (lt, pd, pid, s) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<PlayerData>, PlayerInputData, SpeedData>()
                         .WithAll<Simulate>())
             {
-                if (math.distance(lt.ValueRO.Position, pd.ValueRO.NextPos) < s.value * dt)
+                if (math.distance(lt.ValueRO.Position, pd.ValueRO.NextPos) < s.Value * _dt)
                 {
                     lt.ValueRW.Position = pd.ValueRO.NextPos;
                     pd.ValueRW.PreviousPos = pd.ValueRO.NextPos;
@@ -254,7 +238,7 @@ namespace Natrium
                         pd.ValueRW.NextPos.x--;
                 }
 
-                lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, (float3)pd.ValueRO.NextPos, s.value * dt);
+                lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, (float3)pd.ValueRO.NextPos, s.Value * _dt);
             }
         }
     }

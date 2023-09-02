@@ -3,7 +3,7 @@ using Unity.Entities;
 using Unity.NetCode;
 using Unity.Mathematics;
 
-namespace Natrium
+namespace Natrium.Gameplay.Components
 {
     [DisallowMultipleComponent]
     public class PlayerAuthoring : MonoBehaviour
@@ -15,7 +15,7 @@ namespace Natrium
     {
         public override void Bake(PlayerAuthoring authoring)
         {
-            Entity e = GetEntity(TransformUsageFlags.Dynamic);
+            var e = GetEntity(TransformUsageFlags.Dynamic);
 
             AddComponent(e, new PlayerData
             {
@@ -23,7 +23,7 @@ namespace Natrium
             });
             AddComponent(e, new SpeedData
             {
-                value = authoring.speed
+                Value = authoring.speed
             });
             AddComponent(e, new PlayerInputData
             {
@@ -40,12 +40,12 @@ namespace Natrium
 
     public struct SpeedData : IComponentData
     {
-        public float value;
+        public float Value;
     }
 
     [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
     public struct PlayerInputData : IInputComponentData
     {
-        [GhostField(Quantization = 10)] public float3 InputAxis;
+        [GhostField(Quantization = 100)] public float3 InputAxis;
     }
 }

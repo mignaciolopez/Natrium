@@ -3,7 +3,7 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
 
-namespace Natrium
+namespace Natrium.Gameplay.Components
 {
     [DisallowMultipleComponent]
     public class CameraAuthoring : MonoBehaviour
@@ -15,10 +15,10 @@ namespace Natrium
     {
         public override void Bake(CameraAuthoring authoring)
         {
-            Entity entity = GetEntity(TransformUsageFlags.None);
+            var entity = GetEntity(TransformUsageFlags.None);
             AddComponent(entity, new CameraData
             {
-                offset = authoring.offset
+                Offset = authoring.offset
             });
         }
     }
@@ -26,6 +26,6 @@ namespace Natrium
     [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
     public struct CameraData : IComponentData
     {
-        public float3 offset;
+        public float3 Offset;
     }
 }

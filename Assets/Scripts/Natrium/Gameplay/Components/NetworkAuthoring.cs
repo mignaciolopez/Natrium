@@ -3,30 +3,8 @@ using Unity.Mathematics;
 using Unity.NetCode;
 using UnityEngine;
 
-namespace Natrium
+namespace Natrium.Gameplay.Components
 {
-    public class NetworkAuthoring : MonoBehaviour
-    {
-
-    }
-
-    public class NetworkBaker : Baker<NetworkAuthoring>
-    {
-        public override void Bake(NetworkAuthoring authoring)
-        {
-            Entity e = GetEntity(TransformUsageFlags.None);
-            AddComponent(e, new NetworkData
-            {
-                
-            });
-        }
-    }
-
-    public struct NetworkData : IComponentData
-    {
-        
-    }
-
     public struct RpcConnect : IRpcCommand { }
     public struct RpcDisconnect : IRpcCommand { }
     public struct RpcClick : IRpcCommand

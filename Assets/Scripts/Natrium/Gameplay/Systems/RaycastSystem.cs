@@ -1,16 +1,15 @@
 using Unity.Entities;
 using Unity.Physics;
-using Unity.Mathematics;
 using Unity.Collections;
-using Unity.Physics.Systems;
+using Natrium.Gameplay.Components;
 
-namespace Natrium
+namespace Natrium.Gameplay.Systems
 {
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial class RaycastSystem : SystemBase
     {
-        private PhysicsWorldSingleton m_PhysicsWorldSingleton;
-        private CollisionWorld m_CollisionWorld;
+        private PhysicsWorldSingleton _physicsWorldSingleton;
+        private CollisionWorld _collisionWorld;
 
         protected override void OnCreate()
         {
@@ -22,10 +21,10 @@ namespace Natrium
 
         protected override void OnStartRunning()
         {
-            var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<Unity.Physics.PhysicsWorldSingleton>();
-            EntityQuery singletonQuery = World.DefaultGameObjectInjectionWorld.EntityManager.CreateEntityQuery(builder);
-            m_PhysicsWorldSingleton = singletonQuery.GetSingleton<Unity.Physics.PhysicsWorldSingleton>();
-            m_CollisionWorld = m_PhysicsWorldSingleton.CollisionWorld;
+            var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<PhysicsWorldSingleton>();
+            var singletonQuery = World.DefaultGameObjectInjectionWorld.EntityManager.CreateEntityQuery(builder);
+            _physicsWorldSingleton = singletonQuery.GetSingleton<PhysicsWorldSingleton>();
+            _collisionWorld = _physicsWorldSingleton.CollisionWorld;
             singletonQuery.Dispose();
         }
 
@@ -39,11 +38,11 @@ namespace Natrium
 
                 ecb.RemoveComponent<RaycastCommand>(e);
 
-                Unity.Physics.RaycastInput input = new Unity.Physics.RaycastInput()
+                var input = new RaycastInput()
                 {
                     Start = rc.Start,
                     End = rc.End,
-                    Filter = new Unity.Physics.CollisionFilter()
+                    Filter = new CollisionFilter()
                     {
                         BelongsTo = pc.Value.Value.GetCollisionFilter().BelongsTo,
                         CollidesWith = pc.Value.Value.GetCollisionFilter().CollidesWith,
@@ -51,7 +50,7 @@ namespace Natrium
                     }
                 };
 
-                if (m_CollisionWorld.CastRay(input, out var hit))
+                if (_collisionWorld.CastRay(input, out var hit))
                     ecb.AddComponent(e, new RaycastOutput { Hit = hit, ReqE = rc.ReqE, Start = rc.Start, End = rc.End });
             }
 

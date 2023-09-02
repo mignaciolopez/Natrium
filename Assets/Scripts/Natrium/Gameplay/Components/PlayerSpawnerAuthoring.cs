@@ -1,7 +1,7 @@
 using UnityEngine;
 using Unity.Entities;
 
-namespace Natrium
+namespace Natrium.Gameplay.Components
 {
     [DisallowMultipleComponent]
     public class PlayerSpawnerAuthoring : MonoBehaviour
@@ -13,16 +13,16 @@ namespace Natrium
     {
         public override void Bake(PlayerSpawnerAuthoring authoring)
         {
-            Entity entity = this.GetEntity(TransformUsageFlags.Dynamic);
+            var entity = this.GetEntity(TransformUsageFlags.Dynamic);
             AddComponent(entity, new PlayerSpawnerData
             {
-                playerPrefab = GetEntity(authoring.playerPrefab, TransformUsageFlags.Dynamic)
+                PlayerPrefab = GetEntity(authoring.playerPrefab, TransformUsageFlags.Dynamic)
             });
         }
     }
 
     public struct PlayerSpawnerData : IComponentData
     {
-        public Entity playerPrefab;
+        public Entity PlayerPrefab;
     }
 }

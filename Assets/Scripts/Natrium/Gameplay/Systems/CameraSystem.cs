@@ -1,40 +1,28 @@
 using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
+using Natrium.Gameplay.Components;
 
-namespace Natrium
+namespace Natrium.Gameplay.Systems
 {
     [UpdateInGroup(typeof(LateSimulationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial class CameraSystem : SystemBase
     {
-        private Camera mCurrentCamera;
-        protected override void OnCreate()
-        {
-            base.OnCreate();
-        }
+        private Camera _currentCamera;
 
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
 
-            mCurrentCamera = Camera.main;
+            _currentCamera = Camera.main;
         }
-
-        protected override void OnStopRunning()
-        {
-            base.OnStopRunning();
-        }
-
-        protected override void OnDestroy()
-        {
-            base.OnDestroy();
-        }
+        
         protected override void OnUpdate()
         {
             foreach(var (ltw, cd) in SystemAPI.Query<LocalToWorld, CameraData>().WithAll<Simulate>())
             {
-                mCurrentCamera.transform.position = ltw.Position + cd.offset;
+                _currentCamera.transform.position = ltw.Position + cd.Offset;
             }
         }
     }
