@@ -5,9 +5,12 @@ using Unity.Mathematics;
 using Unity.Collections;
 using Natrium.Gameplay.Components;
 using Natrium.Shared.Systems;
+using Unity.Transforms;
 
 namespace Natrium.Gameplay.Systems
 {
+    #region Client
+    
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial class TileHitSystemClient : SystemBase
     {
@@ -39,6 +42,7 @@ namespace Natrium.Gameplay.Systems
             }
 
             ecb.Playback(EntityManager);
+            ecb.Dispose();
         }
 
         private void OnPrimaryClick(Shared.Stream stream)
@@ -64,97 +68,52 @@ namespace Natrium.Gameplay.Systems
             }
 
             ecb.Playback(EntityManager);
+            ecb.Dispose();
         }
 
         private void DrawGizmos()
         {
-            //var mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition + new Vector3(0,0, Camera.main.transform.position.y));
-            //var ray = Camera.main.ScreenPointToRay(Input.mousePosition + new Vector3(0, 0, Camera.main.transform.position.y));
-            //Debug.Log($"OnDrawGizmos");
-            //Debug.Log($"mouseWorldPosition {mouseWorldPosition}");
-            //Debug.Log($"ray {ray.origin}, {ray.GetPoint(Camera.main.transform.position.y)}");
-
-            //mouseWorldPosition.y -= Camera.main.transform.position.y;
-            //Vector3 direction = (mouseWorldPosition - Camera.main.transform.position);//.normalized * Camera.main.transform.position.y;
-            //Gizmos.color = Color.red;
-            //Gizmos.DrawRay(Camera.main.transform.position + new Vector3(0, -0.1f, 0), direction);
-            //Debug.DrawRay(Camera.main.transform.position, direction, Color.red);
-
             foreach (var td in SystemAPI.Query<TouchData>().WithNone<ReceiveRpcCommandRequest>())
             {
-                UnityEngine.Gizmos.DrawCube(math.round(td.End), new float3(1, 0.1f, 1));
-
-                /*var entSource = Entity.Null;
-                var entTarget = Entity.Null;
-
-                foreach (var (nid, lt, e) in SystemAPI.Query<NetworkId, LocalTransform>().WithEntityAccess())
+                Gizmos.color = Color.gray;
+                Gizmos.DrawCube(math.round(td.End), new float3(1, 0.1f, 1));
+                
+                var start = float3.zero;
+                var end = float3.zero;
+                
+                foreach (var (go, lt, entity) in SystemAPI.Query<GhostOwner, LocalTransform>().WithEntityAccess())
                 {
-                    switch (td.NetworkIDSource)
-                    {
-                        case nid.Value:
-                            entSource = e;
-                            continue;
-                        default:
-                            break;
-                    }
-                    if (td.NetworkIDSource != 0)
-                    {
-                        if (nid.Value == td.NetworkIDSource)
-                        {
-                            
-                        }
-                    }
-                    if (td.NetworkIDTarget != 0)
-                    {
-                        if (nid.Value == td.NetworkIDTarget)
-                        {
-                            entTarget = e;
-                            continue;
-                        }
-                    }
+                    if (go.NetworkId != td.NetworkIDSource) continue;
+                    
+                    start = lt.Position;
+                    break;
                 }
 
-                //Fake Ray, just used to see it in Game
-                float3 ltSrc = float3.zero;
-                float3 ltTarget = float3.zero;
-
-                if (EntityManager.Exists(entSource))
+                if (td.NetworkIDTarget != 0)
                 {
-                    ltSrc = EntityManager.GetComponentData<LocalTransform>(entSource).Position;
+                    foreach (var (go, lt, entity) in SystemAPI.Query<GhostOwner, LocalTransform>().WithEntityAccess())
+                    {
+                        if (go.NetworkId != td.NetworkIDTarget) continue;
+
+                        end = lt.Position;
+                        break;
+                    }
                 }
                 else
                 {
-                    //Warning
-                }
-
-                if (EntityManager.Exists(entTarget))
-                {
-                    ltTarget = EntityManager.GetComponentData<LocalTransform>(entTarget).Position;
-                }
-                else
-                {
-                    ltTarget = td.End;
+                    end = td.End;
                 }
                 
-
-                Vector3 direction = math.normalizesafe(ltTarget - ltSrc) * math.distance(ltSrc, ltTarget);
-                Debug.DrawRay(ltSrc, direction, Color.red);*/
-
-                //Real Ray
-                //Vector3 direction = math.normalizesafe(td.end - td.start) * math.distance(td.start, td.end);
-                //Debug.DrawRay(td.start, direction, Color.red);
-
-                //Fake Ray, just used to see it in Game
-                //Vector3 direction = math.normalizesafe((Vector3)td.end - Camera.main.transform.position) * math.distance(Camera.main.transform.position, td.end);
-                //Debug.DrawRay(Camera.main.transform.position + new Vector3(0, -0.1f, 0), direction, Color.red);
+                Gizmos.color = Color.magenta;
+                Gizmos.DrawLine(start, end);
             }
         }
     }
 
+    #endregion
 
 
-
-    //Server
+    #region Server
 
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial class TileHitSystemServer : SystemBase
@@ -163,7 +122,7 @@ namespace Natrium.Gameplay.Systems
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (reqSrc, rpcClick, reqEntity) in SystemAPI.Query<ReceiveRpcCommandRequest, RpcClick>().WithEntityAccess())
+            foreach (var (clientEntity, rpcClick, rpcEntity) in SystemAPI.Query<ReceiveRpcCommandRequest, RpcClick>().WithEntityAccess())
             {
                 if (rpcClick.MouseWorldPosition is { x: 0, y: 0 })
                 {
@@ -173,14 +132,14 @@ namespace Natrium.Gameplay.Systems
 
                 Debug.Log($"'{World.Unmanaged.Name}' ReceiveRpcCommandRequest RpcClick.MouseWorldPosition: {rpcClick.MouseWorldPosition}");
 
-                var e = EntityManager.GetBuffer<LinkedEntityGroup>(reqSrc.SourceConnection, true)[1].Value;
-
-                var mouseWorldPosition = rpcClick.MouseWorldPosition;
-                mouseWorldPosition.y = 10.0f; //ToDo: The plus 10 on y axis, comes from the offset of the camara
-                var start = mouseWorldPosition;
+                //ghostEntity is the linked entity that contains all the prefab component, LocalTransform, Cube, Colliders, etc...
+                var ghostEntity = EntityManager.GetBuffer<LinkedEntityGroup>(clientEntity.SourceConnection, true)[1].Value;
+                
+                var start = rpcClick.MouseWorldPosition;
+                start.y = 10.0f; //ToDo: The plus 10 on y axis, comes from the offset of the camara
                 var end = rpcClick.MouseWorldPosition;
 
-                ecb.AddComponent(e, new Components.RaycastCommand { Start = start, End = end, MaxDistance = 11, ReqE = reqSrc.SourceConnection });
+                ecb.AddComponent(ghostEntity, new Components.RaycastCommand { Start = start, End = end, MaxDistance = 11 });
 
                 /*Ray ray = Camera.main.ScreenPointToRay(rpcClick.mouseWorldPosition);
 
@@ -204,11 +163,36 @@ namespace Natrium.Gameplay.Systems
                 else
                     UnityEngine.Debug.LogWarning($"'{World.Unmanaged.Name}' rpcClick.mousePosition: {rpcClick.mouseWorldPosition}");*/
 
-                ecb.DestroyEntity(reqEntity);
+                ecb.DestroyEntity(rpcEntity);
 
+            }
+            
+            foreach (var (ro, goSrc, entity) in SystemAPI.Query<RaycastOutput, GhostOwner>().WithEntityAccess())
+            {
+                var networkIDSource = goSrc.NetworkId;
+                var networkIDTarget = 0;
+                if (EntityManager.HasComponent<GhostOwner>(ro.Hit.Entity))
+                    networkIDTarget = EntityManager.GetComponentData<GhostOwner>(ro.Hit.Entity).NetworkId;
+                
+                UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Entity {entity}:{networkIDSource} hit {ro.Hit.Entity}:{networkIDTarget}");
+
+                var rpcEntity = ecb.CreateEntity();
+                ecb.AddComponent(rpcEntity, new TouchData
+                {
+                    Start = ro.Start, 
+                    End = ro.End, 
+                    NetworkIDSource = networkIDSource, 
+                    NetworkIDTarget = networkIDTarget
+                });
+                ecb.AddComponent<SendRpcCommandRequest>(rpcEntity); //Broadcast
+
+                ecb.RemoveComponent<RaycastOutput>(entity);
             }
 
             ecb.Playback(EntityManager);
+            ecb.Dispose();
         }
     }
+    
+    #endregion
 }

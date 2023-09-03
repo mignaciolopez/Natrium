@@ -53,6 +53,7 @@ namespace Natrium.Gameplay.Systems
             }
 
             ecb.Playback(EntityManager);
+            ecb.Dispose();
         }
 
         private void Disconnect(Shared.Stream stream)
@@ -75,6 +76,7 @@ namespace Natrium.Gameplay.Systems
             }
 
             ecb.Playback(EntityManager);
+            ecb.Dispose();
         }
     }
 
@@ -102,34 +104,8 @@ namespace Natrium.Gameplay.Systems
             _networkIdFromEntity.Update(this);
             RPC_Connect();
 
-            foreach (var (ro, e) in SystemAPI.Query<RaycastOutput>().WithEntityAccess())
-            {
-                UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Entity {e} hit {ro.Hit.Entity}");
-
-                {
-                    var reqE0 = EntityManager.GetBuffer<LinkedEntityGroup>(ro.ReqE, true)[1].Value;
-                    UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Sending TouchData to {ro.ReqE}  linked with {reqE0}");
-                    var reqE1 = EntityManager.GetBuffer<LinkedEntityGroup>(e, true)[1].Value;
-                    UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' {e} is linked with {reqE1}");
-                }
-
-
-                var nidSource = 0;
-                if (EntityManager.HasComponent<NetworkId>(ro.ReqE))
-                    nidSource = _networkIdFromEntity[ro.ReqE].Value;
-
-                var nidTarget = 0;
-                if (EntityManager.HasComponent<NetworkId>(ro.Hit.Entity))
-                    nidTarget = _networkIdFromEntity[ro.Hit.Entity].Value;
-
-                var req = ecb.CreateEntity();
-                ecb.AddComponent(req, new TouchData { Start = ro.Start, End = ro.End, NetworkIDSource = nidSource, NetworkIDTarget = nidTarget });
-                ecb.AddComponent<SendRpcCommandRequest>(req);
-
-                ecb.RemoveComponent<RaycastOutput>(e);
-            }
-
             ecb.Playback(EntityManager);
+            ecb.Dispose();
         }
 
         private void RPC_Connect()
@@ -160,6 +136,7 @@ namespace Natrium.Gameplay.Systems
                     $"Add LinkedEntityGroup to '{prefabName}'.");
             }
             ecb.Playback(EntityManager);
+            ecb.Dispose();
         }
     }
 }

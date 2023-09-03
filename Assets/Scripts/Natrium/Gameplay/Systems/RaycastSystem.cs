@@ -32,11 +32,11 @@ namespace Natrium.Gameplay.Systems
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (rc, pc, e) in SystemAPI.Query<RaycastCommand, PhysicsCollider>().WithEntityAccess())
+            foreach (var (rc, pc, entity) in SystemAPI.Query<RaycastCommand, PhysicsCollider>().WithEntityAccess())
             {
-                UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Entity {e} is RayCasting from {rc.Start} to {rc.End}");
+                UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Entity {entity} is RayCasting from {rc.Start} to {rc.End}");
 
-                ecb.RemoveComponent<RaycastCommand>(e);
+                ecb.RemoveComponent<RaycastCommand>(entity);
 
                 var input = new RaycastInput()
                 {
@@ -51,10 +51,13 @@ namespace Natrium.Gameplay.Systems
                 };
 
                 if (_collisionWorld.CastRay(input, out var hit))
-                    ecb.AddComponent(e, new RaycastOutput { Hit = hit, ReqE = rc.ReqE, Start = rc.Start, End = rc.End });
+                    ecb.AddComponent(entity, new RaycastOutput { Hit = hit, Start = rc.Start, End = rc.End });
+                else
+                    UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Entity {entity} No Hit!");
             }
 
             ecb.Playback(EntityManager);
+            ecb.Dispose();
         }
     }
 }

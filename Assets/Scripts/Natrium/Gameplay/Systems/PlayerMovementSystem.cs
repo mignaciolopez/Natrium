@@ -168,9 +168,11 @@ namespace Natrium.Gameplay.Systems
                     break;
                 case MovementType.FullTile:
                     FullTileMovement();
+                    _logOnce = true;
                     break;
                 case MovementType.FullTileNoDiagonal:
                     FullTileMovementNoDiagonal();
+                    _logOnce = true;
                     break;
                 default:
                     if (_logOnce)
@@ -203,15 +205,25 @@ namespace Natrium.Gameplay.Systems
                     lt.ValueRW.Position = pd.ValueRO.NextPos;
                     pd.ValueRW.PreviousPos = pd.ValueRO.NextPos;
 
-                    if (pid.InputAxis.x > 0)
-                        pd.ValueRW.NextPos.x++;
-                    else if (pid.InputAxis.x < 0)
-                        pd.ValueRW.NextPos.x--;
+                    switch (pid.InputAxis.x)
+                    {
+                        case > 0:
+                            pd.ValueRW.NextPos.x++;
+                            break;
+                        case < 0:
+                            pd.ValueRW.NextPos.x--;
+                            break;
+                    }
 
-                    if (pid.InputAxis.z > 0)
-                        pd.ValueRW.NextPos.z++;
-                    else if (pid.InputAxis.z < 0)
-                        pd.ValueRW.NextPos.z--;
+                    switch (pid.InputAxis.z)
+                    {
+                        case > 0:
+                            pd.ValueRW.NextPos.z++;
+                            break;
+                        case < 0:
+                            pd.ValueRW.NextPos.z--;
+                            break;
+                    }
                 }
 
                 lt.ValueRW.Position = Vector3.MoveTowards(lt.ValueRO.Position, (float3)pd.ValueRO.NextPos, s.Value * _dt);

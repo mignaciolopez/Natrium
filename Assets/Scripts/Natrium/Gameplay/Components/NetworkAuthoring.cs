@@ -21,7 +21,6 @@ namespace Natrium.Gameplay.Components
 
     public struct RaycastCommand : IComponentData
     {
-        public Entity ReqE;
         public float3 Start;
         public float3 End;
         public float MaxDistance;
@@ -29,7 +28,6 @@ namespace Natrium.Gameplay.Components
 
     public struct RaycastOutput : IComponentData
     {
-        public Entity ReqE;
         public float3 Start;
         public float3 End;
         public Unity.Physics.RaycastHit Hit;

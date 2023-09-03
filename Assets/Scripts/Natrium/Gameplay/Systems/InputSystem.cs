@@ -37,6 +37,7 @@ namespace Natrium.Gameplay.Systems
                 EventSystem.DispatchEvent(Shared.Events.ClientDisconnect);
 
             ecb.Playback(EntityManager);
+            ecb.Dispose();
         }
     }
 }
