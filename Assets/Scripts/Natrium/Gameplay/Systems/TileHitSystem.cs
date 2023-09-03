@@ -34,14 +34,14 @@ namespace Natrium.Gameplay.Systems
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (td, rpcEntity) in SystemAPI.Query<TouchData>().WithAll<ReceiveRpcCommandRequest>().WithEntityAccess())
+            foreach (var (rpcHit, rpcEntity) in SystemAPI.Query<RpcHit>().WithAll<ReceiveRpcCommandRequest>().WithEntityAccess())
             {
                 foreach (var (go, ghostEntity) in SystemAPI.Query<GhostOwner>().WithEntityAccess())
                 {
-                    if (go.NetworkId != td.NetworkIDSource) continue;
+                    if (go.NetworkId != rpcHit.NetworkIdSource) continue;
                     
-                    Debug.Log($"{World.Unmanaged.Name} New Hit from {ghostEntity}_{go.NetworkId} at ({td.End.x}, {td.End.z}) colliding with {td.NetworkIDTarget}");
-                    ecb.AddComponent(ghostEntity, td);
+                    Debug.Log($"{World.Unmanaged.Name} New Hit from {ghostEntity}:{go.NetworkId} at ({rpcHit.End}) colliding with {rpcHit.NetworkIdTarget}");
+                    ecb.AddComponent(ghostEntity, new Hit { End = rpcHit.End, NetworkIdTarget = rpcHit.NetworkIdTarget });
                     break;
                 }
                 
@@ -74,18 +74,18 @@ namespace Natrium.Gameplay.Systems
 
         private void DrawGizmos()
         {
-            foreach (var (td, lt) in SystemAPI.Query<TouchData, LocalTransform>().WithAll<GhostOwner>())
+            foreach (var (hit, lt) in SystemAPI.Query<Hit, LocalTransform>().WithAll<GhostOwner>())
             {
                 Gizmos.color = Color.gray;
-                Gizmos.DrawCube(math.round(td.End), new float3(1, 0.1f, 1));
+                Gizmos.DrawCube(math.round(hit.End), new float3(1, 0.1f, 1));
 
                 var end = float3.zero;
                 
-                if (td.NetworkIDTarget != 0)
+                if (hit.NetworkIdTarget != 0)
                 {
                     foreach (var (goTarget, ltTarget) in SystemAPI.Query<GhostOwner, LocalTransform>())
                     {
-                        if (goTarget.NetworkId != td.NetworkIDTarget) continue;
+                        if (goTarget.NetworkId != hit.NetworkIdTarget) continue;
 
                         end = ltTarget.Position;
                         break;
@@ -93,7 +93,7 @@ namespace Natrium.Gameplay.Systems
                 }
                 else
                 {
-                    end = td.End;
+                    end = hit.End;
                 }
 
                 if (end is not { x: 0, y: 0, z: 0 })
@@ -125,7 +125,7 @@ namespace Natrium.Gameplay.Systems
                     continue;
                 }
 
-                Debug.Log($"'{World.Unmanaged.Name}' ReceiveRpcCommandRequest RpcClick.MouseWorldPosition: {rpcClick.MouseWorldPosition}");
+                Debug.Log($"'{World.Unmanaged.Name}' ReceiveRpcCommandRequest RpcClick | MouseWorldPosition: {rpcClick.MouseWorldPosition}");
 
                 //ghostEntity is the linked entity that contains all the prefab component, LocalTransform, Cube, Colliders, etc...
                 var ghostEntity = EntityManager.GetBuffer<LinkedEntityGroup>(clientEntity.SourceConnection, true)[1].Value;
@@ -134,7 +134,7 @@ namespace Natrium.Gameplay.Systems
                 start.y = 10.0f; //ToDo: The plus 10 on y axis, comes from the offset of the camara
                 var end = rpcClick.MouseWorldPosition;
 
-                ecb.AddComponent(ghostEntity, new Components.RaycastCommand { Start = start, End = end, MaxDistance = 11 });
+                ecb.AddComponent(ghostEntity, new Components.RaycastCommand { Start = start, End = end});
 
                 /*Ray ray = Camera.main.ScreenPointToRay(rpcClick.mouseWorldPosition);
 
@@ -169,15 +169,15 @@ namespace Natrium.Gameplay.Systems
                 if (EntityManager.HasComponent<GhostOwner>(ro.Hit.Entity))
                     networkIDTarget = EntityManager.GetComponentData<GhostOwner>(ro.Hit.Entity).NetworkId;
                 
-                Debug.Log($"'{World.Unmanaged.Name}' Entity {entity}:{networkIDSource} hit {ro.Hit.Entity}:{networkIDTarget}");
+                Debug.Log($"'{World.Unmanaged.Name}' {entity}:{networkIDSource} hit {ro.Hit.Entity}:{networkIDTarget}");
 
                 var rpcEntity = ecb.CreateEntity();
-                ecb.AddComponent(rpcEntity, new TouchData
+                ecb.AddComponent(rpcEntity, new RpcHit
                 {
                     Start = ro.Start, 
                     End = ro.End, 
-                    NetworkIDSource = networkIDSource, 
-                    NetworkIDTarget = networkIDTarget
+                    NetworkIdSource = networkIDSource, 
+                    NetworkIdTarget = networkIDTarget
                 });
                 ecb.AddComponent<SendRpcCommandRequest>(rpcEntity); //Broadcast
 

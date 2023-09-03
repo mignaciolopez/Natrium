@@ -10,19 +10,24 @@ namespace Natrium.Gameplay.Components
     {
         public float3 MouseWorldPosition;
     }
-    public struct TouchData : IRpcCommand
+    public struct RpcHit : IRpcCommand
     {
         public float3 Start;
         public float3 End;
-        public int NetworkIDSource;
-        public int NetworkIDTarget;
+        public int NetworkIdSource;
+        public int NetworkIdTarget;
+    }
+
+    public struct Hit : IComponentData
+    {
+        public float3 End;
+        public int NetworkIdTarget;
     }
 
     public struct RaycastCommand : IComponentData
     {
         public float3 Start;
         public float3 End;
-        public float MaxDistance;
     }
 
     public struct RaycastOutput : IComponentData
