@@ -1,7 +1,6 @@
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
-using UnityEngine;
 
 namespace Natrium.Gameplay.Components
 {

@@ -34,11 +34,18 @@ namespace Natrium.Gameplay.Systems
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (td, reqEntity) in SystemAPI.Query<TouchData>().WithAll<ReceiveRpcCommandRequest>().WithEntityAccess())
+            foreach (var (td, rpcEntity) in SystemAPI.Query<TouchData>().WithAll<ReceiveRpcCommandRequest>().WithEntityAccess())
             {
-                Debug.Log($"{World.Unmanaged.Name} Drawing Gizmos Hit at {td.End}");
-
-                ecb.RemoveComponent<ReceiveRpcCommandRequest>(reqEntity);
+                foreach (var (go, ghostEntity) in SystemAPI.Query<GhostOwner>().WithEntityAccess())
+                {
+                    if (go.NetworkId != td.NetworkIDSource) continue;
+                    
+                    Debug.Log($"{World.Unmanaged.Name} New Hit from {ghostEntity}_{go.NetworkId} at ({td.End.x}, {td.End.z}) colliding with {td.NetworkIDTarget}");
+                    ecb.AddComponent(ghostEntity, td);
+                    break;
+                }
+                
+                ecb.DestroyEntity(rpcEntity);
             }
 
             ecb.Playback(EntityManager);
@@ -48,12 +55,6 @@ namespace Natrium.Gameplay.Systems
         private void OnPrimaryClick(Shared.Stream stream)
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
-
-            foreach (var (td, e) in SystemAPI.Query<TouchData>().WithNone<ReceiveRpcCommandRequest>().WithEntityAccess())
-            {
-                Debug.Log($"Buffering Destroy of Entity:{e}, to remove {td} from screen.");
-                ecb.DestroyEntity(e);
-            }
 
             if (Camera.main != null)
             {
@@ -73,29 +74,20 @@ namespace Natrium.Gameplay.Systems
 
         private void DrawGizmos()
         {
-            foreach (var td in SystemAPI.Query<TouchData>().WithNone<ReceiveRpcCommandRequest>())
+            foreach (var (td, lt) in SystemAPI.Query<TouchData, LocalTransform>().WithAll<GhostOwner>())
             {
                 Gizmos.color = Color.gray;
                 Gizmos.DrawCube(math.round(td.End), new float3(1, 0.1f, 1));
-                
-                var start = float3.zero;
+
                 var end = float3.zero;
                 
-                foreach (var (go, lt, entity) in SystemAPI.Query<GhostOwner, LocalTransform>().WithEntityAccess())
-                {
-                    if (go.NetworkId != td.NetworkIDSource) continue;
-                    
-                    start = lt.Position;
-                    break;
-                }
-
                 if (td.NetworkIDTarget != 0)
                 {
-                    foreach (var (go, lt, entity) in SystemAPI.Query<GhostOwner, LocalTransform>().WithEntityAccess())
+                    foreach (var (goTarget, ltTarget) in SystemAPI.Query<GhostOwner, LocalTransform>())
                     {
-                        if (go.NetworkId != td.NetworkIDTarget) continue;
+                        if (goTarget.NetworkId != td.NetworkIDTarget) continue;
 
-                        end = lt.Position;
+                        end = ltTarget.Position;
                         break;
                     }
                 }
@@ -103,9 +95,12 @@ namespace Natrium.Gameplay.Systems
                 {
                     end = td.End;
                 }
-                
-                Gizmos.color = Color.magenta;
-                Gizmos.DrawLine(start, end);
+
+                if (end is not { x: 0, y: 0, z: 0 })
+                {
+                    Gizmos.color = Color.magenta;
+                    Gizmos.DrawLine(lt.Position, end);
+                }
             }
         }
     }
@@ -174,7 +169,7 @@ namespace Natrium.Gameplay.Systems
                 if (EntityManager.HasComponent<GhostOwner>(ro.Hit.Entity))
                     networkIDTarget = EntityManager.GetComponentData<GhostOwner>(ro.Hit.Entity).NetworkId;
                 
-                UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Entity {entity}:{networkIDSource} hit {ro.Hit.Entity}:{networkIDTarget}");
+                Debug.Log($"'{World.Unmanaged.Name}' Entity {entity}:{networkIDSource} hit {ro.Hit.Entity}:{networkIDTarget}");
 
                 var rpcEntity = ecb.CreateEntity();
                 ecb.AddComponent(rpcEntity, new TouchData
