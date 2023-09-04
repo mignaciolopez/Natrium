@@ -153,7 +153,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a5c5c1737850f834988e468435a30b2a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  MovementSystem: 1
+  movementSystem: 1
 --- !u!4 &395158843
 Transform:
   m_ObjectHideFlags: 0
@@ -161,6 +161,37 @@ Transform:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 395158841}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!1 &524682779
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 524682780}
+  m_Layer: 0
+  m_Name: UI
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &524682780
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 524682779}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
@@ -551,30 +582,30 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b42a5048583ce524388c3898fd958572, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  movementType: 0
-  AddCustomClientTickRate: 0
-  CommandAgeCorrectionFraction: 0.1
-  InterpolationDelayCorrectionFraction: 0.1
-  InterpolationDelayJitterScale: 1.25
-  InterpolationDelayMaxDeltaTicksFraction: 0.1
-  UseInterpolationTimeMS: 0
-  InterpolationTimeMS: 0
-  UseInterpolationTimeNetTicks: 0
-  InterpolationTimeNetTicks: 0
-  InterpolationTimeScaleMax: 1.1
-  InterpolationTimeScaleMin: 0.85
-  UseMaxExtrapolationTimeSimTicks: 0
-  MaxExtrapolationTimeSimTicks: 0
-  UseMaxPredictAheadTimeMS: 0
-  MaxPredictAheadTimeMS: 0
-  UseMaxPredictionStepBatchSizeFirstTimeTick: 0
-  MaxPredictionStepBatchSizeFirstTimeTick: 0
-  UseMaxPredictionStepBatchSizeRepeatedTick: 0
-  MaxPredictionStepBatchSizeRepeatedTick: 0
-  PredictionTimeScaleMax: 1.1
-  PredictionTimeScaleMin: 0.9
-  UseTargetCommandSlack: 0
-  TargetCommandSlack: 0
+  movementType: 2
+  addCustomClientTickRate: 0
+  commandAgeCorrectionFraction: 0.1
+  interpolationDelayCorrectionFraction: 0.1
+  interpolationDelayJitterScale: 1.25
+  interpolationDelayMaxDeltaTicksFraction: 0.1
+  useInterpolationTimeMS: 0
+  interpolationTimeMS: 0
+  useInterpolationTimeNetTicks: 0
+  interpolationTimeNetTicks: 0
+  interpolationTimeScaleMax: 1.1
+  interpolationTimeScaleMin: 0.85
+  useMaxExtrapolationTimeSimTicks: 0
+  maxExtrapolationTimeSimTicks: 0
+  useMaxPredictAheadTimeMS: 0
+  maxPredictAheadTimeMS: 0
+  useMaxPredictionStepBatchSizeFirstTimeTick: 0
+  maxPredictionStepBatchSizeFirstTimeTick: 0
+  useMaxPredictionStepBatchSizeRepeatedTick: 0
+  maxPredictionStepBatchSizeRepeatedTick: 0
+  predictionTimeScaleMax: 1.1
+  predictionTimeScaleMin: 0.9
+  useTargetCommandSlack: 0
+  targetCommandSlack: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -583,3 +614,4 @@ SceneRoots:
   - {fileID: 1731528804}
   - {fileID: 907910691}
   - {fileID: 903655831}
+  - {fileID: 524682780}

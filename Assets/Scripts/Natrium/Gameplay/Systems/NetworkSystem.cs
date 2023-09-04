@@ -3,6 +3,8 @@ using Unity.Entities;
 using Unity.NetCode;
 using Natrium.Gameplay.Components;
 using Natrium.Shared.Systems;
+using Unity.Mathematics;
+using Unity.Transforms;
 
 namespace Natrium.Gameplay.Systems
 {
@@ -32,7 +34,7 @@ namespace Natrium.Gameplay.Systems
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
-            bool found = false;
+            var found = false;
 
             foreach (var (nId, e) in SystemAPI.Query<NetworkId>().WithEntityAccess().WithNone<NetworkStreamInGame>())
             {
@@ -102,6 +104,7 @@ namespace Natrium.Gameplay.Systems
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
             _networkIdFromEntity.Update(this);
+            
             RPC_Connect();
 
             ecb.Playback(EntityManager);
@@ -120,14 +123,32 @@ namespace Natrium.Gameplay.Systems
             {
                 ecb.AddComponent<NetworkStreamInGame>(reqSrc.ValueRO.SourceConnection);
                 var networkId = _networkIdFromEntity[reqSrc.ValueRO.SourceConnection];
-
-
+                
                 var player = ecb.Instantiate(prefab);
                 ecb.SetComponent(player, new GhostOwner { NetworkId = networkId.Value });
+                
+                //TODO: Grab Data From Database
+                var position = new float3(5.0f, 0.0f, 5.0f);
+                ecb.SetComponent(player, new LocalTransform
+                {
+                    Position = position, 
+                    Rotation = quaternion.identity,
+                    Scale = 1.0f
+                });
+                ecb.SetComponent(player, new Player
+                {
+                    Name = (FixedString64Bytes)($"Player {networkId}"), 
+                    PreviousPos = (int3)position,
+                    NextPos = (int3)position
+                });
+                
+                ecb.SetComponent(player, new Health() { Value = 100 } );
+                ecb.SetComponent(player, new MaxHealth() { Value = 100 } );
+                ecb.SetComponent(player, new DamagePoints() { Value = 10.0f } );
 
                 // Add the player to the linked entity group so it is destroyed automatically on disconnect
                 ecb.AppendToBuffer(reqSrc.ValueRO.SourceConnection, new LinkedEntityGroup { Value = player });
-
+                
                 ecb.DestroyEntity(reqEntity);
 
                 UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Processing ReceiveRpcCommandRequest for Entity: '{reqSrc.ValueRO.SourceConnection}' " +

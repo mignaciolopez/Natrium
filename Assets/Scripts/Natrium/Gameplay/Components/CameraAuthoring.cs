@@ -16,16 +16,20 @@ namespace Natrium.Gameplay.Components
         public override void Bake(CameraAuthoring authoring)
         {
             var entity = GetEntity(TransformUsageFlags.None);
-            AddComponent(entity, new CameraData
+            AddComponent<CameraFollow>(entity);
+            AddComponent(entity, new CameraOffset
             {
-                Offset = authoring.offset
+                Value = authoring.offset
             });
         }
     }
 
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
-    public struct CameraData : IComponentData
+    public struct CameraFollow : IComponentData
     {
-        public float3 Offset;
+    }
+
+    public struct CameraOffset : IComponentData
+    {
+        public float3 Value;
     }
 }

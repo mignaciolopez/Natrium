@@ -1,3 +1,4 @@
+using Unity.Collections;
 using UnityEngine;
 using Unity.Entities;
 using Unity.NetCode;
@@ -15,37 +16,53 @@ namespace Natrium.Gameplay.Components
     {
         public override void Bake(PlayerAuthoring authoring)
         {
-            var e = GetEntity(TransformUsageFlags.Dynamic);
+            var entity = GetEntity(TransformUsageFlags.Dynamic);
 
-            AddComponent(e, new PlayerData
-            {
-
-            });
-            AddComponent(e, new SpeedData
+            AddComponent<Player>(entity);
+            AddComponent(entity, new Speed
             {
                 Value = authoring.speed
             });
-            AddComponent(e, new PlayerInputData
-            {
-                
-            });
+            AddComponent<PlayerInput>(entity);
+            AddComponent<Health>(entity);
+            AddComponent<MaxHealth>(entity);
+            AddComponent<DamagePoints>(entity);
         }
     }
 
-    public struct PlayerData : IComponentData
+    public struct Player : IComponentData
     {
+        public FixedString64Bytes Name;
         public int3 PreviousPos;
         public int3 NextPos;
     }
 
-    public struct SpeedData : IComponentData
+    public struct Speed : IComponentData
     {
+        [GhostField(Quantization = 100)]
         public float Value;
     }
 
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
-    public struct PlayerInputData : IInputComponentData
+    public struct Health : IComponentData
     {
-        [GhostField(Quantization = 100)] public float3 InputAxis;
+        public int Value;
+    }
+    
+    public struct MaxHealth : IComponentData
+    {
+        public int Value;
+    }
+    
+    public struct DamagePoints : IComponentData
+    {
+        [GhostField(Quantization = 100)]
+        public float Value;
+    }
+    
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
+    public struct PlayerInput : IInputComponentData
+    {
+        [GhostField(Quantization = 100)]
+        public float3 InputAxis;
     }
 }

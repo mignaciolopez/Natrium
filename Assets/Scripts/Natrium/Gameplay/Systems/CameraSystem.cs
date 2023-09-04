@@ -20,9 +20,9 @@ namespace Natrium.Gameplay.Systems
         
         protected override void OnUpdate()
         {
-            foreach(var (ltw, cd) in SystemAPI.Query<LocalToWorld, CameraData>().WithAll<Simulate>())
+            foreach(var (ltw, cd) in SystemAPI.Query<LocalToWorld, CameraOffset>().WithAll<CameraFollow>())
             {
-                _currentCamera.transform.position = ltw.Position + cd.Offset;
+                _currentCamera.transform.position = ltw.Position + cd.Value;
             }
         }
     }

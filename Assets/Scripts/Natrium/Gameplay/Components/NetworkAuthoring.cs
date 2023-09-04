@@ -4,6 +4,8 @@ using Unity.NetCode;
 
 namespace Natrium.Gameplay.Components
 {
+    #region Shared
+    
     public struct RpcConnect : IRpcCommand { }
     public struct RpcDisconnect : IRpcCommand { }
     public struct RpcClick : IRpcCommand
@@ -18,11 +20,9 @@ namespace Natrium.Gameplay.Components
         public int NetworkIdTarget;
     }
 
-    public struct Hit : IComponentData
-    {
-        public float3 End;
-        public int NetworkIdTarget;
-    }
+    #endregion
+    
+    #region Server
 
     public struct RaycastCommand : IComponentData
     {
@@ -36,4 +36,18 @@ namespace Natrium.Gameplay.Components
         public float3 End;
         public Unity.Physics.RaycastHit Hit;
     }
+    
+    #endregion
+
+    #region Client
+
+    public struct Hit : IComponentData
+    {
+        public float3 End;
+        public int NetworkIdTarget;
+    }
+
+    public struct PlayerHasData : IComponentData {}
+    
+    #endregion
 }

@@ -184,7 +184,7 @@ namespace Natrium.Gameplay.Systems
 
         private void FreeMovement()
         {
-            foreach (var (lt, pd, pid, s) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<PlayerData>, PlayerInputData, SpeedData>()
+            foreach (var (lt, pd, pid, s) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<Player>, PlayerInput, Speed>()
                         .WithAll<Simulate>())
             {
                 lt.ValueRW.Position += pid.InputAxis * s.Value * _dt;
@@ -196,7 +196,7 @@ namespace Natrium.Gameplay.Systems
 
         private void FullTileMovement()
         {
-            foreach (var (lt, pd, pid, s) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<PlayerData>, PlayerInputData, SpeedData>()
+            foreach (var (lt, pd, pid, s) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<Player>, PlayerInput, Speed>()
                         .WithAll<Simulate>())
             {
 
@@ -232,7 +232,7 @@ namespace Natrium.Gameplay.Systems
 
         private void FullTileMovementNoDiagonal()
         {
-            foreach (var (lt, pd, pid, s) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<PlayerData>, PlayerInputData, SpeedData>()
+            foreach (var (lt, pd, pid, s) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<Player>, PlayerInput, Speed>()
                         .WithAll<Simulate>())
             {
                 if (math.distance(lt.ValueRO.Position, pd.ValueRO.NextPos) < s.Value * _dt)
