@@ -163,15 +163,15 @@ namespace Natrium.Gameplay.Systems
             switch (_settings.MovementType)
             {
                 case MovementType.Free:
-                    FreeMovement();
+                    Free();
                     _logOnce = true;
                     break;
-                case MovementType.FullTile:
-                    FullTileMovement();
+                case MovementType.Diagonal:
+                    Diagonal();
                     _logOnce = true;
                     break;
-                case MovementType.FullTileNoDiagonal:
-                    FullTileMovementNoDiagonal();
+                case MovementType.Classic:
+                    Classic();
                     _logOnce = true;
                     break;
                 default:
@@ -182,7 +182,7 @@ namespace Natrium.Gameplay.Systems
             }
         }
 
-        private void FreeMovement()
+        private void Free()
         {
             foreach (var (lt, pd, pid, s) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<Player>, PlayerInput, Speed>()
                         .WithAll<Simulate>())
@@ -194,7 +194,7 @@ namespace Natrium.Gameplay.Systems
             }
         }
 
-        private void FullTileMovement()
+        private void Diagonal()
         {
             foreach (var (lt, pd, pid, s) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<Player>, PlayerInput, Speed>()
                         .WithAll<Simulate>())
@@ -230,7 +230,7 @@ namespace Natrium.Gameplay.Systems
             }
         }
 
-        private void FullTileMovementNoDiagonal()
+        private void Classic()
         {
             foreach (var (lt, pd, pid, s) in SystemAPI.Query<RefRW<LocalTransform>, RefRW<Player>, PlayerInput, Speed>()
                         .WithAll<Simulate>())

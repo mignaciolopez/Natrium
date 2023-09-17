@@ -13,15 +13,15 @@ namespace Natrium.Gameplay.Systems
     {
         protected override void OnStartRunning()
         {
-            EventSystem.Subscribe(Shared.Events.ClientConnect, Connect);
-            EventSystem.Subscribe(Shared.Events.ClientDisconnect, Disconnect);
+            EventSystem.Subscribe(Shared.Events.OnClientConnect, OnClientConnect);
+            EventSystem.Subscribe(Shared.Events.OnClientDisconnect, OnClientDisconnect);
             base.OnStartRunning();
         }
 
         protected override void OnStopRunning()
         {
-            EventSystem.UnSubscribe(Shared.Events.ClientConnect, Connect);
-            EventSystem.UnSubscribe(Shared.Events.ClientDisconnect, Disconnect);
+            EventSystem.UnSubscribe(Shared.Events.OnClientConnect, OnClientConnect);
+            EventSystem.UnSubscribe(Shared.Events.OnClientDisconnect, OnClientDisconnect);
             base.OnStopRunning();
         }
 
@@ -30,7 +30,7 @@ namespace Natrium.Gameplay.Systems
             
         }
 
-        private void Connect(Shared.Stream stream)
+        private void OnClientConnect(Shared.Stream stream)
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
@@ -58,7 +58,7 @@ namespace Natrium.Gameplay.Systems
             ecb.Dispose();
         }
 
-        private void Disconnect(Shared.Stream stream)
+        private void OnClientDisconnect(Shared.Stream stream)
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 

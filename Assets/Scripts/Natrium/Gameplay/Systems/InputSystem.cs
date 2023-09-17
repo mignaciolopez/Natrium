@@ -31,13 +31,13 @@ namespace Natrium.Gameplay.Systems
                 }
                 
                 if (Input.GetMouseButtonUp(0))
-                    EventSystem.DispatchEvent(Shared.Events.OnPrimaryClick);
+                    EventSystem.EnqueueEvent(Shared.Events.OnPrimaryClick);
             }
             
             if (Input.GetKeyUp(KeyCode.Return))
-                EventSystem.DispatchEvent(Shared.Events.ClientConnect);
+                EventSystem.DispatchEvent(Shared.Events.OnClientConnect);
             if (Input.GetKeyUp(KeyCode.Escape))
-                EventSystem.DispatchEvent(Shared.Events.ClientDisconnect);
+                EventSystem.DispatchEvent(Shared.Events.OnClientDisconnect);
 
             ecb.Playback(EntityManager);
             ecb.Dispose();

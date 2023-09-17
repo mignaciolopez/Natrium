@@ -2,8 +2,10 @@ namespace Natrium.Shared
 {
     public enum Events
     {
-        ClientConnect,
-        ClientDisconnect,
-        OnPrimaryClick
+        OnClientConnect,
+        OnClientDisconnect,
+        OnPrimaryClick,
+        
+        OnUIPrimaryClick
     }
 }

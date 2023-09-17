@@ -17,7 +17,6 @@ namespace Natrium.Gameplay.Systems
         protected override void OnStartRunning()
         {
             EventSystem.Subscribe(Shared.Events.OnPrimaryClick, OnPrimaryClick);
-            Shared.Gizmos.OnEcsGizmos.AddListener(DrawGizmos);
 
             base.OnStartRunning();
         }
@@ -25,7 +24,6 @@ namespace Natrium.Gameplay.Systems
         protected override void OnStopRunning()
         {
             EventSystem.UnSubscribe(Shared.Events.OnPrimaryClick, OnPrimaryClick);
-            Shared.Gizmos.OnEcsGizmos.RemoveListener(DrawGizmos);
 
             base.OnStopRunning();
         }
@@ -70,38 +68,6 @@ namespace Natrium.Gameplay.Systems
 
             ecb.Playback(EntityManager);
             ecb.Dispose();
-        }
-
-        private void DrawGizmos()
-        {
-            foreach (var (hit, lt) in SystemAPI.Query<Hit, LocalTransform>().WithAll<GhostOwner>())
-            {
-                Gizmos.color = Color.gray;
-                Gizmos.DrawCube(math.round(hit.End), new float3(1, 0.1f, 1));
-
-                var end = float3.zero;
-                
-                if (hit.NetworkIdTarget != 0)
-                {
-                    foreach (var (goTarget, ltTarget) in SystemAPI.Query<GhostOwner, LocalTransform>())
-                    {
-                        if (goTarget.NetworkId != hit.NetworkIdTarget) continue;
-
-                        end = ltTarget.Position;
-                        break;
-                    }
-                }
-                else
-                {
-                    end = hit.End;
-                }
-
-                if (end is not { x: 0, y: 0, z: 0 })
-                {
-                    Gizmos.color = Color.magenta;
-                    Gizmos.DrawLine(lt.Position, end);
-                }
-            }
         }
     }
 

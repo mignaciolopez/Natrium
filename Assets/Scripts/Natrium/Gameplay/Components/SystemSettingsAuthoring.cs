@@ -6,9 +6,9 @@ namespace Natrium.Gameplay.Components
 {
     public enum MovementType
     {
-        Free = 0,
-        FullTile,
-        FullTileNoDiagonal
+        Classic = 0,
+        Diagonal,
+        Free
     }
 
     [DisallowMultipleComponent]
