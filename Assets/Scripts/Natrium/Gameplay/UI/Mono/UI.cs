@@ -1,5 +1,7 @@
+using System.Collections.Generic;
 using Natrium.Gameplay.Components;
 using Natrium.Shared.Systems;
+using TMPro;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -11,27 +13,88 @@ namespace Natrium.Gameplay.UI.Mono
 {
     public class UI : MonoBehaviour
     {
-        private EntityManager _entityManager;
-        private World _world;
-        private void Start()
+        private World _clientWorld;
+
+        [SerializeField] private GameObject playerTextPrefab;
+
+        private Dictionary<Entity, GameObject> _playerNames;
+        private void OnEnable()
         {
             EventSystem.Subscribe(Shared.Events.OnUIPrimaryClick, OnUIPrimaryClick);
             foreach (var world in World.All)
             {
-                if (world.Name == "ClientWorld")
-                {
-                    _world = world;
-                    _entityManager = _world.EntityManager;
-                }
+                if(world.Name == "ClientWorld")
+                    _clientWorld = world;
             }
-            //yield return new WaitForSeconds(1.0f);
-        }
 
+            _playerNames = new Dictionary<Entity, GameObject>();
+        }
+        
         private void OnDisable()
         {
             EventSystem.UnSubscribe(Shared.Events.OnUIPrimaryClick, OnUIPrimaryClick);
         }
 
+        private void Update()
+        {
+            if (_clientWorld == null || !_clientWorld.IsCreated)
+                return;
+
+            InstantiateTextsForNewConnections();
+        }
+
+        private void LateUpdate()
+        {
+            if (_clientWorld == null || !_clientWorld.IsCreated)
+                return;
+            
+            UpdateNamesPositions();
+        }
+
+        // ReSharper disable Unity.PerformanceAnalysis
+        private void InstantiateTextsForNewConnections()
+        {
+            var entityManager = _clientWorld.EntityManager;
+            var inGameQuery = entityManager.CreateEntityQuery(typeof(NetworkStreamInGame)).ToEntityArray(Allocator.Temp);
+
+            if (inGameQuery.Length == _playerNames.Count)
+            {
+                inGameQuery.Dispose();
+                return;
+            }
+
+            var entities = entityManager.CreateEntityQuery(typeof(LocalTransform), typeof(Player)).ToEntityArray(Allocator.Temp);
+            foreach (var entity in entities)
+            {
+                if (_playerNames.ContainsKey(entity))
+                    continue;
+
+                var playerText = Instantiate(playerTextPrefab, gameObject.transform);
+                playerText.SetActive(false);
+                var textMeshPro = playerText.GetComponent<TMP_Text>();
+
+                var player = entityManager.GetComponentData<Player>(entity);
+                textMeshPro.text = player.Name.ConvertToString();
+                
+                _playerNames.Add(entity, playerText);
+            }
+
+            entities.Dispose();
+            inGameQuery.Dispose();
+        }
+
+        private void UpdateNamesPositions()
+        {
+            var entityManager = _clientWorld.EntityManager;
+
+            foreach (var player in _playerNames)
+            {
+                var lt = entityManager.GetComponentData<LocalTransform>(player.Key);
+                var pos = (Vector3)lt.Position + new Vector3(0, 0.1f, -1);
+                player.Value.transform.position = pos;
+                player.Value.SetActive(true);
+            }
+        }
         private static void OnUIPrimaryClick(Shared.Stream stream)
         {
             
@@ -39,7 +102,7 @@ namespace Natrium.Gameplay.UI.Mono
 
         private void OnDrawGizmos()
         {
-            if (_world == null)
+            if (_clientWorld == null || !_clientWorld.IsCreated)
                 return;
 
             DrawClickHits();
@@ -47,35 +110,35 @@ namespace Natrium.Gameplay.UI.Mono
 
         private void DrawClickHits()
         {
-            var query = _entityManager.CreateEntityQuery(typeof(Hit), typeof(LocalTransform), typeof(GhostOwner));
-            var entities = query.ToEntityArray(Allocator.Temp);
+            var entityManager = _clientWorld.EntityManager;
+
+            var entities = entityManager.CreateEntityQuery(typeof(Hit), typeof(LocalTransform), typeof(GhostOwner)).ToEntityArray(Allocator.Temp);
 
             foreach (var entity in entities)
             {
-                var hit = _entityManager.GetComponentData<Hit>(entity);
-                var lt = _entityManager.GetComponentData<LocalTransform>(entity);
+                var hit = entityManager.GetComponentData<Hit>(entity);
+                var lt = entityManager.GetComponentData<LocalTransform>(entity);
 
                 Gizmos.color = Color.gray;
                 Gizmos.DrawCube(math.round(hit.End), new float3(1, 0.1f, 1));
 
                 var end = float3.zero;
-                
+
                 if (hit.NetworkIdTarget != 0)
                 {
-                    var queryTarget = _entityManager.CreateEntityQuery(typeof(GhostOwner), typeof(LocalTransform), typeof(GhostOwner));
-                    var entitiesTarget = queryTarget.ToEntityArray(Allocator.Temp);
-
-                    //foreach (var (goTarget, ltTarget) in SystemAPI.Query<GhostOwner, LocalTransform>())
+                    var entitiesTarget = entityManager.CreateEntityQuery(typeof(GhostOwner), typeof(LocalTransform)).ToEntityArray(Allocator.Temp);
                     foreach (var entityTarget in entitiesTarget)
                     {
-                        var goTarget = _entityManager.GetComponentData<GhostOwner>(entityTarget);
-                        var ltTarget = _entityManager.GetComponentData<LocalTransform>(entityTarget);
-                        
-                        if (goTarget.NetworkId != hit.NetworkIdTarget) continue;
+                        var goTarget = entityManager.GetComponentData<GhostOwner>(entityTarget);
 
-                        end = ltTarget.Position;
+                        if (goTarget.NetworkId != hit.NetworkIdTarget)
+                            continue;
+
+                        end = entityManager.GetComponentData<LocalTransform>(entityTarget).Position;
                         break;
                     }
+
+                    entitiesTarget.Dispose();
                 }
                 else
                 {
@@ -89,7 +152,7 @@ namespace Natrium.Gameplay.UI.Mono
                 }
             }
             
-            //foreach (var (hit, lt) in SystemAPI.Query<Hit, LocalTransform>().WithAll<GhostOwner>())
+            entities.Dispose();
         }
     }
 }

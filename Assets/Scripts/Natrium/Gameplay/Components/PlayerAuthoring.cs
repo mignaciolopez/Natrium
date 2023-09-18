@@ -32,8 +32,13 @@ namespace Natrium.Gameplay.Components
 
     public struct Player : IComponentData
     {
+        [GhostField]
         public FixedString64Bytes Name;
+        
+        [GhostField]
         public int3 PreviousPos;
+        
+        [GhostField]
         public int3 NextPos;
     }
 
@@ -45,11 +50,13 @@ namespace Natrium.Gameplay.Components
 
     public struct Health : IComponentData
     {
+        [GhostField]
         public int Value;
     }
     
     public struct MaxHealth : IComponentData
     {
+        [GhostField]
         public int Value;
     }
     

@@ -2,6 +2,7 @@ using Unity.Entities;
 using Unity.Transforms;
 using UnityEngine;
 using Natrium.Gameplay.Components;
+using Unity.NetCode;
 
 namespace Natrium.Gameplay.Systems
 {
@@ -20,7 +21,7 @@ namespace Natrium.Gameplay.Systems
         
         protected override void OnUpdate()
         {
-            foreach(var (ltw, cd) in SystemAPI.Query<LocalToWorld, CameraOffset>().WithAll<CameraFollow>())
+            foreach(var (ltw, cd) in SystemAPI.Query<LocalToWorld, CameraOffset>().WithAll<CameraFollow, GhostOwnerIsLocal>())
             {
                 _currentCamera.transform.position = ltw.Position + cd.Value;
             }

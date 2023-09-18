@@ -137,7 +137,7 @@ namespace Natrium.Gameplay.Systems
                 });
                 ecb.SetComponent(player, new Player
                 {
-                    Name = (FixedString64Bytes)($"Player {networkId}"), 
+                    Name = (FixedString64Bytes)$"Player {networkId.Value}", 
                     PreviousPos = (int3)position,
                     NextPos = (int3)position
                 });
