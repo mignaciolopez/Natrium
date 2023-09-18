@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Linq;
 using Natrium.Gameplay.Components;
 using Natrium.Shared.Systems;
 using TMPro;
@@ -39,7 +40,7 @@ namespace Natrium.Gameplay.UI.Mono
         {
             if (_clientWorld == null || !_clientWorld.IsCreated)
                 return;
-
+            
             InstantiateTextsForNewConnections();
         }
 
@@ -50,49 +51,54 @@ namespace Natrium.Gameplay.UI.Mono
             
             UpdateNamesPositions();
         }
-
+        
+        
         // ReSharper disable Unity.PerformanceAnalysis
         private void InstantiateTextsForNewConnections()
         {
             var entityManager = _clientWorld.EntityManager;
-            var inGameQuery = entityManager.CreateEntityQuery(typeof(NetworkStreamInGame)).ToEntityArray(Allocator.Temp);
-
-            if (inGameQuery.Length == _playerNames.Count)
-            {
-                inGameQuery.Dispose();
-                return;
-            }
 
             var entities = entityManager.CreateEntityQuery(typeof(LocalTransform), typeof(Player)).ToEntityArray(Allocator.Temp);
-            foreach (var entity in entities)
+
+            if (entities.Length > _playerNames.Count)
             {
-                if (_playerNames.ContainsKey(entity))
-                    continue;
+                foreach (var entity in entities)
+                {
+                    if (_playerNames.ContainsKey(entity))
+                        continue;
 
-                var playerText = Instantiate(playerTextPrefab, gameObject.transform);
-                playerText.SetActive(false);
-                var textMeshPro = playerText.GetComponent<TMP_Text>();
+                    var playerText = Instantiate(playerTextPrefab, gameObject.transform);
+                    playerText.SetActive(false);
+                    var textMeshPro = playerText.GetComponent<TMP_Text>();
 
-                var player = entityManager.GetComponentData<Player>(entity);
-                textMeshPro.text = player.Name.ConvertToString();
-                
-                _playerNames.Add(entity, playerText);
+                    var player = entityManager.GetComponentData<Player>(entity);
+                    textMeshPro.text = player.Name.ConvertToString();
+
+                    _playerNames.Add(entity, playerText);
+                }
             }
 
             entities.Dispose();
-            inGameQuery.Dispose();
         }
 
         private void UpdateNamesPositions()
         {
             var entityManager = _clientWorld.EntityManager;
 
-            foreach (var player in _playerNames)
+            foreach (var player in _playerNames.ToList())
             {
-                var lt = entityManager.GetComponentData<LocalTransform>(player.Key);
-                var pos = (Vector3)lt.Position + new Vector3(0, 0.1f, -1);
-                player.Value.transform.position = pos;
-                player.Value.SetActive(true);
+                if (entityManager.Exists(player.Key))
+                {
+                    var lt = entityManager.GetComponentData<LocalTransform>(player.Key);
+                    var pos = (Vector3)lt.Position + new Vector3(0, 0.1f, -1);
+                    player.Value.transform.position = pos;
+                    player.Value.SetActive(true);
+                }
+                else
+                {
+                    Destroy(player.Value);
+                    _playerNames.Remove(player.Key);
+                }
             }
         }
         private static void OnUIPrimaryClick(Shared.Stream stream)
