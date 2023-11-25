@@ -12,7 +12,7 @@ namespace Natrium.Gameplay.Systems
     #region Client
     
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
-    public partial class TileHitSystemClient : SystemBase
+    public partial class AimAttackSystem : SystemBase
     {
         protected override void OnStartRunning()
         {
@@ -62,7 +62,7 @@ namespace Natrium.Gameplay.Systems
                 Debug.Log($"{World.Unmanaged.Name} mouseWorldPosition {mouseWorldPosition}");
 
                 var req = ecb.CreateEntity();
-                ecb.AddComponent(req, new RpcClick { MouseWorldPosition = mouseWorldPosition });
+                ecb.AddComponent(req, new RpcAimAttack { MouseWorldPosition = mouseWorldPosition });
                 ecb.AddComponent<SendRpcCommandRequest>(req);
             }
 
@@ -77,21 +77,21 @@ namespace Natrium.Gameplay.Systems
     #region Server
 
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
-    public partial class TileHitSystemServer : SystemBase
+    public partial class AimAttackSystemServer : SystemBase
     {
         protected override void OnUpdate()
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (clientEntity, rpcClick, rpcEntity) in SystemAPI.Query<ReceiveRpcCommandRequest, RpcClick>().WithEntityAccess())
+            foreach (var (clientEntity, rpcClick, rpcEntity) in SystemAPI.Query<ReceiveRpcCommandRequest, RpcAimAttack>().WithEntityAccess())
             {
                 if (rpcClick.MouseWorldPosition is { x: 0, y: 0 })
                 {
-                    Debug.LogError($"RpcClick.MouseWorldPosition: {rpcClick.MouseWorldPosition}");
+                    Debug.LogError($"RpcAimAttack.MouseWorldPosition: {rpcClick.MouseWorldPosition}");
                     continue;
                 }
 
-                Debug.Log($"'{World.Unmanaged.Name}' ReceiveRpcCommandRequest RpcClick | MouseWorldPosition: {rpcClick.MouseWorldPosition}");
+                Debug.Log($"'{World.Unmanaged.Name}' ReceiveRpcCommandRequest RpcAimAttack | MouseWorldPosition: {rpcClick.MouseWorldPosition}");
 
                 //ghostEntity is the linked entity that contains all the prefab component, LocalTransform, Cube, Colliders, etc...
                 var ghostEntity = EntityManager.GetBuffer<LinkedEntityGroup>(clientEntity.SourceConnection, true)[1].Value;
@@ -101,31 +101,7 @@ namespace Natrium.Gameplay.Systems
                 var end = rpcClick.MouseWorldPosition;
 
                 ecb.AddComponent(ghostEntity, new Components.RaycastCommand { Start = start, End = end});
-
-                /*Ray ray = Camera.main.ScreenPointToRay(rpcClick.mouseWorldPosition);
-
-                if (Physics.Raycast(ray, out RaycastHit hit, 10.0f))
-                {
-                    if (hit.collider.gameObject.CompareTag("Player"))
-                    {
-                        UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Hit Entity");
-                        //var req = ecb.CreateEntity();
-                        //ecb.AddComponent(req, new HitEntity { entity =  });
-                        //ecb.AddComponent(req, new SendRpcCommandRequest { TargetConnection = reqSrc.SourceConnection });
-                    }
-                    else 
-                    {
-                        UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Hit Float at: {hit.point}");
-                        var req = ecb.CreateEntity();
-                        ecb.AddComponent(req, new TouchData { tile = (int3)math.round(hit.point) });
-                        ecb.AddComponent(req, new SendRpcCommandRequest { TargetConnection = reqSrc.SourceConnection });
-                    }
-                }
-                else
-                    UnityEngine.Debug.LogWarning($"'{World.Unmanaged.Name}' rpcClick.mousePosition: {rpcClick.mouseWorldPosition}");*/
-
                 ecb.DestroyEntity(rpcEntity);
-
             }
             
             foreach (var (ro, goSrc, entity) in SystemAPI.Query<RaycastOutput, GhostOwner>().WithEntityAccess())

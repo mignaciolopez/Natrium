@@ -8,10 +8,12 @@ namespace Natrium.Gameplay.Components
     
     public struct RpcConnect : IRpcCommand { }
     public struct RpcDisconnect : IRpcCommand { }
-    public struct RpcClick : IRpcCommand
+    public struct RpcAimAttack : IRpcCommand
     {
         public float3 MouseWorldPosition;
     }
+    public struct RpcMeeleAttack : IRpcCommand { }
+
     public struct RpcHit : IRpcCommand
     {
         public float3 Start;

@@ -51,7 +51,10 @@ namespace Natrium.Gameplay.Systems
                 };
 
                 if (_collisionWorld.CastRay(input, out var hit))
+                {
+                    UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Entity {entity} Hit {hit.Entity}");
                     ecb.AddComponent(entity, new RaycastOutput { Hit = hit, Start = rc.Start, End = rc.End });
+                }
                 else
                     UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Entity {entity} No Hit!");
             }

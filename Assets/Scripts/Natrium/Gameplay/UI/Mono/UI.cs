@@ -90,7 +90,7 @@ namespace Natrium.Gameplay.UI.Mono
                 if (entityManager.Exists(player.Key))
                 {
                     var lt = entityManager.GetComponentData<LocalTransform>(player.Key);
-                    var pos = (Vector3)lt.Position + new Vector3(0, 0.1f, -1);
+                    var pos = (Vector3)lt.Position + new Vector3(0, 0.5f, -1);
                     player.Value.transform.position = pos;
                     player.Value.SetActive(true);
                 }

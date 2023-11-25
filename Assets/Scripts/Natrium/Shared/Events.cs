@@ -6,6 +6,7 @@ namespace Natrium.Shared
         OnClientDisconnect,
         OnPrimaryClick,
         
-        OnUIPrimaryClick
+        OnUIPrimaryClick,
+        OnMeeleAttack
     }
 }
