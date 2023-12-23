@@ -11,8 +11,7 @@ namespace Natrium.Shared.Systems
     {
     }
 
-    [UpdateInGroup(typeof(LateSimulationSystemGroup))]
-    //[WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation | WorldSystemFilterFlags.ServerSimulation)]
+    [UpdateInGroup(typeof(SharedSystemGroup))]
     public partial class EventSystem : SystemBase
     {
         private static Dictionary<Events, CustomUnityEvent> _handlers;
@@ -24,8 +23,13 @@ namespace Natrium.Shared.Systems
             base.OnCreate();
 
             _handlers = new Dictionary<Events, CustomUnityEvent>();
+
             foreach (var evnt in (Events[])Enum.GetValues(typeof(Events)))
-                _handlers[evnt] = new CustomUnityEvent();
+            {
+                _handlers.Add(evnt, new CustomUnityEvent());
+                Debug.Log($"{_worldName} Handler created for {evnt}");
+            }
+
             _worldName = World.Unmanaged.Name;
         }
 
@@ -37,21 +41,20 @@ namespace Natrium.Shared.Systems
 
         protected override void OnStopRunning()
         {
+            base.OnStopRunning();
             _eventsQueue.Clear();
             //_eventsQueue = null;
-
-            base.OnStopRunning();
         }
 
         protected override void OnDestroy()
         {
+            base.OnDestroy();
             //foreach (var evnt in (Events[])Enum.GetValues(typeof(Events)))
             //    _handlers[evnt] = null;
 
             _handlers.Clear();
             //_handlers = null;
-            
-            base.OnDestroy();
+            Debug.Log($"{_worldName} OnDestroy");
         }
 
         protected override void OnUpdate()
@@ -79,7 +82,7 @@ namespace Natrium.Shared.Systems
                 _handlers[evnt]?.Invoke(stream);
             }
             else
-                Debug.Log($"'{_worldName}' There are no mHandlers for the Event: {evnt}");
+                Debug.LogError($"'{_worldName}' There are no mHandlers for the Event: {evnt}");
 
             stream?.Dispose();
         }
@@ -106,7 +109,7 @@ namespace Natrium.Shared.Systems
                 return true;
             }
 
-            Debug.LogWarning($"'{_worldName}' {ua.Target} {ua.Method} Tried to unsubscribe from {evnt}");
+            //Debug.LogWarning($"'{_worldName}' {ua.Target} {ua.Method} Tried to unsubscribe from {evnt}");
             return false;
         }
     }
