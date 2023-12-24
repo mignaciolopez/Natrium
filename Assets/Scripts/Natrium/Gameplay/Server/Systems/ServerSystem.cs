@@ -62,6 +62,8 @@ namespace Natrium.Gameplay.Server.Systems
 
             foreach (var (reqSrc, reqEntity) in SystemAPI.Query<RefRO<ReceiveRpcCommandRequest>>().WithAll<RpcConnect>().WithEntityAccess())
             {
+                UnityEngine.Debug.Log($"{World.Unmanaged.Name} processing {reqSrc.ValueRO.SourceConnection}'s RpcConnect");
+
                 ecb.AddComponent<NetworkStreamInGame>(reqSrc.ValueRO.SourceConnection);
                 var networkId = _networkIdFromEntity[reqSrc.ValueRO.SourceConnection];
 

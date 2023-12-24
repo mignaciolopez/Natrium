@@ -8,24 +8,17 @@ using Unity.NetCode;
 using Unity.Transforms;
 using UnityEngine;
 using Natrium.Gameplay.Shared.Components;
+using Natrium.Gameplay.Shared;
 
 namespace Natrium.Gameplay.Client.UI
 {
     public class UI : MonoBehaviour
     {
-        private World _clientWorld;
-
         [SerializeField] private GameObject playerTextPrefab;
 
         private Dictionary<Entity, GameObject> _playerNames;
         private void OnEnable()
         {
-            foreach (var world in World.All)
-            {
-                if(world.Name == "ClientWorld")
-                    _clientWorld = world;
-            }
-
             _playerNames = new Dictionary<Entity, GameObject>();
         }
         
@@ -36,7 +29,7 @@ namespace Natrium.Gameplay.Client.UI
 
         private void Update()
         {
-            if (_clientWorld == null || !_clientWorld.IsCreated)
+            if (WorldManager.ClientWorld == null || !WorldManager.ClientWorld.IsCreated)
                 return;
             
             InstantiateTextsForNewConnections();
@@ -44,7 +37,7 @@ namespace Natrium.Gameplay.Client.UI
 
         private void LateUpdate()
         {
-            if (_clientWorld == null || !_clientWorld.IsCreated)
+            if (WorldManager.ClientWorld == null || !WorldManager.ClientWorld.IsCreated)
                 return;
             
             UpdateNamesPositions();
@@ -54,7 +47,7 @@ namespace Natrium.Gameplay.Client.UI
         // ReSharper disable Unity.PerformanceAnalysis
         private void InstantiateTextsForNewConnections()
         {
-            var entityManager = _clientWorld.EntityManager;
+            var entityManager = WorldManager.ClientWorld.EntityManager;
 
             var entities = entityManager.CreateEntityQuery(typeof(LocalTransform), typeof(Player)).ToEntityArray(Allocator.Temp);
 
@@ -81,7 +74,7 @@ namespace Natrium.Gameplay.Client.UI
 
         private void UpdateNamesPositions()
         {
-            var entityManager = _clientWorld.EntityManager;
+            var entityManager = WorldManager.ClientWorld.EntityManager;
 
             foreach (var player in _playerNames.ToList())
             {
@@ -102,15 +95,16 @@ namespace Natrium.Gameplay.Client.UI
 
         private void OnDrawGizmos()
         {
-            if (_clientWorld == null || !_clientWorld.IsCreated)
+            if (WorldManager.ClientWorld == null || !WorldManager.ClientWorld.IsCreated)
                 return;
 
-            DrawClickHits();
+            DebugDrawAttacks();
+            DebugDrawTiles();
         }
 
-        private void DrawClickHits()
+        private void DebugDrawAttacks()
         {
-            var entityManager = _clientWorld.EntityManager;
+            var entityManager = WorldManager.ClientWorld.EntityManager;
 
             var entities = entityManager.CreateEntityQuery(typeof(Attack), typeof(LocalTransform), typeof(GhostOwner)).ToEntityArray(Allocator.Temp);
 
@@ -152,6 +146,27 @@ namespace Natrium.Gameplay.Client.UI
                 }
             }
             
+            entities.Dispose();
+        }
+
+        private void DebugDrawTiles()
+        {
+            var entityManager = WorldManager.ClientWorld.EntityManager;
+
+            var entities = entityManager.CreateEntityQuery(typeof(Tile), typeof(LocalTransform), typeof(GhostOwner)).ToEntityArray(Allocator.Temp);
+
+            foreach (var entity in entities)
+            {
+                var tile = entityManager.GetComponentData<Attack>(entity);
+                var lt = entityManager.GetComponentData<LocalTransform>(entity);
+
+                Gizmos.color = Color.gray;
+                Gizmos.DrawCube(math.round(tile.End), new float3(1, 0.1f, 1));
+
+                Gizmos.color = Color.magenta;
+                Gizmos.DrawLine(lt.Position, tile.End);
+            }
+
             entities.Dispose();
         }
     }
