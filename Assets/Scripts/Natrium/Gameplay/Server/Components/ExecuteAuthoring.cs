@@ -1,7 +1,7 @@
 using Unity.Entities;
 using UnityEngine;
 
-namespace Natrium.Server.Gameplay.Components
+namespace Natrium.Gameplay.Server.Components
 {
     public class ExecuteAuthoring : MonoBehaviour
     {

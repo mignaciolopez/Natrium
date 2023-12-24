@@ -8,6 +8,7 @@ using Unity.Transforms;
 using Natrium.Shared;
 using Natrium.Gameplay.Shared;
 using Natrium.Gameplay.Client.Components;
+using System.Collections.Generic;
 
 namespace Natrium.Gameplay.Server.Systems
 {
@@ -17,6 +18,8 @@ namespace Natrium.Gameplay.Server.Systems
     public partial class ServerSystem : SystemBase
     {
         private static ComponentLookup<NetworkId> _networkIdFromEntity;
+        public static Dictionary<int, Entity> EntitiesPlayer;
+        public static Dictionary<int, Entity> EntitiesConnection;
 
         protected override void OnCreate()
         {
@@ -33,6 +36,9 @@ namespace Natrium.Gameplay.Server.Systems
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
+
+            EntitiesPlayer = new Dictionary<int, Entity>();
+            EntitiesConnection = new Dictionary<int, Entity>();
 
             var client = SystemAPI.GetSingleton<ClientConnectionData>();
 
@@ -67,7 +73,7 @@ namespace Natrium.Gameplay.Server.Systems
                 ecb.AddComponent<NetworkStreamInGame>(reqSrc.ValueRO.SourceConnection);
                 var networkId = _networkIdFromEntity[reqSrc.ValueRO.SourceConnection];
 
-                var player = ecb.Instantiate(prefab);
+                var player = EntityManager.Instantiate(prefab);
                 ecb.SetComponent(player, new GhostOwner { NetworkId = networkId.Value });
 
                 //TODO: Grab Data From Database
@@ -93,6 +99,9 @@ namespace Natrium.Gameplay.Server.Systems
                 ecb.AppendToBuffer(reqSrc.ValueRO.SourceConnection, new LinkedEntityGroup { Value = player });
 
                 ecb.DestroyEntity(reqEntity);
+
+                EntitiesConnection.Add(networkId.Value, reqSrc.ValueRO.SourceConnection);
+                EntitiesPlayer.Add(networkId.Value, player);
 
                 UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Processing ReceiveRpcCommandRequest for Entity: '{reqSrc.ValueRO.SourceConnection}' " +
                     $"Added NetworkStreamInGame for NetworkId Value: '{networkId.Value}' " +

@@ -21,9 +21,6 @@ namespace Natrium.Gameplay.Server.Systems
                     continue;
                 }
 
-                //ghostEntity is the linked entity that contains all the prefab component, LocalTransform, Cube, Colliders, etc...
-                var ghostEntity = EntityManager.GetBuffer<LinkedEntityGroup>(clientEntity.SourceConnection, true)[1].Value;
-
                 var nid = EntityManager.GetComponentData<NetworkId>(clientEntity.SourceConnection);
 
                 UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' RpcAim from {clientEntity.SourceConnection}:{nid.Value} | MouseWorldPosition: {rpcAim.MouseWorldPosition}");
@@ -32,7 +29,7 @@ namespace Natrium.Gameplay.Server.Systems
                 start.y = 10.0f; //ToDo: The plus 10 on y axis, comes from the offset of the camara
                 var end = rpcAim.MouseWorldPosition;
 
-                ecb.AddComponent(ghostEntity, new RaycastCommand { Start = start, End = end });
+                ecb.AddComponent(ServerSystem.EntitiesPlayer[nid.Value], new RaycastCommand { Start = start, End = end });
                 ecb.DestroyEntity(rpcEntity);
             }
 
@@ -60,20 +57,13 @@ namespace Natrium.Gameplay.Server.Systems
                 else
                 {
                     var rpcEntity = ecb.CreateEntity();
-                    ecb.AddComponent(rpcEntity, new Tile
+                    ecb.AddComponent(rpcEntity, new RpcTile
                     {
                         Start = ro.Start,
                         End = ro.End,
                         NetworkIdSource = networkIDSource
                     });
-                    foreach (var (nsig, nid, srcEntity) in SystemAPI.Query<NetworkStreamInGame, NetworkId>().WithEntityAccess())
-                    {
-                        if (nid.Value == networkIDSource)
-                        {
-                            ecb.AddComponent(rpcEntity, new SendRpcCommandRequest { TargetConnection = srcEntity });
-                            break;
-                        }
-                    }
+                    ecb.AddComponent(rpcEntity, new SendRpcCommandRequest { TargetConnection = ServerSystem.EntitiesConnection[networkIDSource] });
                 }
 
                 ecb.RemoveComponent<RaycastOutput>(entity);

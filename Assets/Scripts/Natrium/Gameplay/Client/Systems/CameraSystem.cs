@@ -4,7 +4,7 @@ using UnityEngine;
 using Natrium.Gameplay.Client.Components;
 using Unity.NetCode;
 
-namespace Natrium.Client.Gameplay.Systems
+namespace Natrium.Gameplay.Client.Systems
 {
     [UpdateInGroup(typeof(LateSimulationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]

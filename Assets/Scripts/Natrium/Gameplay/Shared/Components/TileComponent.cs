@@ -3,7 +3,7 @@ using Unity.NetCode;
 
 namespace Natrium.Gameplay.Shared.Components
 {
-    public struct Tile : IRpcCommand
+    public struct RpcTile : IRpcCommand
     {
         public float3 Start;
         public float3 End;

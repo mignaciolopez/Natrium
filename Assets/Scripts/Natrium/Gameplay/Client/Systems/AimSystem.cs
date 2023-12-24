@@ -2,10 +2,11 @@ using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
 using Unity.Collections;
+using Natrium.Shared;
 using Natrium.Shared.Systems;
 using Natrium.Gameplay.Shared.Components;
 
-namespace Natrium.Client.Gameplay.Systems
+namespace Natrium.Gameplay.Client.Systems
 {    
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial class AimSystem : SystemBase
@@ -13,13 +14,13 @@ namespace Natrium.Client.Gameplay.Systems
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
-            EventSystem.Subscribe(Shared.Events.OnPrimaryClick, OnPrimaryClick);
+            EventSystem.Subscribe(Events.OnPrimaryClick, OnPrimaryClick);
         }
 
         protected override void OnStopRunning()
         {
             base.OnStopRunning();
-            EventSystem.UnSubscribe(Shared.Events.OnPrimaryClick, OnPrimaryClick);
+            EventSystem.UnSubscribe(Events.OnPrimaryClick, OnPrimaryClick);
         }
 
         protected override void OnUpdate()
@@ -27,7 +28,7 @@ namespace Natrium.Client.Gameplay.Systems
             
         }
 
-        private void OnPrimaryClick(Shared.Stream stream)
+        private void OnPrimaryClick(Stream stream)
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 

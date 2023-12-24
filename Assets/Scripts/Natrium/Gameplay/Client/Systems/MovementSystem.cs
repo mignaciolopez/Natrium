@@ -6,7 +6,7 @@ using UnityEngine;
 using Natrium.Gameplay.Shared;
 using Natrium.Gameplay.Shared.Components;
 
-namespace Natrium.Client.Gameplay.Systems
+namespace Natrium.Gameplay.Client.Systems
 {
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation)]

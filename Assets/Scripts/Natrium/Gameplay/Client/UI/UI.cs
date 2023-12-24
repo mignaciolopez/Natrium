@@ -17,9 +17,13 @@ namespace Natrium.Gameplay.Client.UI
         [SerializeField] private GameObject playerTextPrefab;
 
         private Dictionary<Entity, GameObject> _playerNames;
+
+        private RpcTile _lastTile;
+        private bool _receivedTile = false;
         private void OnEnable()
         {
             _playerNames = new Dictionary<Entity, GameObject>();
+            _lastTile = new RpcTile();
         }
         
         private void OnDisable()
@@ -153,18 +157,20 @@ namespace Natrium.Gameplay.Client.UI
         {
             var entityManager = WorldManager.ClientWorld.EntityManager;
 
-            var entities = entityManager.CreateEntityQuery(typeof(Tile), typeof(LocalTransform), typeof(GhostOwner)).ToEntityArray(Allocator.Temp);
+            var entities = entityManager.CreateEntityQuery(typeof(RpcTile), typeof(ReceiveRpcCommandRequest)).ToEntityArray(Allocator.Temp);
 
             foreach (var entity in entities)
             {
-                var tile = entityManager.GetComponentData<Attack>(entity);
-                var lt = entityManager.GetComponentData<LocalTransform>(entity);
+                _lastTile = entityManager.GetComponentData<RpcTile>(entity);
+                _receivedTile = true;
+            }
 
+            entityManager.DestroyEntity(entities);
+
+            if (_receivedTile)
+            {
                 Gizmos.color = Color.gray;
-                Gizmos.DrawCube(math.round(tile.End), new float3(1, 0.1f, 1));
-
-                Gizmos.color = Color.magenta;
-                Gizmos.DrawLine(lt.Position, tile.End);
+                Gizmos.DrawCube(math.round(_lastTile.End), new float3(1, 0.1f, 1));
             }
 
             entities.Dispose();

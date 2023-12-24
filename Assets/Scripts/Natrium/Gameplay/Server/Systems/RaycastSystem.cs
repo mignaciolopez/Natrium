@@ -3,7 +3,7 @@ using Unity.Physics;
 using Unity.Collections;
 using Natrium.Gameplay.Server.Components;
 
-namespace Natrium.Server.Gameplay.Systems
+namespace Natrium.Gameplay.Server.Systems
 {
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial class RaycastSystem : SystemBase
@@ -52,7 +52,7 @@ namespace Natrium.Server.Gameplay.Systems
 
                 if (_collisionWorld.CastRay(input, out var hit))
                 {
-                    UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Entity {entity} Hit {hit.Entity}");
+                    UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' {entity} Hit {hit.Entity}");
                     ecb.AddComponent(entity, new RaycastOutput { Hit = hit, Start = rc.Start, End = rc.End });
                 }
                 else
