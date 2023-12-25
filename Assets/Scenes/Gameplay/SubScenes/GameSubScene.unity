@@ -133,7 +133,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 395158843}
-  - component: {fileID: 395158842}
+  - component: {fileID: 395158844}
   m_Layer: 0
   m_Name: Execute
   m_TagString: Untagged
@@ -141,19 +141,6 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!114 &395158842
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 395158841}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a5c5c1737850f834988e468435a30b2a, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  movementSystem: 1
 --- !u!4 &395158843
 Transform:
   m_ObjectHideFlags: 0
@@ -169,6 +156,27 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &395158844
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 395158841}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a5c5c1737850f834988e468435a30b2a, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  AimSystem: 1
+  MeeleSystem: 1
+  MovementSystem: 1
+  CameraSystem: 1
+  ClientSystem: 1
+  InputSystem: 1
+  AttackSystem: 1
+  RaycastSystem: 1
+  ServerSystem: 1
 --- !u!1 &903655829
 GameObject:
   m_ObjectHideFlags: 0
@@ -517,7 +525,6 @@ GameObject:
   m_Component:
   - component: {fileID: 1731528804}
   - component: {fileID: 1731528805}
-  - component: {fileID: 1731528806}
   m_Layer: 0
   m_Name: Systems Settings
   m_TagString: Untagged
@@ -552,6 +559,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b42a5048583ce524388c3898fd958572, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  IP: 127.0.0.1
+  Port: 7979
   movementType: 0
   addCustomClientTickRate: 0
   commandAgeCorrectionFraction: 0.1
@@ -576,20 +585,6 @@ MonoBehaviour:
   predictionTimeScaleMin: 0.9
   useTargetCommandSlack: 0
   targetCommandSlack: 0
---- !u!114 &1731528806
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1731528802}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1fadebf1f825c0c448916ee451df6013, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  IP: 127.0.0.1
-  Port: 7979
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

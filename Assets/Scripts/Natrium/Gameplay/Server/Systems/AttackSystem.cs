@@ -1,18 +1,22 @@
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+using Unity.Entities;
+using Natrium.Gameplay.Shared.Components;
+using Natrium.Gameplay.Server.Components;
 
-public class AttackSystem : MonoBehaviour
+namespace Natrium.Gameplay.Server.Systems
 {
-    // Start is called before the first frame update
-    void Start()
+    [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
+    public partial class AttackSystem : SystemBase
     {
-        
-    }
+        protected override void OnCreate()
+        {
+            base.OnCreate();
 
-    // Update is called once per frame
-    void Update()
-    {
-        
+            RequireForUpdate<AttackSystemExecute>();
+        }
+
+        protected override void OnUpdate()
+        {
+            
+        }
     }
 }

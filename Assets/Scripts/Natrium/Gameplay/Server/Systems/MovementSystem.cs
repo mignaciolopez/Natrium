@@ -20,12 +20,12 @@ namespace Natrium.Gameplay.Server.Systems
 
         protected override void OnCreate()
         {
+            base.OnCreate();
+
             RequireForUpdate<MovementSystemExecute>();
             RequireForUpdate<SystemsSettings>();
 
             _logOnce = true;
-
-            base.OnCreate();
         }
 
         protected override void OnUpdate()

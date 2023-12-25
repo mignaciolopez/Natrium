@@ -9,6 +9,13 @@ namespace Natrium.Gameplay.Server.Systems
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial class AimSystem : SystemBase
     {
+        protected override void OnCreate()
+        {
+            base.OnCreate();
+
+            RequireForUpdate<AimSystemExecute>();
+        }
+
         protected override void OnUpdate()
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);

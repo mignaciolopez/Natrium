@@ -9,6 +9,7 @@ using Natrium.Shared;
 using Natrium.Gameplay.Shared;
 using Natrium.Gameplay.Client.Components;
 using System.Collections.Generic;
+using UnityEditor.PackageManager;
 
 namespace Natrium.Gameplay.Server.Systems
 {
@@ -24,7 +25,9 @@ namespace Natrium.Gameplay.Server.Systems
         protected override void OnCreate()
         {
             base.OnCreate();
-            //RequireForUpdate<PlayerSpawnerData>();
+            
+            RequireForUpdate<ServerSystemExecute>();
+            RequireForUpdate<SystemsSettings>();
 
             //var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<Rpc_Connect>().WithAll<ReceiveRpcCommandRequest>();
             //RequireForUpdate(GetEntityQuery(builder));
@@ -40,10 +43,15 @@ namespace Natrium.Gameplay.Server.Systems
             EntitiesPlayer = new Dictionary<int, Entity>();
             EntitiesConnection = new Dictionary<int, Entity>();
 
-            var client = SystemAPI.GetSingleton<ClientConnectionData>();
+            var ss = SystemAPI.GetSingleton<SystemsSettings>();
 
             using var query = WorldManager.ServerWorld.EntityManager.CreateEntityQuery(ComponentType.ReadWrite<NetworkStreamDriver>());
-            query.GetSingletonRW<NetworkStreamDriver>().ValueRW.Listen((ClientServerBootstrap.DefaultListenAddress.WithPort(client.Port)));
+            query.GetSingletonRW<NetworkStreamDriver>().ValueRW.Listen((ClientServerBootstrap.DefaultListenAddress.WithPort(ss.Port)));
+        }
+
+        protected override void OnStopRunning()
+        {
+            base.OnStopRunning();
         }
 
         protected override void OnUpdate()

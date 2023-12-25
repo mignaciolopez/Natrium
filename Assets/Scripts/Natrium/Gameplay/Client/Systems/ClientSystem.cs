@@ -21,7 +21,8 @@ namespace Natrium.Gameplay.Client.Systems
         {
             base.OnCreate();
 
-            //RequireForUpdate<ClientConnectionData>();
+            RequireForUpdate<ClientSystemExecute>();
+            RequireForUpdate<SystemsSettings>();
         }
 
         protected override void OnStartRunning()
@@ -49,15 +50,15 @@ namespace Natrium.Gameplay.Client.Systems
 
         private void OnKeyCodeReturn(Stream stream)
         {
-            var client = SystemAPI.GetSingleton<ClientConnectionData>();
+            var ss = SystemAPI.GetSingleton<SystemsSettings>();
 
-            var serverAddress = IPAddress.Parse(client.IP.ToString());
+            var serverAddress = IPAddress.Parse(ss.IP.ToString());
             var nativeArrayAddress = new NativeArray<byte>(serverAddress.GetAddressBytes().Length, Allocator.Temp);
             nativeArrayAddress.CopyFrom(serverAddress.GetAddressBytes());
 
             var endpoint = NetworkEndpoint.AnyIpv4;
             endpoint.SetRawAddressBytes(nativeArrayAddress);
-            endpoint.Port = client.Port;
+            endpoint.Port = ss.Port;
 
             using var query = WorldManager.ClientWorld.EntityManager.CreateEntityQuery(ComponentType.ReadWrite<NetworkStreamDriver>());
             var driver = query.GetSingletonRW<NetworkStreamDriver>().ValueRW;

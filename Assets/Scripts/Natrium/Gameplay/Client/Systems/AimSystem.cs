@@ -11,6 +11,13 @@ namespace Natrium.Gameplay.Client.Systems
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial class AimSystem : SystemBase
     {
+        protected override void OnCreate()
+        {
+            base.OnCreate();
+
+            RequireForUpdate<AimSystemExecute>();
+        }
+
         protected override void OnStartRunning()
         {
             base.OnStartRunning();

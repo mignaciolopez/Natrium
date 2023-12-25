@@ -1,6 +1,7 @@
 using UnityEngine;
 using Unity.Entities;
 using Unity.NetCode;
+using Unity.Collections;
 
 namespace Natrium.Gameplay.Shared
 {
@@ -11,11 +12,19 @@ namespace Natrium.Gameplay.Shared
         Free
     }
 
+
+
     [DisallowMultipleComponent]
     public class SystemsSettingsAuthoring : MonoBehaviour
     {
-        #region Movement System
-        [Header("Movement System")]
+        #region ConnectionSettings
+        [Header("ConnectionSettings")]
+        public string IP = "127.0.0.1";
+        public ushort Port = 7979;
+        #endregion //ConnectionSettings
+
+        #region MovementSystem
+        [Header("MovementSystem")]
             public MovementType movementType = MovementType.Free;
 
         #endregion
@@ -76,15 +85,19 @@ namespace Natrium.Gameplay.Shared
         public override void Bake(SystemsSettingsAuthoring authoring)
         {
             var e = GetEntity(TransformUsageFlags.None);
-
-            #region Movement System
             {
                 AddComponent(e, new SystemsSettings
                 {
+                    #region ConnectionSettings
+                    IP = authoring.IP,
+                    Port = authoring.Port,
+                    #endregion //ConnectionSettings
+
+                    #region MovementSystem
                     MovementType = authoring.movementType
+                    #endregion //MovementSystem
                 });
             }
-            #endregion
 
             #region NetCode
             {
@@ -125,7 +138,13 @@ namespace Natrium.Gameplay.Shared
 
     public struct SystemsSettings : IComponentData
     {
+        #region ConnectionSettings
+        public FixedString32Bytes IP;
+        public ushort Port;
+        #endregion //ConnectionSettings
+
+        #region MovementSystem
         public MovementType MovementType;
-        
+        #endregion //MovementSystem
     }
 }

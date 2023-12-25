@@ -2,6 +2,7 @@ using Unity.Entities;
 using Unity.Physics;
 using Unity.Collections;
 using Natrium.Gameplay.Server.Components;
+using Natrium.Gameplay.Shared.Components;
 
 namespace Natrium.Gameplay.Server.Systems
 {
@@ -15,6 +16,7 @@ namespace Natrium.Gameplay.Server.Systems
         {
             base.OnCreate();
 
+            RequireForUpdate<RaycastSystemExecute>();
             RequireForUpdate<RaycastCommand>();
             RequireForUpdate<PhysicsWorldSingleton>();
         }

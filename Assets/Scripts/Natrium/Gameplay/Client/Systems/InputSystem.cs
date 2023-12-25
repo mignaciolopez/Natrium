@@ -12,6 +12,13 @@ namespace Natrium.Gameplay.Client.Systems
     [UpdateInGroup(typeof(GhostInputSystemGroup))]
     public partial class InputSystem : SystemBase
     {
+        protected override void OnCreate()
+        {
+            base.OnCreate();
+
+            RequireForUpdate<InputSystemExecute>();
+        }
+
         protected override void OnUpdate()
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
