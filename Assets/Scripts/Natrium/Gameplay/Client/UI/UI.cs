@@ -14,7 +14,10 @@ namespace Natrium.Gameplay.Client.UI
 {
     public class UI : MonoBehaviour
     {
-        [SerializeField] private GameObject playerTextPrefab;
+        [SerializeField] private GameObject _playerTextPrefab;
+        [SerializeField] private GameObject _debugTilePrefab;
+
+        private GameObject _lastDebugTile;
 
         private Dictionary<Entity, GameObject> _playerNames;
 
@@ -24,11 +27,15 @@ namespace Natrium.Gameplay.Client.UI
         {
             _playerNames = new Dictionary<Entity, GameObject>();
             _lastTile = new RpcTile();
+
+            _lastDebugTile = Instantiate(_debugTilePrefab);
+            _lastDebugTile.GetComponentInChildren<SpriteRenderer>().color = Color.gray;
+            _lastDebugTile.SetActive(false);
         }
         
         private void OnDisable()
         {
-            
+            Destroy(_lastDebugTile);
         }
 
         private void Update()
@@ -37,6 +44,8 @@ namespace Natrium.Gameplay.Client.UI
                 return;
             
             InstantiateTextsForNewConnections();
+            DrawDebugTiles();
+            DrawDebugAttacks();
         }
 
         private void LateUpdate()
@@ -62,7 +71,7 @@ namespace Natrium.Gameplay.Client.UI
                     if (_playerNames.ContainsKey(entity))
                         continue;
 
-                    var playerText = Instantiate(playerTextPrefab, gameObject.transform);
+                    var playerText = Instantiate(_playerTextPrefab, gameObject.transform);
                     playerText.SetActive(false);
                     var textMeshPro = playerText.GetComponent<TMP_Text>();
 
@@ -102,58 +111,32 @@ namespace Natrium.Gameplay.Client.UI
             if (WorldManager.ClientWorld == null || !WorldManager.ClientWorld.IsCreated)
                 return;
 
-            DebugDrawAttacks();
-            DebugDrawTiles();
+            //DrawDebugAttacks();
+            //DrawDebugTiles();
         }
 
-        private void DebugDrawAttacks()
+        private void DrawDebugAttacks()
         {
             var entityManager = WorldManager.ClientWorld.EntityManager;
 
-            var entities = entityManager.CreateEntityQuery(typeof(Attack), typeof(LocalTransform), typeof(GhostOwner)).ToEntityArray(Allocator.Temp);
+            var entities = entityManager.CreateEntityQuery(typeof(Attack), typeof(ReceiveRpcCommandRequest)).ToEntityArray(Allocator.Temp);
 
             foreach (var entity in entities)
             {
                 var attack = entityManager.GetComponentData<Attack>(entity);
-                var lt = entityManager.GetComponentData<LocalTransform>(entity);
 
-                Gizmos.color = Color.gray;
-                Gizmos.DrawCube(math.round(attack.End), new float3(1, 0.1f, 1));
-
-                var end = float3.zero;
-
-                if (attack.NetworkIdTarget != 0)
-                {
-                    var entitiesTarget = entityManager.CreateEntityQuery(typeof(GhostOwner), typeof(LocalTransform)).ToEntityArray(Allocator.Temp);
-                    foreach (var entityTarget in entitiesTarget)
-                    {
-                        var goTarget = entityManager.GetComponentData<GhostOwner>(entityTarget);
-
-                        if (goTarget.NetworkId != attack.NetworkIdTarget)
-                            continue;
-
-                        end = entityManager.GetComponentData<LocalTransform>(entityTarget).Position;
-                        break;
-                    }
-
-                    entitiesTarget.Dispose();
-                }
-                else
-                {
-                    end = attack.End;
-                }
-
-                if (end is not { x: 0, y: 0, z: 0 })
-                {
-                    Gizmos.color = Color.magenta;
-                    Gizmos.DrawLine(lt.Position, end);
-                }
+                attack.End.y = 1.6f;
+                var gameObject = Instantiate(_debugTilePrefab, math.round(attack.End), Quaternion.identity);
+                gameObject.GetComponentInChildren<SpriteRenderer>().color = Color.magenta;
+                Destroy(gameObject, 1.0f);
             }
-            
+
+            entityManager.DestroyEntity(entities);
+
             entities.Dispose();
         }
 
-        private void DebugDrawTiles()
+        private void DrawDebugTiles()
         {
             var entityManager = WorldManager.ClientWorld.EntityManager;
 
@@ -163,14 +146,19 @@ namespace Natrium.Gameplay.Client.UI
             {
                 _lastTile = entityManager.GetComponentData<RpcTile>(entity);
                 _receivedTile = true;
+
+                if (!_lastDebugTile.activeSelf)
+                    _lastDebugTile.SetActive(true);
+
+                _lastDebugTile.transform.position = math.round(_lastTile.End);
             }
 
             entityManager.DestroyEntity(entities);
 
             if (_receivedTile)
             {
-                Gizmos.color = Color.gray;
-                Gizmos.DrawCube(math.round(_lastTile.End), new float3(1, 0.1f, 1));
+                //Gizmos.color = Color.gray;
+                //Gizmos.DrawCube(math.round(_lastTile.End), new float3(1, 0.1f, 1));
             }
 
             entities.Dispose();

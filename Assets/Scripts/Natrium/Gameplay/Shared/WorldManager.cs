@@ -19,7 +19,7 @@ namespace Natrium.Gameplay.Shared
 
         private void Awake()
         {
-            _role = GetCurrentRole();
+            UpdateCurrentRole();
             InitWorlds();
         }
 
@@ -66,7 +66,7 @@ namespace Natrium.Gameplay.Shared
             return true;
         }
 
-        private Role GetCurrentRole()
+        private void UpdateCurrentRole()
         {
             switch (Application.platform)
             {
@@ -74,17 +74,27 @@ namespace Natrium.Gameplay.Shared
                 case RuntimePlatform.OSXServer:
                 case RuntimePlatform.LinuxServer:
                     {
-                        return Role.Server;
+                        _role =  Role.Server;
+                        break;
                     }
+#if UNITY_EDITOR
                 case RuntimePlatform.WindowsEditor:
                 case RuntimePlatform.OSXEditor:
                 case RuntimePlatform.LinuxEditor:
                     {
-                        return Role.ServerAndClient;
+                        if (MultiplayerPlayModePreferences.RequestedPlayType == ClientServerBootstrap.PlayType.Server)
+                            _role = Role.Server;
+                        else if (MultiplayerPlayModePreferences.RequestedPlayType == ClientServerBootstrap.PlayType.ClientAndServer)
+                            _role = Role.ServerAndClient;
+                        else
+                            _role = Role.Client;                    
+                        break;
                     }
+#endif
                 default:
                     {
-                        return Role.Client;
+                        _role = Role.Client;
+                        break;
                     }
             }
         }

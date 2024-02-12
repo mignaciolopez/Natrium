@@ -1,18 +1,21 @@
 using UnityEngine;
 
-public class FPS : MonoBehaviour
+namespace Natrium.Shared
 {
-    public int targetFrameRate = 30;
-
-    private void Update()
+    public class FPS : MonoBehaviour
     {
-        if (Application.targetFrameRate != targetFrameRate)
-            Set(targetFrameRate);
-    }
+        public int targetFrameRate = 30;
 
-    public void Set(int target)
-    {
-        QualitySettings.vSyncCount = 0;
-        Application.targetFrameRate = target;
+        private void Update()
+        {
+            if (Application.targetFrameRate != targetFrameRate)
+                Set(targetFrameRate);
+        }
+
+        public void Set(int target)
+        {
+            QualitySettings.vSyncCount = 0;
+            Application.targetFrameRate = target;
+        }
     }
 }

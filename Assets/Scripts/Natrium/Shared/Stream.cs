@@ -52,7 +52,7 @@ namespace Natrium.Shared
 
             if (stringLength < bytes.Length)
             {
-                Debug.LogWarning("String truncated.");
+                UnityEngine.Debug.LogWarning("String truncated.");
                 var newBytes = new byte[stringLength];
                 Array.Copy(bytes, 0, newBytes, 0, stringLength);
                 Write(newBytes, 0, newBytes.Length);

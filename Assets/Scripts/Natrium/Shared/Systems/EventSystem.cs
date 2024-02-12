@@ -27,7 +27,7 @@ namespace Natrium.Shared.Systems
             foreach (var evnt in (Events[])Enum.GetValues(typeof(Events)))
             {
                 _handlers.Add(evnt, new CustomUnityEvent());
-                Debug.Log($"{_worldName} Handler created for {evnt}");
+                UnityEngine.Debug.Log($"{_worldName} Handler created for {evnt}");
             }
 
             _worldName = World.Unmanaged.Name;
@@ -54,7 +54,7 @@ namespace Natrium.Shared.Systems
 
             _handlers.Clear();
             //_handlers = null;
-            Debug.Log($"{_worldName} OnDestroy");
+            UnityEngine.Debug.Log($"{_worldName} OnDestroy");
         }
 
         protected override void OnUpdate()
@@ -67,7 +67,7 @@ namespace Natrium.Shared.Systems
 
         public static void EnqueueEvent(Events evnt, Stream stream = null)
         {
-            Debug.Log($"'{_worldName}' Enqueuing Event: {evnt}");
+            UnityEngine.Debug.Log($"'{_worldName}' Enqueuing Event: {evnt}");
             _eventsQueue.Enqueue(new Tuple<Events, Stream>(evnt, stream));
         }
         
@@ -78,11 +78,11 @@ namespace Natrium.Shared.Systems
                 if (stream != null)
                     stream.Position = 0;
 
-                Debug.Log($"'{_worldName}' Dispatching Event: {evnt}");
+                UnityEngine.Debug.Log($"'{_worldName}' Dispatching Event: {evnt}");
                 _handlers[evnt]?.Invoke(stream);
             }
             else
-                Debug.LogError($"'{_worldName}' There are no mHandlers for the Event: {evnt}");
+                UnityEngine.Debug.LogError($"'{_worldName}' There are no mHandlers for the Event: {evnt}");
 
             stream?.Dispose();
         }
@@ -92,11 +92,11 @@ namespace Natrium.Shared.Systems
             if (_handlers.ContainsKey(evnt))
             {
                 _handlers[evnt].AddListener(ua);
-                Debug.Log($"'{_worldName}' {ua.Target} {ua.Method} Subscribed to {evnt}");
+                UnityEngine.Debug.Log($"'{_worldName}' {ua.Target} {ua.Method} Subscribed to {evnt}");
                 return true;
             }
 
-            Debug.LogWarning($"'{_worldName}' {ua.Target} {ua.Method} Tried to subscribe to {evnt}");
+            UnityEngine.Debug.LogWarning($"'{_worldName}' {ua.Target} {ua.Method} Tried to subscribe to {evnt}");
             return false;
         }
 
@@ -105,7 +105,7 @@ namespace Natrium.Shared.Systems
             if (_handlers.ContainsKey(evnt))
             {
                 _handlers[evnt].RemoveListener(ua);
-                Debug.Log($"'{_worldName}' {ua.Target} {ua.Method} UnSubscribed from {evnt}");
+                UnityEngine.Debug.Log($"'{_worldName}' {ua.Target} {ua.Method} UnSubscribed from {evnt}");
                 return true;
             }
 

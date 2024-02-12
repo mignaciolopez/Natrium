@@ -7,9 +7,7 @@ using Unity.Mathematics;
 using Unity.Transforms;
 using Natrium.Shared;
 using Natrium.Gameplay.Shared;
-using Natrium.Gameplay.Client.Components;
 using System.Collections.Generic;
-using UnityEditor.PackageManager;
 
 namespace Natrium.Gameplay.Server.Systems
 {
@@ -19,8 +17,6 @@ namespace Natrium.Gameplay.Server.Systems
     public partial class ServerSystem : SystemBase
     {
         private static ComponentLookup<NetworkId> _networkIdFromEntity;
-        public static Dictionary<int, Entity> EntitiesPlayer;
-        public static Dictionary<int, Entity> EntitiesConnection;
 
         protected override void OnCreate()
         {
@@ -39,9 +35,6 @@ namespace Natrium.Gameplay.Server.Systems
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
-
-            EntitiesPlayer = new Dictionary<int, Entity>();
-            EntitiesConnection = new Dictionary<int, Entity>();
 
             var ss = SystemAPI.GetSingleton<SystemsSettings>();
 
@@ -107,9 +100,6 @@ namespace Natrium.Gameplay.Server.Systems
                 ecb.AppendToBuffer(reqSrc.ValueRO.SourceConnection, new LinkedEntityGroup { Value = player });
 
                 ecb.DestroyEntity(reqEntity);
-
-                EntitiesConnection.Add(networkId.Value, reqSrc.ValueRO.SourceConnection);
-                EntitiesPlayer.Add(networkId.Value, player);
 
                 UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Processing ReceiveRpcCommandRequest for Entity: '{reqSrc.ValueRO.SourceConnection}' " +
                     $"Added NetworkStreamInGame for NetworkId Value: '{networkId.Value}' " +
