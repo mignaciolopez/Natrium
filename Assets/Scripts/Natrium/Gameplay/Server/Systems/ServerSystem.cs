@@ -7,7 +7,6 @@ using Unity.Mathematics;
 using Unity.Transforms;
 using Natrium.Shared;
 using Natrium.Gameplay.Shared;
-using System.Collections.Generic;
 
 namespace Natrium.Gameplay.Server.Systems
 {
@@ -96,12 +95,19 @@ namespace Natrium.Gameplay.Server.Systems
                 ecb.SetComponent(player, new MaxHealth() { Value = 100 });
                 ecb.SetComponent(player, new DamagePoints() { Value = 10.0f });
 
+                var color = new float3(UnityEngine.Random.Range(0.0f, 1.0f), UnityEngine.Random.Range(0.0f, 1.0f), UnityEngine.Random.Range(0.0f, 1.0f));
+
+                ecb.SetComponent(player, new DebugColor
+                {
+                    Value = color
+                });
+
                 // Add the player to the linked entity group so it is destroyed automatically on disconnect
                 ecb.AppendToBuffer(reqSrc.ValueRO.SourceConnection, new LinkedEntityGroup { Value = player });
 
                 ecb.DestroyEntity(reqEntity);
 
-                UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Processing ReceiveRpcCommandRequest for Entity: '{reqSrc.ValueRO.SourceConnection}' " +
+                UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Processing RpcConnect for Entity: '{reqSrc.ValueRO.SourceConnection}' " +
                     $"Added NetworkStreamInGame for NetworkId Value: '{networkId.Value}' " +
                     $"Instantiate prefab: '{prefabName}'" + $"SetComponent: new GhostOwner " +
                     $"Add LinkedEntityGroup to '{prefabName}'.");

@@ -27,6 +27,7 @@ namespace Natrium.Gameplay.Shared.Components
             AddComponent<Health>(entity);
             AddComponent<MaxHealth>(entity);
             AddComponent<DamagePoints>(entity);
+            AddComponent<DebugColor>(entity);
         }
     }
 
@@ -65,7 +66,13 @@ namespace Natrium.Gameplay.Shared.Components
         [GhostField(Quantization = 100)]
         public float Value;
     }
-    
+
+    public struct DebugColor : IComponentData
+    {
+        [GhostField(Quantization = 100)]
+        public float3 Value;
+    }
+
     [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
     public struct PlayerInput : IInputComponentData
     {

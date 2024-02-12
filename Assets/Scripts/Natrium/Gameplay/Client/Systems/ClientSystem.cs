@@ -4,11 +4,14 @@ using Natrium.Shared;
 using Unity.Collections;
 using Unity.NetCode;
 using Natrium.Gameplay.Shared.Components;
+using Natrium.Gameplay.Shared.Utilities;
 using Natrium.Gameplay.Shared;
 using System.Net;
 using Unity.Networking.Transport;
 using Natrium.Gameplay.Client.Components;
 using System;
+using Unity.Mathematics;
+using Unity.Rendering;
 
 namespace Natrium.Gameplay.Client.Systems
 {
@@ -28,8 +31,6 @@ namespace Natrium.Gameplay.Client.Systems
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
-            EventSystem.Subscribe(Events.OnConnected, OnConnected);
-            EventSystem.Subscribe(Events.OnDisconnected, OnDisconnected);
             EventSystem.Subscribe(Events.OnKeyCodeReturn, OnKeyCodeReturn);
             EventSystem.Subscribe(Events.OnKeyCodeEscape, OnKeyCodeEscape);
         }
@@ -37,15 +38,29 @@ namespace Natrium.Gameplay.Client.Systems
         protected override void OnStopRunning()
         {
             base.OnStopRunning();
-            EventSystem.UnSubscribe(Events.OnConnected, OnConnected);
-            EventSystem.UnSubscribe(Events.OnDisconnected, OnDisconnected);
             EventSystem.UnSubscribe(Events.OnKeyCodeReturn, OnKeyCodeReturn);
             EventSystem.UnSubscribe(Events.OnKeyCodeEscape, OnKeyCodeEscape);
         }
 
         protected override void OnUpdate()
         {
-            OnConnected(null);
+            OnConnect(null);
+
+            var ecb = new EntityCommandBuffer(Allocator.Temp);
+
+            foreach (var (go, dc, e) in SystemAPI.Query<GhostOwner, DebugColor>().WithAll<GhostOwnerIsLocal>().WithEntityAccess())
+            {
+                var entityPrefab = Utils.GetEntityPrefab(go.NetworkId, EntityManager);
+
+                var prefabGroup = EntityManager.GetBuffer<LinkedEntityGroup>(entityPrefab);
+                ecb.AddComponent(prefabGroup[1].Value, new URPMaterialPropertyBaseColor()
+                {
+                    Value = new float4(dc.Value, 1.0f)
+                });
+            }
+
+            ecb.Playback(EntityManager);
+            ecb.Dispose();
         }
 
         private void OnKeyCodeReturn(Stream stream)
@@ -82,15 +97,12 @@ namespace Natrium.Gameplay.Client.Systems
             ecb.Dispose();
         }
 
-        private void OnConnected(Stream stream)
+        private void OnConnect(Stream stream)
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
-            var found = false;
-
             foreach (var (nId, e) in SystemAPI.Query<NetworkId>().WithEntityAccess().WithNone<NetworkStreamInGame>())
             {
-                found = true;
                 UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Connecting... Found Entity: {e} NetworkId: {nId.Value}");
 
                 ecb.AddComponent<NetworkStreamInGame>(e);
@@ -101,16 +113,11 @@ namespace Natrium.Gameplay.Client.Systems
                 ecb.AddComponent(req, new SendRpcCommandRequest { TargetConnection = e });
             }
 
-            if (!found)
-            {
-                //UnityEngine.Debug.LogWarning($"'{World.Unmanaged.Name}' Entity Not Found");
-            }
-
             ecb.Playback(EntityManager);
             ecb.Dispose();
         }
 
-        private void OnDisconnected(Stream stream)
+        private void OnDisconnect(Stream stream)
         {
             throw new NotImplementedException("OnDisconnected");
         }

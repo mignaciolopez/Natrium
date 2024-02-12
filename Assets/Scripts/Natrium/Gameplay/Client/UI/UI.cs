@@ -9,6 +9,7 @@ using Unity.Transforms;
 using UnityEngine;
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Gameplay.Shared;
+using Natrium.Gameplay.Shared.Utilities;
 
 namespace Natrium.Gameplay.Client.UI
 {
@@ -125,12 +126,16 @@ namespace Natrium.Gameplay.Client.UI
             {
                 var attack = entityManager.GetComponentData<Attack>(entity);
 
+                var entitySource = Utils.GetEntityPrefab(attack.NetworkIdSource, entityManager);
+                var DebugColor = entityManager.GetComponentData<DebugColor>(entitySource);
+
                 attack.End.y = 1.6f;
                 var gameObject = Instantiate(_debugTilePrefab, math.round(attack.End), Quaternion.identity);
-                gameObject.GetComponentInChildren<SpriteRenderer>().color = Color.magenta;
+                gameObject.GetComponentInChildren<SpriteRenderer>().color = new Color(DebugColor.Value.x, DebugColor.Value.y, DebugColor.Value.z);
                 Destroy(gameObject, 1.0f);
             }
 
+            //UI should not Consume this entities
             entityManager.DestroyEntity(entities);
 
             entities.Dispose();
