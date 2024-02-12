@@ -45,8 +45,16 @@ namespace Natrium.Gameplay.Client.Systems
                 EventSystem.EnqueueEvent(Natrium.Shared.Events.OnKeyCodeReturn);
             if (Input.GetKeyUp(KeyCode.Escape))
                 EventSystem.EnqueueEvent(Natrium.Shared.Events.OnKeyCodeEscape);
-            if (Input.GetKeyUp(KeyCode.LeftControl) || Input.GetKeyUp(KeyCode.RightControl))
-                throw new NotImplementedException("Input KeyCode.LeftControl || KeyCode.RightControl");
+            //if (Input.GetKeyUp(KeyCode.LeftControl) || Input.GetKeyUp(KeyCode.RightControl))
+            //    throw new NotImplementedException("Input KeyCode.LeftControl || KeyCode.RightControl");
+
+            if (Input.GetKeyUp(KeyCode.F11))
+            {
+                if (Screen.fullScreen)
+                    Screen.fullScreenMode = FullScreenMode.Windowed;
+                else
+                    Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
+            }
 
             ecb.Playback(EntityManager);
             ecb.Dispose();

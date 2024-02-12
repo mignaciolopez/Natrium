@@ -63,7 +63,7 @@ namespace Natrium.Gameplay.Client.UI
         {
             var entityManager = WorldManager.ClientWorld.EntityManager;
 
-            var entities = entityManager.CreateEntityQuery(typeof(LocalTransform), typeof(Player)).ToEntityArray(Allocator.Temp);
+            var entities = entityManager.CreateEntityQuery(typeof(LocalTransform), typeof(Player), typeof(DebugColor)).ToEntityArray(Allocator.Temp);
 
             if (entities.Length > _playerNames.Count)
             {
@@ -75,6 +75,9 @@ namespace Natrium.Gameplay.Client.UI
                     var playerText = Instantiate(_playerTextPrefab, gameObject.transform);
                     playerText.SetActive(false);
                     var textMeshPro = playerText.GetComponent<TMP_Text>();
+
+                    var debugColor = entityManager.GetComponentData<DebugColor>(entity);
+                    textMeshPro.color = new Color(debugColor.Value.x, debugColor.Value.y, debugColor.Value.z);
 
                     var player = entityManager.GetComponentData<Player>(entity);
                     textMeshPro.text = player.Name.ConvertToString();

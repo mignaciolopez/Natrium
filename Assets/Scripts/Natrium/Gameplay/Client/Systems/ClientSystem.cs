@@ -45,22 +45,7 @@ namespace Natrium.Gameplay.Client.Systems
         protected override void OnUpdate()
         {
             OnConnect(null);
-
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
-
-            foreach (var (go, dc, e) in SystemAPI.Query<GhostOwner, DebugColor>().WithAll<GhostOwnerIsLocal>().WithEntityAccess())
-            {
-                var entityPrefab = Utils.GetEntityPrefab(go.NetworkId, EntityManager);
-
-                var prefabGroup = EntityManager.GetBuffer<LinkedEntityGroup>(entityPrefab);
-                ecb.AddComponent(prefabGroup[1].Value, new URPMaterialPropertyBaseColor()
-                {
-                    Value = new float4(dc.Value, 1.0f)
-                });
-            }
-
-            ecb.Playback(EntityManager);
-            ecb.Dispose();
+            ApplyColor();
         }
 
         private void OnKeyCodeReturn(Stream stream)
@@ -120,6 +105,25 @@ namespace Natrium.Gameplay.Client.Systems
         private void OnDisconnect(Stream stream)
         {
             throw new NotImplementedException("OnDisconnected");
+        }
+
+        private void ApplyColor()
+        {
+            var ecb = new EntityCommandBuffer(Allocator.Temp);
+
+            foreach (var (go, dc) in SystemAPI.Query<GhostOwner, DebugColor>().WithNone<URPMaterialPropertyBaseColor>())
+            {
+                var entityPrefab = Utils.GetEntityPrefab(go.NetworkId, EntityManager);
+
+                var prefabGroup = EntityManager.GetBuffer<LinkedEntityGroup>(entityPrefab);
+                ecb.AddComponent(prefabGroup[1].Value, new URPMaterialPropertyBaseColor()
+                {
+                    Value = new float4(dc.Value, 1.0f)
+                });
+            }
+
+            ecb.Playback(EntityManager);
+            ecb.Dispose();
         }
     }
 }
