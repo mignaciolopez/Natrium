@@ -50,6 +50,13 @@ namespace Natrium.Gameplay.Client.Systems
 
         private void OnKeyCodeReturn(Stream stream)
         {
+            foreach(var conState in SystemAPI.Query<ConnectionState>().WithAll<GhostOwnerIsLocal>())
+            {
+                UnityEngine.Debug.LogWarning($"Conection State: {conState.CurrentState}");
+                if (conState.CurrentState == ConnectionState.State.Connecting || conState.CurrentState == ConnectionState.State.Connected)
+                    return;
+            }
+
             var ss = SystemAPI.GetSingleton<SystemsSettings>();
 
             var serverAddress = IPAddress.Parse(ss.IP.ToString());
@@ -60,8 +67,7 @@ namespace Natrium.Gameplay.Client.Systems
             endpoint.SetRawAddressBytes(nativeArrayAddress);
             endpoint.Port = ss.Port;
 
-            using var query = WorldManager.ClientWorld.EntityManager.CreateEntityQuery(ComponentType.ReadWrite<NetworkStreamDriver>());
-            var driver = query.GetSingletonRW<NetworkStreamDriver>().ValueRW;
+            var driver = SystemAPI.GetSingletonRW<NetworkStreamDriver>().ValueRW;
             driver.Connect(WorldManager.ClientWorld.EntityManager, endpoint);
 
             nativeArrayAddress.Dispose();
@@ -92,6 +98,7 @@ namespace Natrium.Gameplay.Client.Systems
 
                 ecb.AddComponent<NetworkStreamInGame>(e);
                 ecb.AddComponent<GhostOwnerIsLocal>(e);
+                ecb.AddComponent<ConnectionState>(e);
 
                 var req = ecb.CreateEntity();
                 ecb.AddComponent<RpcConnect>(req);
