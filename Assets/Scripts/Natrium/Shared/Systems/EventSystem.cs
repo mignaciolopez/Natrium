@@ -22,6 +22,7 @@ namespace Natrium.Shared.Systems
         {
             base.OnCreate();
 
+            _worldName = World.Name;
             _handlers = new Dictionary<Events, CustomUnityEvent>();
 
             foreach (var evnt in (Events[])Enum.GetValues(typeof(Events)))
@@ -29,8 +30,6 @@ namespace Natrium.Shared.Systems
                 _handlers.Add(evnt, new CustomUnityEvent());
                 UnityEngine.Debug.Log($"{_worldName} Handler created for {evnt}");
             }
-
-            _worldName = World.Unmanaged.Name;
         }
 
         protected override void OnStartRunning()
