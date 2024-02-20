@@ -1,6 +1,7 @@
 using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
+using Natrium.Shared;
 
 namespace Natrium.Gameplay.Shared
 {
@@ -39,7 +40,7 @@ namespace Natrium.Gameplay.Shared
                 ServerWorld = ClientServerBootstrap.CreateServerWorld("ServerWorld");
                 if (ServerWorld == null)
                 {
-                    Debug.LogError($"Error ClientServerBootstrap.CreateServerWorld(\"ServerWorld\")");
+                    Log.Error($"Error ClientServerBootstrap.CreateServerWorld(\"ServerWorld\")", this);
                     return false;
                 }
             }
@@ -49,7 +50,7 @@ namespace Natrium.Gameplay.Shared
                 ClientWorld = ClientServerBootstrap.CreateClientWorld("ClientWorld");
                 if (ClientWorld == null)
                 {
-                    Debug.LogError($"Error ClientServerBootstrap.CreateClientWorld(\"ClientWorld\");");
+                    Log.Error($"Error ClientServerBootstrap.CreateClientWorld(\"ClientWorld\");", this);
                     return false;
                 }
             }

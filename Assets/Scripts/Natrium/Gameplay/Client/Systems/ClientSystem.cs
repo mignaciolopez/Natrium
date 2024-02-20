@@ -1,14 +1,14 @@
-using Unity.Entities;
-using Natrium.Shared.Systems;
 using Natrium.Shared;
+using Natrium.Shared.Systems;
+using Unity.Entities;
 using Unity.Collections;
 using Unity.NetCode;
+using Natrium.Gameplay.Client.Components;
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Gameplay.Shared.Utilities;
 using Natrium.Gameplay.Shared;
 using System.Net;
 using Unity.Networking.Transport;
-using Natrium.Gameplay.Client.Components;
 using System;
 using Unity.Mathematics;
 using Unity.Rendering;
@@ -52,7 +52,7 @@ namespace Natrium.Gameplay.Client.Systems
         {
             foreach(var conState in SystemAPI.Query<ConnectionState>().WithAll<GhostOwnerIsLocal>())
             {
-                UnityEngine.Debug.LogWarning($"Conection State: {conState.CurrentState}");
+                Log.Warning($"Conection State: {conState.CurrentState}");
                 if (conState.CurrentState == ConnectionState.State.Connecting || conState.CurrentState == ConnectionState.State.Connected)
                     return;
             }
@@ -79,7 +79,7 @@ namespace Natrium.Gameplay.Client.Systems
 
             foreach (var (nid, e) in SystemAPI.Query<NetworkId>().WithEntityAccess().WithAll<NetworkStreamInGame, GhostOwnerIsLocal>())
             {
-                UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Disconnecting... Entity: {e}, NetworkId: {nid.Value}");
+                Log.Info($"{World.Name} Disconnecting... Entity: {e}, NetworkId: {nid.Value}");
                 var req = ecb.CreateEntity();
                 ecb.AddComponent<NetworkStreamRequestDisconnect>(e);
             }
@@ -94,7 +94,7 @@ namespace Natrium.Gameplay.Client.Systems
 
             foreach (var (nId, e) in SystemAPI.Query<NetworkId>().WithEntityAccess().WithNone<NetworkStreamInGame>())
             {
-                UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Connecting... Found Entity: {e} NetworkId: {nId.Value}");
+                Log.Info($"{World.Name} Connecting... Found Entity: {e} NetworkId: {nId.Value}");
 
                 ecb.AddComponent<NetworkStreamInGame>(e);
                 ecb.AddComponent<GhostOwnerIsLocal>(e);

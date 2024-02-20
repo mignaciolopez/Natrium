@@ -43,8 +43,8 @@ namespace Natrium.Gameplay.Client.Systems
             {
                 var mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition + new Vector3(0, 0, Camera.main.transform.position.y));
 
-                Debug.Log($"{World.Unmanaged.Name} Input.mousePosition {Input.mousePosition}");
-                Debug.Log($"{World.Unmanaged.Name} mouseWorldPosition {mouseWorldPosition}");
+                Log.Debug($"{World.Name} Input.mousePosition {Input.mousePosition}");
+                Log.Debug($"{World.Name} mouseWorldPosition {mouseWorldPosition}");
 
                 var req = ecb.CreateEntity();
                 ecb.AddComponent(req, new RpcAim { MouseWorldPosition = mouseWorldPosition });

@@ -1,12 +1,12 @@
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
-using Natrium.Gameplay.Server.Components;
-using Natrium.Gameplay.Shared.Components;
-using Unity.Mathematics;
-using Unity.Transforms;
 using Natrium.Shared;
 using Natrium.Gameplay.Shared;
+using Natrium.Gameplay.Shared.Components;
+using Natrium.Gameplay.Server.Components;
+using Unity.Mathematics;
+using Unity.Transforms;
 
 namespace Natrium.Gameplay.Server.Systems
 {
@@ -68,7 +68,7 @@ namespace Natrium.Gameplay.Server.Systems
 
             foreach (var (reqSrc, reqEntity) in SystemAPI.Query<RefRO<ReceiveRpcCommandRequest>>().WithAll<RpcConnect>().WithEntityAccess())
             {
-                UnityEngine.Debug.Log($"{World.Unmanaged.Name} processing {reqSrc.ValueRO.SourceConnection}'s RpcConnect");
+                Log.Debug($"{World.Name} processing {reqSrc.ValueRO.SourceConnection}'s RpcConnect");
 
                 ecb.AddComponent<NetworkStreamInGame>(reqSrc.ValueRO.SourceConnection);
                 var networkId = _networkIdFromEntity[reqSrc.ValueRO.SourceConnection];
@@ -107,7 +107,7 @@ namespace Natrium.Gameplay.Server.Systems
 
                 ecb.DestroyEntity(reqEntity);
 
-                UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Processing RpcConnect for Entity: '{reqSrc.ValueRO.SourceConnection}' " +
+                Log.Debug($"'{World.Name}' Processing RpcConnect for Entity: '{reqSrc.ValueRO.SourceConnection}' " +
                     $"Added NetworkStreamInGame for NetworkId Value: '{networkId.Value}' " +
                     $"Instantiate prefab: '{prefabName}'" + $"SetComponent: new GhostOwner " +
                     $"Add LinkedEntityGroup to '{prefabName}'.");

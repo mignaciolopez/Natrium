@@ -5,6 +5,7 @@ using Unity.Transforms;
 using UnityEngine;
 using Natrium.Gameplay.Shared;
 using Natrium.Gameplay.Shared.Components;
+using Natrium.Shared;
 
 namespace Natrium.Gameplay.Server.Systems
 {
@@ -50,7 +51,7 @@ namespace Natrium.Gameplay.Server.Systems
                     break;
                 default:
                     if (_logOnce)
-                        Debug.LogError("Movement not handled by " + ToString() + " " + _settings.MovementType.ToString());
+                        Log.Error("Movement not handled by " + ToString() + " " + _settings.MovementType.ToString());
                     _logOnce = false;
                     break;
             }

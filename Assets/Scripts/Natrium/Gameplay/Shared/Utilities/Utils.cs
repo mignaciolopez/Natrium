@@ -2,7 +2,7 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 using Natrium.Gameplay.Shared.Components;
-using UnityEngine;
+using Natrium.Shared;
 
 namespace Natrium.Gameplay.Shared.Utilities
 {
@@ -10,6 +10,7 @@ namespace Natrium.Gameplay.Shared.Utilities
     {
         public static Entity GetEntityPrefab(int nidValue, EntityManager entityManager)
         {
+            //Log.Verbose($"[{entityManager.World}] GetEntityPrefab");
             var e = Entity.Null;
             var found = false;
 
@@ -22,12 +23,14 @@ namespace Natrium.Gameplay.Shared.Utilities
                 {
                     e = entity;
                     found = true;
+                    //Log.Debug($"[{entityManager.World}] Found NetworkID: {nidValue} Associated with Entity: {entity}");
+                    //Log.Debug($"[{entityManager.World}] Entities in Query: {entities.Length}");
                     break;
                 }
             }
 
             if (!found)
-                Debug.LogError($"{entityManager.World} NetworkID: {nidValue} not found! Entities in Query: {entities.Length}");
+                Log.Error($"[{entityManager.World}] NetworkID: {nidValue} not found! Entities in Query: {entities.Length}");
 
             entities.Dispose();
 
@@ -36,6 +39,7 @@ namespace Natrium.Gameplay.Shared.Utilities
 
         public static Entity GetEntityConnection(int nidValue, EntityManager entityManager)
         {
+            //Log.Verbose($"[{entityManager.World}] GetEntityConnection");
             var e = Entity.Null;
             var found = false;
 
@@ -48,12 +52,14 @@ namespace Natrium.Gameplay.Shared.Utilities
                 {
                     e = entity;
                     found = true;
+                    //Log.Debug($"[{entityManager.World}] Found NetworkID: {nidValue} Associated with Entity: {entity}");
+                    //Log.Debug($"[{entityManager.World}] Entities in Query: {entities.Length}");
                     break;
                 }
             }
 
             if (!found)
-                Debug.LogError($"{entityManager.World} NetworkID: {nidValue} not found! Entities in Query: {entities.Length}");
+                Log.Error($"[{entityManager.World}] NetworkID: {nidValue} not found! Entities in Query: {entities.Length}");
 
             entities.Dispose();
 

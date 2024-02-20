@@ -3,6 +3,7 @@ using Unity.Physics;
 using Unity.Collections;
 using Natrium.Gameplay.Server.Components;
 using Natrium.Gameplay.Shared.Components;
+using Natrium.Shared;
 
 namespace Natrium.Gameplay.Server.Systems
 {
@@ -36,7 +37,7 @@ namespace Natrium.Gameplay.Server.Systems
 
             foreach (var (rc, pc, entity) in SystemAPI.Query<RaycastCommand, PhysicsCollider>().WithEntityAccess())
             {
-                UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Entity {entity} is RayCasting from {rc.Start} to {rc.End}");
+                Log.Debug($"'{World.Name}' Entity {entity} is RayCasting from {rc.Start} to {rc.End}");
 
                 ecb.RemoveComponent<RaycastCommand>(entity);
 
@@ -54,11 +55,11 @@ namespace Natrium.Gameplay.Server.Systems
 
                 if (_collisionWorld.CastRay(input, out var hit))
                 {
-                    UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' {entity} Hit {hit.Entity}");
+                    Log.Debug($"'{World.Name}' {entity} Hit {hit.Entity}");
                     ecb.AddComponent(entity, new RaycastOutput { Hit = hit, Start = rc.Start, End = rc.End });
                 }
                 else
-                    UnityEngine.Debug.Log($"'{World.Unmanaged.Name}' Entity {entity} No Hit!");
+                    Log.Debug($"'{World.Name}' Entity {entity} No Hit!");
             }
 
             ecb.Playback(EntityManager);
