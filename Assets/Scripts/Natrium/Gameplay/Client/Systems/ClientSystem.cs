@@ -12,6 +12,7 @@ using Unity.Networking.Transport;
 using System;
 using Unity.Mathematics;
 using Unity.Rendering;
+using System.Net.Sockets;
 
 namespace Natrium.Gameplay.Client.Systems
 {
@@ -53,24 +54,42 @@ namespace Natrium.Gameplay.Client.Systems
             foreach(var conState in SystemAPI.Query<ConnectionState>().WithAll<GhostOwnerIsLocal>())
             {
                 Log.Warning($"Conection State: {conState.CurrentState}");
-                if (conState.CurrentState == ConnectionState.State.Connecting || conState.CurrentState == ConnectionState.State.Connected)
+                if (conState.CurrentState == ConnectionState.State.Connecting || conState.CurrentState == ConnectionState.State.Connected || conState.CurrentState == ConnectionState.State.Unknown)
                     return;
             }
+            
+            if (SystemAPI.TryGetSingleton<SystemsSettings>(out var ss))
+            {
+                Log.Debug($"SystemsSettings: {ss.FQDN}:{ss.Port}");
 
-            var ss = SystemAPI.GetSingleton<SystemsSettings>();
+                var ecb = new EntityCommandBuffer(Allocator.Temp);
 
-            var serverAddress = IPAddress.Parse(ss.IP.ToString());
-            var nativeArrayAddress = new NativeArray<byte>(serverAddress.GetAddressBytes().Length, Allocator.Temp);
-            nativeArrayAddress.CopyFrom(serverAddress.GetAddressBytes());
+                IPAddress[] ipv4Addresses = Array.FindAll(Dns.GetHostEntry(ss.FQDN.ToString()).AddressList, a => a.AddressFamily == AddressFamily.InterNetwork);
+                if (ipv4Addresses.Length > 0)
+                {
+                    Log.Debug($"ipv4Addresses[0]: {ipv4Addresses[0]}");
 
-            var endpoint = NetworkEndpoint.AnyIpv4;
-            endpoint.SetRawAddressBytes(nativeArrayAddress);
-            endpoint.Port = ss.Port;
+                    var endpoint = NetworkEndpoint.Parse(ipv4Addresses[0].ToString(), ss.Port);
+                    Log.Debug($"endpoint (Dns.GetHostEntry): {endpoint}");
 
-            var driver = SystemAPI.GetSingletonRW<NetworkStreamDriver>().ValueRW;
-            driver.Connect(WorldManager.ClientWorld.EntityManager, endpoint);
+                    var req = ecb.CreateEntity();
+                    ecb.AddComponent(req, new NetworkStreamRequestConnect
+                    {
+                        Endpoint = endpoint
+                    });
 
-            nativeArrayAddress.Dispose();
+                    ecb.Playback(EntityManager);
+                    ecb.Dispose();
+                }
+                else
+                {
+                    Log.Fatal($"Dns.GetHostEntry could not resolve name {ss.FQDN} to any valid ipv4");
+                }
+            }
+            else
+            {
+                Log.Fatal($"SystemsSettings Singleton not present!!!");
+            }
         }
 
         private void OnKeyCodeEscape(Stream stream)

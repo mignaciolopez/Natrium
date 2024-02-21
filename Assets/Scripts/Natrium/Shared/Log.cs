@@ -13,7 +13,18 @@ namespace Natrium.Shared
     {
         #region Singleton
         private static Log _instance;
-        public static Log Instance { private set { _instance = value; } get { return _instance; } }
+        public static Log Instance
+        {
+            private set { _instance = value; }
+            get
+            {
+                if (_instance == null)
+                {
+                }
+
+                return _instance; 
+            }
+        }
 
         private void AwakeSingleton()
         {

@@ -2,7 +2,6 @@ using System.Collections.Generic;
 using Unity.Entities;
 using UnityEngine.Events;
 using System;
-using Unity.Collections;
 
 namespace Natrium.Shared.Systems
 {
@@ -11,17 +10,19 @@ namespace Natrium.Shared.Systems
     }
 
     [UpdateInGroup(typeof(SharedSystemGroup))]
+    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation | WorldSystemFilterFlags.ServerSimulation)]
     public partial class EventSystem : SystemBase
     {
         private static Dictionary<Events, CustomUnityEvent> _handlers;
         private static Queue<Tuple<Events, Stream>> _eventsQueue;
-        private static FixedString128Bytes _worldName;
+        private Log _logInstance;
 
         protected override void OnCreate()
         {
             base.OnCreate();
 
-            _worldName = World.Name;
+            _logInstance = Log.Instance;
+
             _handlers = new Dictionary<Events, CustomUnityEvent>();
 
             foreach (var evnt in (Events[])Enum.GetValues(typeof(Events)))
@@ -50,7 +51,7 @@ namespace Natrium.Shared.Systems
             //foreach (var evnt in (Events[])Enum.GetValues(typeof(Events)))
             //    _handlers[evnt] = null;
 
-            _handlers.Clear();
+            //_handlers.Clear();
             //_handlers = null;
             Log.Verbose($"OnDestroy");
         }

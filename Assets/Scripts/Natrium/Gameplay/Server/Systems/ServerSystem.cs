@@ -7,6 +7,10 @@ using Natrium.Gameplay.Shared.Components;
 using Natrium.Gameplay.Server.Components;
 using Unity.Mathematics;
 using Unity.Transforms;
+using Unity.Networking.Transport;
+using System.Net;
+using System;
+using System.Net.Sockets;
 
 namespace Natrium.Gameplay.Server.Systems
 {
@@ -16,7 +20,7 @@ namespace Natrium.Gameplay.Server.Systems
     public partial class ServerSystem : SystemBase
     {
         private static ComponentLookup<NetworkId> _networkIdFromEntity;
-
+        private NetworkStreamRequestListenResult.State _listenState;
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -34,11 +38,7 @@ namespace Natrium.Gameplay.Server.Systems
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
-
-            var ss = SystemAPI.GetSingleton<SystemsSettings>();
-
-            using var query = WorldManager.ServerWorld.EntityManager.CreateEntityQuery(ComponentType.ReadWrite<NetworkStreamDriver>());
-            query.GetSingletonRW<NetworkStreamDriver>().ValueRW.Listen((ClientServerBootstrap.DefaultListenAddress.WithPort(ss.Port)));
+            Listen();
         }
 
         protected override void OnStopRunning()
@@ -52,10 +52,67 @@ namespace Natrium.Gameplay.Server.Systems
 
             _networkIdFromEntity.Update(this);
 
+            GetListeningStatus();
             RPC_Connect();
 
             ecb.Playback(EntityManager);
             ecb.Dispose();
+        }
+
+        private void Listen()
+        {
+            if (SystemAPI.TryGetSingleton<SystemsSettings>(out var ss))
+            {
+                Log.Debug($"SystemsSettings: {ss.FQDN}:{ss.Port}");
+
+                var ecb = new EntityCommandBuffer(Allocator.Temp);
+
+                IPAddress[] ipv4Addresses = Array.FindAll(Dns.GetHostEntry(ss.FQDN.ToString()).AddressList, a => a.AddressFamily == AddressFamily.InterNetwork);
+                if (ipv4Addresses.Length > 0)
+                {
+                    Log.Debug($"ipv4Addresses[0]: {ipv4Addresses[0]}");
+
+                    var endpoint = NetworkEndpoint.Parse("0.0.0.0", ss.Port);
+                    Log.Debug($"endpoint (Dns.GetHostEntry): {endpoint}");
+
+                    var req = ecb.CreateEntity();
+                    ecb.AddComponent(req, new NetworkStreamRequestListen
+                    {
+                        Endpoint = endpoint
+                    });
+                    ecb.AddComponent<NetworkStreamRequestListenResult>(req);
+
+                    ecb.Playback(EntityManager);
+                    ecb.Dispose();
+                }
+                else
+                {
+                    Log.Fatal($"Dns.GetHostEntry could not resolve name {ss.FQDN} to any valid ipv4");
+                }
+            }
+            else
+            {
+                Log.Fatal($"SystemsSettings Singleton not present!!!");
+            }
+
+            foreach (var nsrlr in SystemAPI.Query<NetworkStreamRequestListenResult>())
+            {
+                _listenState = nsrlr.RequestState;
+                Log.Debug($"NetworkStreamRequestListenResult: {_listenState}");
+
+            }
+        }
+
+        private void GetListeningStatus()
+        {
+            foreach (var nsrlr in SystemAPI.Query<NetworkStreamRequestListenResult>())
+            {
+                if (_listenState != nsrlr.RequestState)
+                {
+                    _listenState = nsrlr.RequestState;
+                    Log.Info($"NetworkStreamRequestListenResult: {_listenState}");
+                }
+            }
         }
 
         private void RPC_Connect()

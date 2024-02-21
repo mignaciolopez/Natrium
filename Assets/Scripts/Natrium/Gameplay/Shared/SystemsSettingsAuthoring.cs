@@ -19,7 +19,7 @@ namespace Natrium.Gameplay.Shared
     {
         #region ConnectionSettings
         [Header("ConnectionSettings")]
-        public string IP = "127.0.0.1";
+        public string FQDN = "localhost";
         public ushort Port = 7979;
         #endregion //ConnectionSettings
 
@@ -89,7 +89,7 @@ namespace Natrium.Gameplay.Shared
                 AddComponent(e, new SystemsSettings
                 {
                     #region ConnectionSettings
-                    IP = authoring.IP,
+                    FQDN = authoring.FQDN,
                     Port = authoring.Port,
                     #endregion //ConnectionSettings
 
@@ -139,7 +139,7 @@ namespace Natrium.Gameplay.Shared
     public struct SystemsSettings : IComponentData
     {
         #region ConnectionSettings
-        public FixedString32Bytes IP;
+        public FixedString32Bytes FQDN;
         public ushort Port;
         #endregion //ConnectionSettings
 
