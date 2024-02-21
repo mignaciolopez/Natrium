@@ -62,6 +62,8 @@ namespace Natrium.Shared
                 .WriteTo.File(fullPath, minLevel: LogLevel.Verbose, formatter: LogFormatterJson.Formatter));
 
             SelfLog.SetMode(SelfLog.Mode.EnabledInUnityEngineDebugLogError);
+
+            Info("Log Started.", this.name, this);
         }
         #endregion Logger
 
@@ -69,6 +71,12 @@ namespace Natrium.Shared
         {
             AwakeSingleton();
             AwakeLogger();
+        }
+
+        private void OnDestroy()
+        {
+            _instance = null;
+            Info("Log Ended.", this.name, this);
         }
 
         private void Update()
@@ -79,7 +87,7 @@ namespace Natrium.Shared
 
         private void OnLogLevelChanged()
         {
-            Verbose($"OnLogLevelChanged: {_logLevel}", this.name);
+            Verbose($"OnLogLevelChanged: {_logLevel}", this.name, gameObject);
             Unity.Logging.Log.Logger.Config.MinimumLevel.Set(_logLevel);
             _previousLogLevel = _logLevel;
         }
@@ -154,7 +162,7 @@ namespace Natrium.Shared
             };
 
             _logFilterWorlds.Add(logFilter);
-            Debug($"UpdateLogFilterWorlds: Add [{worldName}]", this.name, this);
+            Debug($"UpdateLogFilterWorlds: Add [{worldName}]", this.name, gameObject);
 
             return logFilter;
         }
@@ -173,189 +181,105 @@ namespace Natrium.Shared
             };
 
             _logFilterClass.Add(logFilter);
-            Debug($"UpdateLogFilterClass: Add [{className}]", this.name, this);
+            Debug($"UpdateLogFilterClass: Add [{className}]", this.name, gameObject);
 
             return logFilter;
+        }
+
+        private void LogInternal(LogLevel level, string message, string className = "", UnityEngine.Object context = null)
+        {
+            if (Instance._logLevel <= level)
+            {
+                string worldName = Instance.ResolveWorldName();
+                var worldFilter = Instance.UpdateLogFilterWorlds(worldName);
+
+                if (Instance._logFilterWorlds[Instance._logFilterWorlds.IndexOf(worldFilter)].isLogging)
+                {
+                    string stackClassName = Instance.ResolveClassName(className);
+                    var classFilter = Instance.UpdateLogFilterClass(stackClassName);
+
+                    if (Instance._logFilterClass[Instance._logFilterClass.IndexOf(classFilter)].isLogging)
+                    {
+                        var hexColorWorld = ColorUtility.ToHtmlStringRGB(worldFilter.color);
+                        var hexColorClass = ColorUtility.ToHtmlStringRGB(classFilter.color);
+                        switch(level)
+                        {
+                            case LogLevel.Verbose:
+                                UnityEngine.Debug.Log($"<b><color=grey>[{LogLevel.Verbose}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> {message}", context);
+                                Unity.Logging.Log.Verbose(message);
+                                break;
+                            case LogLevel.Debug:
+                                UnityEngine.Debug.Log($"<b><color=white>[{LogLevel.Debug}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <color=white>{message}</color>", context);
+                                Unity.Logging.Log.Debug(message);
+                                break;
+                            case LogLevel.Info:
+                                UnityEngine.Debug.Log($"<b><color=cyan>[{LogLevel.Info}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <color=white>{message}</color>", context);
+                                Unity.Logging.Log.Info(message);
+                                break;
+                            case LogLevel.Warning:
+                                UnityEngine.Debug.LogWarning($"<b><color=yellow>[{LogLevel.Warning}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <color=white>{message}</color>", context);
+                                Unity.Logging.Log.Warning(message);
+                                break;
+                            case LogLevel.Error:
+                                UnityEngine.Debug.LogError($"<b><color=#AB1B1B>[{LogLevel.Error}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <color=white>{message}</color>", context);
+                                Unity.Logging.Log.Error(message);
+                                break;
+                            case LogLevel.Fatal:
+                                UnityEngine.Debug.LogAssertion($"<b><color=red>[{LogLevel.Fatal}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <b><color=white>{message}</color></b>", context);
+                                Unity.Logging.Log.Fatal(message);
+                                break;
+                        }
+                    }
+                }
+            }
         }
 
         public static void Verbose(string message, string className = "", UnityEngine.Object context = null)
         {
             if (Instance != null)
-            {
-                if (Instance._logLevel <= LogLevel.Verbose)
-                {
-                    string worldName = Instance.ResolveWorldName();
-                    var worldFilter = Instance.UpdateLogFilterWorlds(worldName);
-
-                    if (Instance._logFilterWorlds[Instance._logFilterWorlds.IndexOf(worldFilter)].isLogging)
-                    {
-                        string stackClassName = Instance.ResolveClassName(className);
-                        var classFilter = Instance.UpdateLogFilterClass(stackClassName);
-
-                        if (Instance._logFilterClass[Instance._logFilterClass.IndexOf(classFilter)].isLogging)
-                        {
-                            Unity.Logging.Log.Verbose(message);
-                            var hexColorWorld = ColorUtility.ToHtmlStringRGB(worldFilter.color);
-                            var hexColorClass = ColorUtility.ToHtmlStringRGB(classFilter.color);
-                            UnityEngine.Debug.Log($"<b><color=grey>[{LogLevel.Verbose}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> {message}", context);
-                        }
-                    }
-                }
-            }
+                Instance.LogInternal(LogLevel.Verbose, message, className, context);
             else
-            {
                 UnityEngine.Debug.Log($"<b><color=grey>[{LogLevel.Verbose}]</color></b> {message}", context);
-            }
         }
 
         public static void Debug(string message, string className = "", UnityEngine.Object context = null)
         {
             if (Instance != null)
-            {
-                if (Instance._logLevel <= LogLevel.Debug)
-                {
-                    string worldName = Instance.ResolveWorldName();
-                    var worldFilter = Instance.UpdateLogFilterWorlds(worldName);
-
-                    if (Instance._logFilterWorlds[Instance._logFilterWorlds.IndexOf(worldFilter)].isLogging)
-                    {
-                        string stackClassName = Instance.ResolveClassName(className);
-                        var classFilter = Instance.UpdateLogFilterClass(stackClassName);
-
-                        if (Instance._logFilterClass[Instance._logFilterClass.IndexOf(classFilter)].isLogging)
-                        {
-                            Unity.Logging.Log.Debug(message);
-                            var hexColorWorld = ColorUtility.ToHtmlStringRGB(worldFilter.color);
-                            var hexColorClass = ColorUtility.ToHtmlStringRGB(classFilter.color);
-                            UnityEngine.Debug.Log($"<b><color=white>[{LogLevel.Debug}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <color=white>{message}</color>", context);
-                        }
-                    }
-                }
-            }
+                Instance.LogInternal(LogLevel.Debug, message, className, context);
             else
-            {
                 UnityEngine.Debug.Log($"<color=white>[{LogLevel.Debug}]</color> <color=white>{message}</color>", context);
-            }
         }
 
         public static void Info(string message, string className = "", UnityEngine.Object context = null)
         {
             if (Instance != null)
-            {
-                if (Instance._logLevel <= LogLevel.Info)
-                {
-                    string worldName = Instance.ResolveWorldName();
-                    var worldFilter = Instance.UpdateLogFilterWorlds(worldName);
-
-                    if (Instance._logFilterWorlds[Instance._logFilterWorlds.IndexOf(worldFilter)].isLogging)
-                    {
-                        string stackClassName = Instance.ResolveClassName(className);
-                        var classFilter = Instance.UpdateLogFilterClass(stackClassName);
-
-                        if (Instance._logFilterClass[Instance._logFilterClass.IndexOf(classFilter)].isLogging)
-                        {
-                            Unity.Logging.Log.Info(message);
-                            var hexColorWorld = ColorUtility.ToHtmlStringRGB(worldFilter.color);
-                            var hexColorClass = ColorUtility.ToHtmlStringRGB(classFilter.color);
-                            UnityEngine.Debug.Log($"<b><color=cyan>[{LogLevel.Info}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <color=white>{message}</color>", context);
-                        }
-                    }
-                }
-            }
+                Instance.LogInternal(LogLevel.Info, message, className, context);
             else
-            {
                 UnityEngine.Debug.Log($"<color=cyan>[{LogLevel.Info}]</color> <color=white>{message}</color>", context);
-            }
         }
 
         public static void Warning(string message, string className = "", UnityEngine.Object context = null)
         {
             if (Instance != null)
-            {
-                if (Instance._logLevel <= LogLevel.Warning)
-                {
-                    string worldName = Instance.ResolveWorldName();
-                    var worldFilter = Instance.UpdateLogFilterWorlds(worldName);
-
-                    if (Instance._logFilterWorlds[Instance._logFilterWorlds.IndexOf(worldFilter)].isLogging)
-                    {
-                        string stackClassName = Instance.ResolveClassName(className);
-                        var classFilter = Instance.UpdateLogFilterClass(stackClassName);
-
-                        if (Instance._logFilterClass[Instance._logFilterClass.IndexOf(classFilter)].isLogging)
-                        {
-                            Unity.Logging.Log.Warning(message);
-                            var hexColorWorld = ColorUtility.ToHtmlStringRGB(worldFilter.color);
-                            var hexColorClass = ColorUtility.ToHtmlStringRGB(classFilter.color);
-                            UnityEngine.Debug.LogWarning($"<b><color=yellow>[{LogLevel.Warning}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <color=white>{message}</color>", context);
-                        }
-                    }
-                }
-            }
+                Instance.LogInternal(LogLevel.Warning, message, className, context);
             else
-            {
                 UnityEngine.Debug.LogWarning($"<color=yellow>[{LogLevel.Warning}]</color> <color=white>{message}</color>", context);
-            }
         }
 
         public static void Error(string message, string className = "", UnityEngine.Object context = null)
         {
             if (Instance != null)
-            {
-                if (Instance._logLevel <= LogLevel.Error)
-                {
-                    string worldName = Instance.ResolveWorldName();
-                    var worldFilter = Instance.UpdateLogFilterWorlds(worldName);
-
-                    if (Instance._logFilterWorlds[Instance._logFilterWorlds.IndexOf(worldFilter)].isLogging)
-                    {
-                        string stackClassName = Instance.ResolveClassName(className);
-                        var classFilter = Instance.UpdateLogFilterClass(stackClassName);
-
-                        if (Instance._logFilterClass[Instance._logFilterClass.IndexOf(classFilter)].isLogging)
-                        {
-                            Unity.Logging.Log.Error(message);
-                            var hexColorWorld = ColorUtility.ToHtmlStringRGB(worldFilter.color);
-                            var hexColorClass = ColorUtility.ToHtmlStringRGB(classFilter.color);
-                            UnityEngine.Debug.LogError($"<b><color=#AB1B1B>[{LogLevel.Error}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <color=white>{message}</color>", context);
-                        }
-                    }
-                }
-            }
+                Instance.LogInternal(LogLevel.Error, message, className, context);
             else
-            {
                 UnityEngine.Debug.LogError($"<color=#AB1B1B>[{LogLevel.Error}]</color> <color=white>{message}</color>", context);
-            }
         }
 
         public static void Fatal(string message, string className = "", UnityEngine.Object context = null)
         {
             if (Instance != null)
-            {
-                if (Instance._logLevel <= LogLevel.Fatal)
-                {
-                    string worldName = Instance.ResolveWorldName();
-                    var worldFilter = Instance.UpdateLogFilterWorlds(worldName);
-
-                    if (Instance._logFilterWorlds[Instance._logFilterWorlds.IndexOf(worldFilter)].isLogging)
-                    {
-                        string stackClassName = Instance.ResolveClassName(className);
-                        var classFilter = Instance.UpdateLogFilterClass(stackClassName);
-
-                        if (Instance._logFilterClass[Instance._logFilterClass.IndexOf(classFilter)].isLogging)
-                        {
-                            Unity.Logging.Log.Fatal(message);
-                            var hexColorWorld = ColorUtility.ToHtmlStringRGB(worldFilter.color);
-                            var hexColorClass = ColorUtility.ToHtmlStringRGB(classFilter.color);
-                            UnityEngine.Debug.LogAssertion($"<b><color=red>[{LogLevel.Fatal}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <color=white>{message}</color>", context);
-                        }
-                    }
-                }
-            }
+                Instance.LogInternal(LogLevel.Fatal, message, className, context);
             else
-            {
                 UnityEngine.Debug.LogAssertion($"<color=red>[{LogLevel.Fatal}]</color> <color=white>{message}</color>", context);
-            }
         }
     }
 }
