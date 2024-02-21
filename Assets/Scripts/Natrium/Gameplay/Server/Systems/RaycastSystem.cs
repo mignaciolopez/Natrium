@@ -37,7 +37,7 @@ namespace Natrium.Gameplay.Server.Systems
 
             foreach (var (rc, pc, entity) in SystemAPI.Query<RaycastCommand, PhysicsCollider>().WithEntityAccess())
             {
-                Log.Debug($"'{World.Name}' Entity {entity} is RayCasting from {rc.Start} to {rc.End}");
+                Log.Debug($"Entity {entity} is RayCasting from {rc.Start} to {rc.End}");
 
                 ecb.RemoveComponent<RaycastCommand>(entity);
 
@@ -55,11 +55,11 @@ namespace Natrium.Gameplay.Server.Systems
 
                 if (_collisionWorld.CastRay(input, out var hit))
                 {
-                    Log.Debug($"'{World.Name}' {entity} Hit {hit.Entity}");
+                    Log.Debug($"{entity} Hit {hit.Entity}");
                     ecb.AddComponent(entity, new RaycastOutput { Hit = hit, Start = rc.Start, End = rc.End });
                 }
                 else
-                    Log.Debug($"'{World.Name}' Entity {entity} No Hit!");
+                    Log.Debug($"Entity {entity} No Hit!");
             }
 
             ecb.Playback(EntityManager);

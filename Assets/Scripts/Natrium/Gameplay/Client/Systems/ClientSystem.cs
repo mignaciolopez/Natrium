@@ -79,7 +79,7 @@ namespace Natrium.Gameplay.Client.Systems
 
             foreach (var (nid, e) in SystemAPI.Query<NetworkId>().WithEntityAccess().WithAll<NetworkStreamInGame, GhostOwnerIsLocal>())
             {
-                Log.Info($"{World.Name} Disconnecting... Entity: {e}, NetworkId: {nid.Value}");
+                Log.Info($"Disconnecting... Entity: {e}, NetworkId: {nid.Value}");
                 var req = ecb.CreateEntity();
                 ecb.AddComponent<NetworkStreamRequestDisconnect>(e);
             }
@@ -94,7 +94,7 @@ namespace Natrium.Gameplay.Client.Systems
 
             foreach (var (nId, e) in SystemAPI.Query<NetworkId>().WithEntityAccess().WithNone<NetworkStreamInGame>())
             {
-                Log.Info($"{World.Name} Connecting... Found Entity: {e} NetworkId: {nId.Value}");
+                Log.Info($"Connecting... Found Entity: {e} NetworkId: {nId.Value}");
 
                 ecb.AddComponent<NetworkStreamInGame>(e);
                 ecb.AddComponent<GhostOwnerIsLocal>(e);

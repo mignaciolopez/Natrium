@@ -68,7 +68,7 @@ namespace Natrium.Gameplay.Server.Systems
 
             foreach (var (reqSrc, reqEntity) in SystemAPI.Query<RefRO<ReceiveRpcCommandRequest>>().WithAll<RpcConnect>().WithEntityAccess())
             {
-                Log.Debug($"{World.Name} processing {reqSrc.ValueRO.SourceConnection}'s RpcConnect");
+                Log.Debug($"Processing {reqSrc.ValueRO.SourceConnection}'s RpcConnect");
 
                 ecb.AddComponent<NetworkStreamInGame>(reqSrc.ValueRO.SourceConnection);
                 var networkId = _networkIdFromEntity[reqSrc.ValueRO.SourceConnection];
@@ -107,7 +107,7 @@ namespace Natrium.Gameplay.Server.Systems
 
                 ecb.DestroyEntity(reqEntity);
 
-                Log.Debug($"'{World.Name}' Processing RpcConnect for Entity: '{reqSrc.ValueRO.SourceConnection}' " +
+                Log.Debug($"Processing RpcConnect for Entity: '{reqSrc.ValueRO.SourceConnection}' " +
                     $"Added NetworkStreamInGame for NetworkId Value: '{networkId.Value}' " +
                     $"Instantiate prefab: '{prefabName}'" + $"SetComponent: new GhostOwner " +
                     $"Add LinkedEntityGroup to '{prefabName}'.");

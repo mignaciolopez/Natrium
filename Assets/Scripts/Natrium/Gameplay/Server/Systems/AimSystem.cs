@@ -32,7 +32,7 @@ namespace Natrium.Gameplay.Server.Systems
 
                 var nid = EntityManager.GetComponentData<NetworkId>(clientEntity.SourceConnection);
 
-                Log.Debug($"'{World.Name}' RpcAim from {clientEntity.SourceConnection}:{nid.Value} | MouseWorldPosition: {rpcAim.MouseWorldPosition}");
+                Log.Debug($"RpcAim from {clientEntity.SourceConnection}:{nid.Value} | MouseWorldPosition: {rpcAim.MouseWorldPosition}");
 
                 var start = rpcAim.MouseWorldPosition;
                 start.y = 10.0f; //ToDo: The plus 10 on y axis, comes from the offset of the camara
@@ -49,7 +49,7 @@ namespace Natrium.Gameplay.Server.Systems
                 if (EntityManager.HasComponent<GhostOwner>(ro.Hit.Entity))
                     networkIDTarget = EntityManager.GetComponentData<GhostOwner>(ro.Hit.Entity).NetworkId;
 
-                Log.Debug($"'{World.Name}' {entity}:{networkIDSource} hit {ro.Hit.Entity}:{networkIDTarget}");
+                Log.Debug($"{entity}:{networkIDSource} hit {ro.Hit.Entity}:{networkIDTarget}");
 
                 if (SystemAPI.HasComponent<Player>(ro.Hit.Entity))
                 {

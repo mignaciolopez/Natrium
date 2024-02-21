@@ -780,6 +780,37 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 8699a0a7e7b0e184ba2bb7d0c21181f9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  _logLevel: 0
+  _logFilterWorlds:
+  - name: Shared
+    isLogging: 1
+    color: {r: 1, g: 0.9389151, b: 0.5113207, a: 1}
+  - name: Client
+    isLogging: 1
+    color: {r: 0.24375218, g: 0.73976576, b: 0.7735849, a: 1}
+  - name: Server
+    isLogging: 1
+    color: {r: 0.8037735, g: 0.5723088, b: 0.22899963, a: 1}
+  _logFilterClass:
+  - name: Log
+    isLogging: 1
+    color: {r: 0.15489489, g: 0.86415094, b: 0.2594018, a: 1}
+  - name: EventSystem
+    isLogging: 1
+    color: {r: 0.98440254, g: 0.87543166, b: 0.68683887, a: 1}
+  - name: ClientSystem
+    isLogging: 1
+    color: {r: 0.16517623, g: 0.35017166, b: 0.78867924, a: 1}
+  - name: ServerSystem
+    isLogging: 1
+    color: {r: 1, g: 0.702221, b: 0, a: 1}
+  - name: AimSystem
+    isLogging: 1
+    color: {r: 0.50231946, g: 0.69186807, b: 0.6997994, a: 1}
+  - name: RaycastSystem
+    isLogging: 1
+    color: {r: 0.55160356, g: 0.79926133, b: 0.45062694, a: 1}
+  _stackFrameIndex: 2
 --- !u!1 &1782942050
 GameObject:
   m_ObjectHideFlags: 0

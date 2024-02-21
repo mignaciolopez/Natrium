@@ -40,7 +40,7 @@ namespace Natrium.Gameplay.Shared
                 ServerWorld = ClientServerBootstrap.CreateServerWorld("ServerWorld");
                 if (ServerWorld == null)
                 {
-                    Log.Error($"Error ClientServerBootstrap.CreateServerWorld(\"ServerWorld\")", this);
+                    Log.Error($"Error ClientServerBootstrap.CreateServerWorld(\"ServerWorld\")", "WorldManager", this);
                     return false;
                 }
             }
@@ -50,7 +50,7 @@ namespace Natrium.Gameplay.Shared
                 ClientWorld = ClientServerBootstrap.CreateClientWorld("ClientWorld");
                 if (ClientWorld == null)
                 {
-                    Log.Error($"Error ClientServerBootstrap.CreateClientWorld(\"ClientWorld\");", this);
+                    Log.Error($"Error ClientServerBootstrap.CreateClientWorld(\"ClientWorld\");", "WorldManager", this);
                     return false;
                 }
             }
