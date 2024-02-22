@@ -28,7 +28,7 @@ namespace Natrium.Shared.Systems
             foreach (var evnt in (Events[])Enum.GetValues(typeof(Events)))
             {
                 _handlers.Add(evnt, new CustomUnityEvent());
-                Log.Verbose($"Handler created for {evnt}");
+                Log.Verbose($"[{World.Name}] Handler created for {evnt}");
             }
         }
 
@@ -53,7 +53,7 @@ namespace Natrium.Shared.Systems
 
             //_handlers.Clear();
             //_handlers = null;
-            Log.Verbose($"OnDestroy");
+            Log.Verbose($"[{World.Name}] OnDestroy");
         }
 
         protected override void OnUpdate()

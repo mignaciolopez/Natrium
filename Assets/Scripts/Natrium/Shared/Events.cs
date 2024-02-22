@@ -7,6 +7,8 @@ namespace Natrium.Shared
 
         OnPrimaryClick,
         OnKeyCodeReturn,
-        OnKeyCodeEscape
+        OnKeyCodeEscape,
+
+        OnSendPing
     }
 }

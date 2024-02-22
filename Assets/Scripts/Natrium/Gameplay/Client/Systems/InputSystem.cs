@@ -9,6 +9,7 @@ using Natrium.Shared.Systems;
 
 namespace Natrium.Gameplay.Client.Systems
 {
+    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     [UpdateInGroup(typeof(GhostInputSystemGroup))]
     public partial class InputSystem : SystemBase
     {
@@ -54,6 +55,11 @@ namespace Natrium.Gameplay.Client.Systems
                     Screen.fullScreenMode = FullScreenMode.Windowed;
                 else
                     Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
+            }
+
+            if (Input.GetKeyUp(KeyCode.F2))
+            {
+                EventSystem.EnqueueEvent(Natrium.Shared.Events.OnSendPing);
             }
 
             ecb.Playback(EntityManager);

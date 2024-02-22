@@ -10,6 +10,7 @@ namespace Natrium.Gameplay.Shared.Components
         public bool AimSystem = true;
         public bool MeeleSystem = true;
         public bool MovementSystem = true;
+        public bool PingPongSystem = true;
         #endregion //Shared
 
         [Header("Client")]
@@ -40,6 +41,8 @@ namespace Natrium.Gameplay.Shared.Components
                 AddComponent<MeeleSystemExecute>(e);
             if (authoring.MovementSystem)
                 AddComponent<MovementSystemExecute>(e);
+            if (authoring.PingPongSystem)
+                AddComponent<PingPongSystemExecute>(e);
             #endregion //Shared
 
             #region Client
@@ -66,6 +69,7 @@ namespace Natrium.Gameplay.Shared.Components
     public struct AimSystemExecute : IComponentData {}
     public struct MeeleSystemExecute : IComponentData {}
     public struct MovementSystemExecute : IComponentData {}
+    public struct PingPongSystemExecute : IComponentData {}
     #endregion //Shared
 
     #region Client
