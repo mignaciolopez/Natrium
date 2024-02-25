@@ -37,31 +37,40 @@ namespace Natrium.Gameplay.Shared.Components
             #region Shared
             if (authoring.AimSystem)
                 AddComponent<AimSystemExecute>(e);
+
             if (authoring.MeeleSystem)
                 AddComponent<MeeleSystemExecute>(e);
+
             if (authoring.MovementSystem)
                 AddComponent<MovementSystemExecute>(e);
+
             if (authoring.PingPongSystem)
                 AddComponent<PingPongSystemExecute>(e);
-            #endregion //Shared
+            #endregion Shared
 
             #region Client
             if (authoring.CameraSystem)
                 AddComponent<CameraSystemExecute>(e);
+
             if (authoring.ClientSystem)
                 AddComponent<ClientSystemExecute>(e);
+
             if (authoring.InputSystem)
                 AddComponent<InputSystemExecute>(e);
-            #endregion //Client
+
+            #endregion Client
 
             #region Server
             if (authoring.AttackSystem)
                 AddComponent<AttackSystemExecute>(e);
+
             if (authoring.RaycastSystem)
                 AddComponent<RaycastSystemExecute>(e);
+
             if (authoring.ServerSystem)
                 AddComponent<ServerSystemExecute>(e);
-            #endregion //Server
+
+            #endregion Server
         }
     }
 
@@ -70,17 +79,17 @@ namespace Natrium.Gameplay.Shared.Components
     public struct MeeleSystemExecute : IComponentData {}
     public struct MovementSystemExecute : IComponentData {}
     public struct PingPongSystemExecute : IComponentData {}
-    #endregion //Shared
+    #endregion Shared
 
     #region Client
     public struct CameraSystemExecute : IComponentData {}
     public struct ClientSystemExecute : IComponentData {}
     public struct InputSystemExecute : IComponentData {}
-    #endregion //Client
+    #endregion Client
 
     #region Server
     public struct AttackSystemExecute : IComponentData {}
     public struct RaycastSystemExecute : IComponentData {}
     public struct ServerSystemExecute : IComponentData {}
-    #endregion //Server
+    #endregion Server
 }

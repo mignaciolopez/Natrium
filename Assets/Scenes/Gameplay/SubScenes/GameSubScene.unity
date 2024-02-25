@@ -171,6 +171,7 @@ MonoBehaviour:
   AimSystem: 1
   MeeleSystem: 1
   MovementSystem: 1
+  MovementChangeSystem: 1
   PingPongSystem: 1
   CameraSystem: 1
   ClientSystem: 1
@@ -562,30 +563,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   FQDN: natrium.ddns.net
   Port: 7979
-  movementType: 0
-  addCustomClientTickRate: 0
-  commandAgeCorrectionFraction: 0.1
-  interpolationDelayCorrectionFraction: 0.1
-  interpolationDelayJitterScale: 1.25
-  interpolationDelayMaxDeltaTicksFraction: 0.1
-  useInterpolationTimeMS: 0
-  interpolationTimeMS: 0
-  useInterpolationTimeNetTicks: 0
-  interpolationTimeNetTicks: 0
-  interpolationTimeScaleMax: 1.1
-  interpolationTimeScaleMin: 0.85
-  useMaxExtrapolationTimeSimTicks: 0
-  maxExtrapolationTimeSimTicks: 0
-  useMaxPredictAheadTimeMS: 0
-  maxPredictAheadTimeMS: 0
-  useMaxPredictionStepBatchSizeFirstTimeTick: 0
-  maxPredictionStepBatchSizeFirstTimeTick: 0
-  useMaxPredictionStepBatchSizeRepeatedTick: 0
-  maxPredictionStepBatchSizeRepeatedTick: 0
-  predictionTimeScaleMax: 1.1
-  predictionTimeScaleMin: 0.9
-  useTargetCommandSlack: 0
-  targetCommandSlack: 0
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0

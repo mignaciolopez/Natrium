@@ -6,10 +6,18 @@ using Unity.Mathematics;
 
 namespace Natrium.Gameplay.Shared.Components
 {
+    public enum MovementTypeEnum
+    {
+        Free = 0,
+        Diagonal,
+        Classic
+    }
+
     [DisallowMultipleComponent]
     public class PlayerAuthoring : MonoBehaviour
     {
         public float speed = 2.0f;
+        public MovementTypeEnum movementType = MovementTypeEnum.Classic;
     }
 
     public class PlayerBaker : Baker<PlayerAuthoring>
@@ -23,6 +31,14 @@ namespace Natrium.Gameplay.Shared.Components
             {
                 Value = authoring.speed
             });
+            AddComponent(entity, new MovementType
+            {
+                Value = authoring.movementType
+            });
+            AddComponent<MovementFree>(entity);
+            AddComponent<MovementDiagonal>(entity);
+            AddComponent<MovementClassic>(entity);
+
             AddComponent<PlayerInput>(entity);
             AddComponent<Health>(entity);
             AddComponent<MaxHealth>(entity);
@@ -79,4 +95,14 @@ namespace Natrium.Gameplay.Shared.Components
         [GhostField(Quantization = 100)]
         public float3 InputAxis;
     }
+
+    public struct MovementType : IComponentData
+    {
+        [GhostField]
+        public MovementTypeEnum Value;
+    }
+
+    public struct MovementFree : IComponentData, IEnableableComponent { }
+    public struct MovementDiagonal : IComponentData, IEnableableComponent { }
+    public struct MovementClassic : IComponentData, IEnableableComponent { }
 }
