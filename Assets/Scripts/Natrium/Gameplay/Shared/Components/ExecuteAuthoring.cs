@@ -18,6 +18,8 @@ namespace Natrium.Gameplay.Shared.Components
         public bool CameraSystem = true;
         public bool ClientSystem = true;
         public bool InputSystem = true;
+        public bool PlayerNameSystem = true;
+        public bool DebugTileSystem = true;
         #endregion //Client
 
         [Header("Server")]
@@ -58,6 +60,12 @@ namespace Natrium.Gameplay.Shared.Components
             if (authoring.InputSystem)
                 AddComponent<InputSystemExecute>(e);
 
+            if (authoring.PlayerNameSystem)
+                AddComponent<PlayerNameSystemExecute>(e);
+
+            if (authoring.DebugTileSystem)
+                AddComponent<DebugTileSystemExecute>(e);
+
             #endregion Client
 
             #region Server
@@ -85,6 +93,8 @@ namespace Natrium.Gameplay.Shared.Components
     public struct CameraSystemExecute : IComponentData {}
     public struct ClientSystemExecute : IComponentData {}
     public struct InputSystemExecute : IComponentData {}
+    public struct PlayerNameSystemExecute : IComponentData {}
+    public struct DebugTileSystemExecute : IComponentData {}
     #endregion Client
 
     #region Server

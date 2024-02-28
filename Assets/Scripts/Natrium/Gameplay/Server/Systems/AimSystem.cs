@@ -54,7 +54,7 @@ namespace Natrium.Gameplay.Server.Systems
                 if (SystemAPI.HasComponent<Player>(ro.Hit.Entity))
                 {
                     var rpcEntity = ecb.CreateEntity();
-                    ecb.AddComponent(rpcEntity, new Attack
+                    ecb.AddComponent(rpcEntity, new RpcAttack
                     {
                         Start = ro.Start,
                         End = ro.End,

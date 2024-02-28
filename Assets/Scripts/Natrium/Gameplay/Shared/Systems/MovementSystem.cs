@@ -25,7 +25,6 @@ namespace Natrium.Gameplay.Shared.Systems
             _lookUpClassic = state.GetComponentLookup<MovementClassic>();
         }
 
-
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {

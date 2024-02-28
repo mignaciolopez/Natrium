@@ -11,7 +11,7 @@ namespace Natrium.Gameplay.Shared.Components
     }
     public struct RpcMeele : IRpcCommand { }
 
-    public struct Attack : IRpcCommand
+    public struct RpcAttack : IRpcCommand
     {
         public float3 Start;
         public float3 End;
