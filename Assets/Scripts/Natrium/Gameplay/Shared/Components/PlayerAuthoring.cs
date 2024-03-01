@@ -35,6 +35,7 @@ namespace Natrium.Gameplay.Shared.Components
             {
                 Value = authoring.movementType
             });
+            AddComponent<PlayerPosition>(entity);
             AddComponent<MovementFree>(entity);
             AddComponent<MovementDiagonal>(entity);
             AddComponent<MovementClassic>(entity);
@@ -51,12 +52,15 @@ namespace Natrium.Gameplay.Shared.Components
     {
         [GhostField]
         public FixedString64Bytes Name;
-        
+    }
+
+    public struct PlayerPosition : IComponentData
+    {
         [GhostField]
-        public int3 PreviousPos;
-        
+        public float3 Previous;
+
         [GhostField]
-        public int3 NextPos;
+        public float3 Next;
     }
 
     public struct Speed : IComponentData

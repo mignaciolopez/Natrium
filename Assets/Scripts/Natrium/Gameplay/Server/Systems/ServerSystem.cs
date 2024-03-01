@@ -22,16 +22,14 @@ namespace Natrium.Gameplay.Server.Systems
         private static ComponentLookup<NetworkId> _networkIdFromEntity;
         private NetworkStreamRequestListenResult.State _listenState;
 
-        EntityCommandBuffer _ecb;
+        private EntityCommandBuffer _ecb;
+
         protected override void OnCreate()
         {
             base.OnCreate();
             
             RequireForUpdate<ServerSystemExecute>();
             RequireForUpdate<SystemsSettings>();
-
-            //var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<Rpc_Connect>().WithAll<ReceiveRpcCommandRequest>();
-            //RequireForUpdate(GetEntityQuery(builder));
 
             _networkIdFromEntity = GetComponentLookup<NetworkId>(true);
         }
@@ -40,12 +38,10 @@ namespace Natrium.Gameplay.Server.Systems
         {
             base.OnStartRunning();
 
-            _ecb = new EntityCommandBuffer(Allocator.Temp);
+            if (SystemAPI.TryGetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>(out var ecbs))
+                _ecb = ecbs.CreateCommandBuffer(World.Unmanaged);
 
             Listen();
-
-            _ecb.Playback(EntityManager);
-            _ecb.Dispose();
         }
 
         protected override void OnStopRunning()
@@ -55,21 +51,19 @@ namespace Natrium.Gameplay.Server.Systems
 
         protected override void OnUpdate()
         {
-            _ecb = new EntityCommandBuffer(Allocator.Temp);
+            if (SystemAPI.TryGetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>(out var ecbs))
+                _ecb = ecbs.CreateCommandBuffer(World.Unmanaged);
 
             _networkIdFromEntity.Update(this);
 
             GetListeningStatus();
             RPC_Connect();
 
-            //delete changemovement
+            //TODO: delete changemovement()
             //changemovement();
-
-            _ecb.Playback(EntityManager);
-            _ecb.Dispose();
         }
 
-        //delete changemovement
+        //TODO: delete changemovement()
         private float elapsedtime = 0;
         private int currentMT = -1;
         private float interval = 7.5f;
@@ -91,7 +85,6 @@ namespace Natrium.Gameplay.Server.Systems
                 }
             }
         }
-        //delete changemovement
 
         private void Listen()
         {
@@ -150,14 +143,14 @@ namespace Natrium.Gameplay.Server.Systems
 
             EntityManager.GetName(prefab, out var prefabName);
 
-            foreach (var (reqSrc, reqEntity) in SystemAPI.Query<RefRO<ReceiveRpcCommandRequest>>().WithAll<RpcConnect>().WithEntityAccess())
+            foreach (var (rpcConnect, rpcSource, rpcEntity) in SystemAPI.Query<RefRO<RpcConnect>, RefRO<ReceiveRpcCommandRequest>>().WithEntityAccess())
             {
-                Log.Debug($"Processing {reqSrc.ValueRO.SourceConnection}'s RpcConnect");
+                Log.Debug($"Processing {rpcSource.ValueRO.SourceConnection}'s RpcConnect");
 
-                _ecb.AddComponent<NetworkStreamInGame>(reqSrc.ValueRO.SourceConnection);
-                var networkId = _networkIdFromEntity[reqSrc.ValueRO.SourceConnection];
+                _ecb.AddComponent<NetworkStreamInGame>(rpcSource.ValueRO.SourceConnection);
+                var networkId = _networkIdFromEntity[rpcSource.ValueRO.SourceConnection];
 
-                var player = EntityManager.Instantiate(prefab);
+                var player = _ecb.Instantiate(prefab);
                 _ecb.SetComponent(player, new GhostOwner { NetworkId = networkId.Value });
 
                 //TODO: Grab Data From Database
@@ -171,8 +164,12 @@ namespace Natrium.Gameplay.Server.Systems
                 _ecb.SetComponent(player, new Player
                 {
                     Name = (FixedString64Bytes)$"Player {networkId.Value}",
-                    PreviousPos = (int3)position,
-                    NextPos = (int3)position
+                });
+
+                _ecb.SetComponent(player, new PlayerPosition
+                {
+                    Previous = position,
+                    Next = position
                 });
 
                 _ecb.SetComponent(player, new Health() { Value = 100 });
@@ -187,11 +184,11 @@ namespace Natrium.Gameplay.Server.Systems
                 });
 
                 // Add the player to the linked entity group so it is destroyed automatically on disconnect
-                _ecb.AppendToBuffer(reqSrc.ValueRO.SourceConnection, new LinkedEntityGroup { Value = player });
+                _ecb.AppendToBuffer(rpcSource.ValueRO.SourceConnection, new LinkedEntityGroup { Value = player });
 
-                _ecb.DestroyEntity(reqEntity);
+                _ecb.DestroyEntity(rpcEntity);
 
-                Log.Debug($"Processing RpcConnect for Entity: '{reqSrc.ValueRO.SourceConnection}' " +
+                Log.Debug($"Processing RpcConnect for Entity: '{rpcSource.ValueRO.SourceConnection}' " +
                     $"Added NetworkStreamInGame for NetworkId Value: '{networkId.Value}' " +
                     $"Instantiate prefab: '{prefabName}'" + $"SetComponent: new GhostOwner " +
                     $"Add LinkedEntityGroup to '{prefabName}'.");

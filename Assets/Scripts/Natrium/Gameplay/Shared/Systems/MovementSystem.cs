@@ -84,12 +84,13 @@ namespace Natrium.Gameplay.Shared.Systems
     {
         public float dt;
 
-        private void Execute(RefRW<LocalTransform> lt, RefRW<Player> p, PlayerInput pi, Speed s, EnabledRefRW<MovementFree> mf, Simulate sim)
+        private void Execute(RefRW<LocalTransform> lt, RefRW<PlayerPosition> p, PlayerInput pi, Speed s, EnabledRefRW<MovementFree> mf, Simulate sim)
         {
             lt.ValueRW.Position += pi.InputAxis * s.Value * dt;
 
             //When in Free Mode needs to keep track for Hot Swapping between modes.
-            p.ValueRW.NextPos = (int3)math.round(lt.ValueRO.Position);
+            p.ValueRW.Next = math.round(lt.ValueRO.Position);
+            p.ValueRW.Previous = p.ValueRW.Next;
         }
     }
 
@@ -113,35 +114,35 @@ namespace Natrium.Gameplay.Shared.Systems
             return new float3(current.x + num / num5 * maxDistanceDelta, current.y + num2 / num5 * maxDistanceDelta, current.z + num3 / num5 * maxDistanceDelta);
         }
 
-        private void Execute(RefRW<LocalTransform> lt, RefRW<Player> p, PlayerInput pi, Speed s, EnabledRefRW<MovementDiagonal> md, Simulate sim)
+        private void Execute(RefRW<LocalTransform> lt, RefRW<PlayerPosition> p, PlayerInput pi, Speed s, EnabledRefRW<MovementDiagonal> md, Simulate sim)
         {
-            if (math.distance(lt.ValueRO.Position, p.ValueRO.NextPos) < s.Value * dt)
+            if (math.distance(lt.ValueRO.Position, p.ValueRO.Next) < s.Value * dt)
             {
-                lt.ValueRW.Position = p.ValueRO.NextPos;
-                p.ValueRW.PreviousPos = p.ValueRO.NextPos;
+                lt.ValueRW.Position = p.ValueRO.Next;
+                p.ValueRW.Previous = p.ValueRO.Next;
 
                 switch (pi.InputAxis.x)
                 {
                     case > 0:
-                        p.ValueRW.NextPos.x++;
+                        p.ValueRW.Next.x++;
                         break;
                     case < 0:
-                        p.ValueRW.NextPos.x--;
+                        p.ValueRW.Next.x--;
                         break;
                 }
 
                 switch (pi.InputAxis.z)
                 {
                     case > 0:
-                        p.ValueRW.NextPos.z++;
+                        p.ValueRW.Next.z++;
                         break;
                     case < 0:
-                        p.ValueRW.NextPos.z--;
+                        p.ValueRW.Next.z--;
                         break;
                 }
             }
 
-            lt.ValueRW.Position = MoveTowards(lt.ValueRW.Position, (float3)p.ValueRO.NextPos, s.Value * dt);
+            lt.ValueRW.Position = MoveTowards(lt.ValueRW.Position, (float3)p.ValueRO.Next, s.Value * dt);
         }
     }
 
@@ -165,24 +166,24 @@ namespace Natrium.Gameplay.Shared.Systems
             return new float3(current.x + num / num5 * maxDistanceDelta, current.y + num2 / num5 * maxDistanceDelta, current.z + num3 / num5 * maxDistanceDelta);
         }
 
-        private void Execute(RefRW<LocalTransform> lt, RefRW<Player> p, PlayerInput pi, Speed s, EnabledRefRW<MovementClassic> mc, Simulate sim)
+        private void Execute(RefRW<LocalTransform> lt, RefRW<PlayerPosition> p, PlayerInput pi, Speed s, EnabledRefRW<MovementClassic> mc, Simulate sim)
         {
-            if (math.distance(lt.ValueRO.Position, p.ValueRO.NextPos) < s.Value * dt)
+            if (math.distance(lt.ValueRO.Position, p.ValueRO.Next) < s.Value * dt)
             {
-                lt.ValueRW.Position = p.ValueRO.NextPos;
-                p.ValueRW.PreviousPos = p.ValueRO.NextPos;
+                lt.ValueRW.Position = p.ValueRO.Next;
+                p.ValueRW.Previous = p.ValueRO.Next;
 
                 if (pi.InputAxis.z > 0)
-                    p.ValueRW.NextPos.z++;
+                    p.ValueRW.Next.z++;
                 else if (pi.InputAxis.x > 0)
-                    p.ValueRW.NextPos.x++;
+                    p.ValueRW.Next.x++;
                 else if (pi.InputAxis.z < 0)
-                    p.ValueRW.NextPos.z--;
+                    p.ValueRW.Next.z--;
                 else if (pi.InputAxis.x < 0)
-                    p.ValueRW.NextPos.x--;
+                    p.ValueRW.Next.x--;
             }
 
-            lt.ValueRW.Position = MoveTowards(lt.ValueRW.Position, (float3)p.ValueRO.NextPos, s.Value * dt);
+            lt.ValueRW.Position = MoveTowards(lt.ValueRW.Position, (float3)p.ValueRO.Next, s.Value * dt);
         }
     }
 } // namespace
