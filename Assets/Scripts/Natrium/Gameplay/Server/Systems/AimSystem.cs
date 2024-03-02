@@ -1,7 +1,5 @@
 using Unity.Entities;
 using Unity.NetCode;
-using Unity.Collections;
-using Natrium.Gameplay.Server.Components;
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Gameplay.Shared.Utilities;
 using Natrium.Shared;
@@ -38,11 +36,11 @@ namespace Natrium.Gameplay.Server.Systems
                 start.y = 10.0f; //ToDo: The plus 10 on y axis, comes from the offset of the camara
                 var end = rpcAim.MouseWorldPosition;
 
-                ecb.AddComponent(Utils.GetEntityPrefab(nid.Value, EntityManager), new RaycastCommand { Start = start, End = end });
+                ecb.AddComponent(Utils.GetEntityPrefab(nid.Value, EntityManager), new RayCast { Start = start, End = end });
                 ecb.DestroyEntity(rpcEntity);
             }
 
-            foreach (var (ro, goSrc, entity) in SystemAPI.Query<RaycastOutput, GhostOwner>().WithEntityAccess())
+            foreach (var (ro, goSrc, entity) in SystemAPI.Query<RayCastOutput, GhostOwner>().WithEntityAccess())
             {
                 var networkIDSource = goSrc.NetworkId;
                 var networkIDTarget = 0;
@@ -75,7 +73,7 @@ namespace Natrium.Gameplay.Server.Systems
                     ecb.AddComponent(rpcEntity, new SendRpcCommandRequest { TargetConnection = Utils.GetEntityConnection(networkIDSource, EntityManager) });
                 }
 
-                ecb.RemoveComponent<RaycastOutput>(entity);
+                ecb.RemoveComponent<RayCastOutput>(entity);
             }
 
             ecb.Playback(EntityManager);

@@ -142,7 +142,7 @@ namespace Natrium.Gameplay.Shared.Systems
                 }
             }
 
-            lt.ValueRW.Position = MoveTowards(lt.ValueRW.Position, (float3)p.ValueRO.Next, s.Value * dt);
+            lt.ValueRW.Position = MoveTowards(lt.ValueRW.Position, p.ValueRO.Next, s.Value * dt);
         }
     }
 
@@ -183,7 +183,7 @@ namespace Natrium.Gameplay.Shared.Systems
                     p.ValueRW.Next.x--;
             }
 
-            lt.ValueRW.Position = MoveTowards(lt.ValueRW.Position, (float3)p.ValueRO.Next, s.Value * dt);
+            lt.ValueRW.Position = MoveTowards(lt.ValueRW.Position, p.ValueRO.Next, s.Value * dt);
         }
     }
 } // namespace
