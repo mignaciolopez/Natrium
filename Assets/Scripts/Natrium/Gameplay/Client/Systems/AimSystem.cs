@@ -37,7 +37,7 @@ namespace Natrium.Gameplay.Client.Systems
 
         private void OnPrimaryClick(Stream stream)
         {
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
+            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
 
             if (Camera.main != null)
             {
@@ -52,7 +52,6 @@ namespace Natrium.Gameplay.Client.Systems
             }
 
             ecb.Playback(EntityManager);
-            ecb.Dispose();
         }
     }
 }

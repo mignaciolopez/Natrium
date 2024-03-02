@@ -20,7 +20,7 @@ namespace Natrium.Gameplay.Server.Systems
 
         protected override void OnUpdate()
         {
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
+            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
 
             foreach (var (clientEntity, rpcAim, rpcEntity) in SystemAPI.Query<ReceiveRpcCommandRequest, RpcAim>().WithEntityAccess())
             {
@@ -79,7 +79,6 @@ namespace Natrium.Gameplay.Server.Systems
             }
 
             ecb.Playback(EntityManager);
-            ecb.Dispose();
         }
     }
 }

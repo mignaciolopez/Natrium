@@ -1,6 +1,5 @@
 using Unity.Entities;
 using Unity.Physics;
-using Unity.Collections;
 using Natrium.Gameplay.Server.Components;
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Shared;
@@ -24,7 +23,7 @@ namespace Natrium.Gameplay.Server.Systems
 
         protected override void OnStartRunning()
         {
-            var builder = new EntityQueryBuilder(Allocator.Temp).WithAll<PhysicsWorldSingleton>();
+            var builder = new EntityQueryBuilder(WorldUpdateAllocator).WithAll<PhysicsWorldSingleton>();
             var singletonQuery = World.DefaultGameObjectInjectionWorld.EntityManager.CreateEntityQuery(builder);
             _physicsWorldSingleton = singletonQuery.GetSingleton<PhysicsWorldSingleton>();
             _collisionWorld = _physicsWorldSingleton.CollisionWorld;
@@ -33,7 +32,7 @@ namespace Natrium.Gameplay.Server.Systems
 
         protected override void OnUpdate()
         {
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
+            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
 
             foreach (var (rc, pc, entity) in SystemAPI.Query<RaycastCommand, PhysicsCollider>().WithEntityAccess())
             {
@@ -63,7 +62,6 @@ namespace Natrium.Gameplay.Server.Systems
             }
 
             ecb.Playback(EntityManager);
-            ecb.Dispose();
         }
     }
 }

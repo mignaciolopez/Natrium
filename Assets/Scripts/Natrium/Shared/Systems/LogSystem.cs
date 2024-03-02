@@ -12,17 +12,16 @@ namespace Natrium.Shared.Systems
         {
             base.OnCreate();
 
-            //_ecb = new EntityCommandBuffer(Allocator.Temp);
+            //_ecb = new EntityCommandBuffer(WorldUpdateAllocator);
         }
 
         protected override void OnUpdate()
         {
-            _ecb = new EntityCommandBuffer(Allocator.Temp);
+            _ecb = new EntityCommandBuffer(WorldUpdateAllocator);
 
             PerformLogging();
 
             _ecb.Playback(EntityManager);
-            _ecb.Dispose();
         }
 
         private void PerformLogging()

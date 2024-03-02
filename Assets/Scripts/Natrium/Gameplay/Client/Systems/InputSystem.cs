@@ -22,7 +22,7 @@ namespace Natrium.Gameplay.Client.Systems
 
         protected override void OnUpdate()
         {
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
+            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
 
             foreach (var pid in SystemAPI.Query<RefRW<PlayerInput>>().WithAll<GhostOwnerIsLocal>())
             {
@@ -63,7 +63,6 @@ namespace Natrium.Gameplay.Client.Systems
             }
 
             ecb.Playback(EntityManager);
-            ecb.Dispose();
         }
     }
 }

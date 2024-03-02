@@ -62,7 +62,7 @@ namespace Natrium.Gameplay.Client.Systems
             {
                 Log.Debug($"SystemsSettings: {ss.FQDN}:{ss.Port}");
 
-                var ecb = new EntityCommandBuffer(Allocator.Temp);
+                var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
 
                 IPAddress[] ipv4Addresses = Array.FindAll(Dns.GetHostEntry(ss.FQDN.ToString()).AddressList, a => a.AddressFamily == AddressFamily.InterNetwork);
                 if (ipv4Addresses.Length > 0)
@@ -79,7 +79,6 @@ namespace Natrium.Gameplay.Client.Systems
                     });
 
                     ecb.Playback(EntityManager);
-                    ecb.Dispose();
                 }
                 else
                 {
@@ -94,7 +93,7 @@ namespace Natrium.Gameplay.Client.Systems
 
         private void OnKeyCodeEscape(Stream stream)
         {
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
+            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
 
             foreach (var (nid, e) in SystemAPI.Query<NetworkId>().WithEntityAccess().WithAll<NetworkStreamInGame, GhostOwnerIsLocal>())
             {
@@ -104,12 +103,11 @@ namespace Natrium.Gameplay.Client.Systems
             }
 
             ecb.Playback(EntityManager);
-            ecb.Dispose();
         }
 
         private void OnConnect(Stream stream)
         {
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
+            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
 
             foreach (var (nId, e) in SystemAPI.Query<NetworkId>().WithEntityAccess().WithNone<NetworkStreamInGame>())
             {
@@ -125,7 +123,6 @@ namespace Natrium.Gameplay.Client.Systems
             }
 
             ecb.Playback(EntityManager);
-            ecb.Dispose();
         }
 
         private void OnDisconnect(Stream stream)
@@ -135,7 +132,7 @@ namespace Natrium.Gameplay.Client.Systems
 
         private void ApplyColor()
         {
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
+            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
 
             foreach (var (go, dc) in SystemAPI.Query<GhostOwner, DebugColor>().WithNone<URPMaterialPropertyBaseColor>())
             {
@@ -149,7 +146,6 @@ namespace Natrium.Gameplay.Client.Systems
             }
 
             ecb.Playback(EntityManager);
-            ecb.Dispose();
         }
     }
 }

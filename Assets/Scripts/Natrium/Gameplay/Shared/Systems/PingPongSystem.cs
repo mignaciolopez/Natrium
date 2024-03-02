@@ -36,13 +36,12 @@ namespace Natrium.Gameplay.Shared.Systems
 
         protected override void OnUpdate()
         {
-            _ecb = new EntityCommandBuffer(Allocator.Temp);
+            _ecb = new EntityCommandBuffer(WorldUpdateAllocator);
 
             ProcessPings();
             ProcessPongs();
 
             _ecb.Playback(EntityManager);
-            _ecb.Dispose();
         }
 
         private void ProcessPings()
@@ -69,7 +68,7 @@ namespace Natrium.Gameplay.Shared.Systems
         {
             var unixTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
 
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
+            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
 
             var reqE = ecb.CreateEntity();
             ecb.AddComponent(reqE, new RpcPing
