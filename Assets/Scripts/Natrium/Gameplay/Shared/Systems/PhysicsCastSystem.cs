@@ -45,12 +45,7 @@ namespace Natrium.Gameplay.Shared.Systems
             {
                 Start = cr.ValueRO.Start,
                 End = cr.ValueRO.End,
-                Filter = new CollisionFilter()
-                {
-                    BelongsTo = pc.ValueRO.Value.Value.GetCollisionFilter().BelongsTo,
-                    CollidesWith = pc.ValueRO.Value.Value.GetCollisionFilter().CollidesWith,
-                    GroupIndex = pc.ValueRO.Value.Value.GetCollisionFilter().GroupIndex
-                }
+                Filter = pc.ValueRO.Value.Value.GetCollisionFilter()
             };
 
             if (collisionWorld.CastRay(input, out var hit))
@@ -69,12 +64,7 @@ namespace Natrium.Gameplay.Shared.Systems
         {
             ecb.RemoveComponent<BoxCast>(e);
 
-            var filter = new CollisionFilter()
-            {
-                BelongsTo = pc.ValueRO.Value.Value.GetCollisionFilter().BelongsTo,
-                CollidesWith = pc.ValueRO.Value.Value.GetCollisionFilter().CollidesWith,
-                GroupIndex = pc.ValueRO.Value.Value.GetCollisionFilter().GroupIndex
-            };
+            var filter = pc.ValueRO.Value.Value.GetCollisionFilter();
 
             if (collisionWorld.BoxCast(bc.ValueRO.Center, bc.ValueRO.Orientation, bc.ValueRO.HalfExtents, bc.ValueRO.Direction, bc.ValueRO.MaxDistance, out var hit, filter))
             {
