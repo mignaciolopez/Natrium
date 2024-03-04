@@ -57,7 +57,7 @@ namespace Natrium.Gameplay.Client.Systems.UI
             foreach(var (rpcTile, rpcEntity) in SystemAPI.Query<RefRO<RpcTile>>().WithAll<ReceiveRpcCommandRequest>().WithNone<RpcTileDrawnTag>().WithEntityAccess())
             {
                 _debugTile.SetActive(true);
-                _debugTile.transform.position = math.round(rpcTile.ValueRO.End);
+                _debugTile.transform.position = math.round(rpcTile.ValueRO.End); ;
                 _ecb.AddComponent<RpcTileDrawnTag>(rpcEntity);
 
                 //TODO: UI Should Not consume the rpc, just removing the warning cause no one is consuming it rn
@@ -67,13 +67,13 @@ namespace Natrium.Gameplay.Client.Systems.UI
 
         private void DrawDebugAttacks()
         {
-            foreach (var (rpcA, rpcEntity) in SystemAPI.Query<RefRO<RpcAttack>>().WithAll<ReceiveRpcCommandRequest>().WithNone<RpcTileDrawnTag>().WithEntityAccess())
+            foreach (var (rpcAttack, rpcEntity) in SystemAPI.Query<RefRO<RpcAttack>>().WithAll<ReceiveRpcCommandRequest>().WithNone<RpcTileDrawnTag>().WithEntityAccess())
             {
-                var entitySource = Utils.GetEntityPrefab(rpcA.ValueRO.NetworkIdSource, EntityManager);
+                var entitySource = Utils.GetEntityPrefab(rpcAttack.ValueRO.NetworkIdSource, EntityManager);
                 var DebugColor = EntityManager.GetComponentData<DebugColor>(entitySource);
 
                 var offset = new float3(0, 1.6f, 0);
-                var gameObject = GameObject.Instantiate(_debugTilePrefab, math.round(rpcA.ValueRO.End + offset), Quaternion.identity);
+                var gameObject = GameObject.Instantiate(_debugTilePrefab, math.round(rpcAttack.ValueRO.End + offset), Quaternion.identity);
                 gameObject.GetComponentInChildren<SpriteRenderer>().color = new Color(DebugColor.Value.x, DebugColor.Value.y, DebugColor.Value.z);
                 GameObject.Destroy(gameObject, 1.0f);
 
