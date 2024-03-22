@@ -2,6 +2,7 @@ using Unity.Entities;
 using Unity.Physics;
 using Natrium.Gameplay.Shared.Components;
 using Unity.Burst;
+using Unity.Physics.Systems;
 
 namespace Natrium.Gameplay.Shared.Systems
 {
@@ -10,7 +11,6 @@ namespace Natrium.Gameplay.Shared.Systems
     {
         public void OnCreate(ref SystemState state)
         {
-            state.RequireForUpdate<RaycastSystemExecute>();
             state.RequireForUpdate<PhysicsWorldSingleton>();
         }
 
@@ -48,10 +48,14 @@ namespace Natrium.Gameplay.Shared.Systems
                 Filter = pc.ValueRO.Value.Value.GetCollisionFilter()
             };
 
-            if (collisionWorld.CastRay(input, out var hit))
+            var isHit = collisionWorld.CastRay(input, out var hit);
+            ecb.AddComponent(e, new RayCastOutput
             {
-                ecb.AddComponent(e, new RayCastOutput { Hit = hit, Start = cr.ValueRO.Start, End = cr.ValueRO.End });
-            }
+                IsHit = isHit,
+                Hit = hit,
+                Start = cr.ValueRO.Start,
+                End = cr.ValueRO.End
+            });
         }
     }
 
@@ -66,10 +70,8 @@ namespace Natrium.Gameplay.Shared.Systems
 
             var filter = pc.ValueRO.Value.Value.GetCollisionFilter();
 
-            if (collisionWorld.BoxCast(bc.ValueRO.Center, bc.ValueRO.Orientation, bc.ValueRO.HalfExtents, bc.ValueRO.Direction, bc.ValueRO.MaxDistance, out var hit, filter))
-            {
-                ecb.AddComponent(e, new BoxCastOutput { Hit = hit });
-            }
+            var isHit = collisionWorld.BoxCast(bc.ValueRO.Center, bc.ValueRO.Orientation, bc.ValueRO.HalfExtents, bc.ValueRO.Direction, bc.ValueRO.MaxDistance, out var hit, filter);
+            ecb.AddComponent(e, new BoxCastOutput { IsHit = isHit, Hit = hit });
         }
     }
 }

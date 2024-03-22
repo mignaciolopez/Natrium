@@ -1,33 +1,34 @@
 using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
-using Unity.Collections;
 using Natrium.Shared;
-using Natrium.Shared.Systems;
 using Natrium.Gameplay.Shared.Components;
+using Natrium.Settings.Input;
+using UnityEngine.InputSystem;
 
 namespace Natrium.Gameplay.Client.Systems
 {    
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial class AimSystem : SystemBase
     {
+        private InputActions _inputActions;
+
         protected override void OnCreate()
         {
-            base.OnCreate();
-
-            RequireForUpdate<AimSystemExecute>();
+            _inputActions = new InputActions();
+            RequireForUpdate<NetworkStreamInGame>();
         }
 
         protected override void OnStartRunning()
         {
-            base.OnStartRunning();
-            EventSystem.Subscribe(Events.OnPrimaryClick, OnPrimaryClick);
+            _inputActions.Enable();
+            _inputActions.Map_Gameplay.Axn_MouseRealease.performed += OnPrimaryClick;
         }
 
         protected override void OnStopRunning()
         {
-            base.OnStopRunning();
-            EventSystem.UnSubscribe(Events.OnPrimaryClick, OnPrimaryClick);
+            _inputActions.Map_Gameplay.Axn_MouseRealease.performed -= OnPrimaryClick;
+            _inputActions.Disable();
         }
 
         protected override void OnUpdate()
@@ -35,15 +36,18 @@ namespace Natrium.Gameplay.Client.Systems
             
         }
 
-        private void OnPrimaryClick(Stream stream)
+        private void OnPrimaryClick(InputAction.CallbackContext context)
         {
             var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
 
             if (Camera.main != null)
             {
-                var mouseWorldPosition = Camera.main.ScreenToWorldPoint(Input.mousePosition + new Vector3(0, 0, Camera.main.transform.position.y));
+                var mouseInputPosition = _inputActions.Map_Gameplay.Axn_MousePosition.ReadValue<Vector2>();
+                var mousePosition = new Vector3(mouseInputPosition.x, mouseInputPosition.y, Camera.main.transform.position.y);
+                var mouseWorldPosition = Camera.main.ScreenToWorldPoint(mousePosition);
 
-                Log.Debug($"Input.mousePosition {Input.mousePosition}");
+                Log.Debug($"mouseInputPosition {mouseInputPosition}");
+                Log.Debug($"mousePosition {mousePosition}");
                 Log.Debug($"mouseWorldPosition {mouseWorldPosition}");
 
                 var req = ecb.CreateEntity();

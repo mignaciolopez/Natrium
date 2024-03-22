@@ -3,7 +3,6 @@ using Unity.Transforms;
 using UnityEngine;
 using Natrium.Gameplay.Client.Components;
 using Unity.NetCode;
-using Natrium.Gameplay.Shared.Components;
 
 namespace Natrium.Gameplay.Client.Systems
 {
@@ -16,8 +15,6 @@ namespace Natrium.Gameplay.Client.Systems
         protected override void OnCreate()
         {
             base.OnCreate();
-
-            RequireForUpdate<CameraSystemExecute>();
         }
 
         protected override void OnStartRunning()

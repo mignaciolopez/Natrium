@@ -1,5 +1,3 @@
-using Natrium.Gameplay.Shared.Components;
-using Unity.Collections;
 using Unity.Entities;
 
 namespace Natrium.Gameplay.Server.Systems
@@ -10,8 +8,6 @@ namespace Natrium.Gameplay.Server.Systems
         protected override void OnCreate()
         {
             base.OnCreate();
-
-            RequireForUpdate<MeeleSystemExecute>();
         }
 
         protected override void OnUpdate()

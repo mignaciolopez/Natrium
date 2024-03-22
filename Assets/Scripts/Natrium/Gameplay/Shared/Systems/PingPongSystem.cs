@@ -2,7 +2,6 @@ using Natrium.Gameplay.Shared.Components;
 using Natrium.Shared;
 using Natrium.Shared.Systems;
 using System;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 
@@ -18,7 +17,6 @@ namespace Natrium.Gameplay.Shared.Systems
 
             Log.Verbose($"[{World.Name}] OnCreate");
 
-            RequireForUpdate<PingPongSystemExecute>();
             RequireForUpdate<SystemsSettings>();
         }
 

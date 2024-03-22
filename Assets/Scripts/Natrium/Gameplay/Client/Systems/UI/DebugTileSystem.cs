@@ -19,8 +19,6 @@ namespace Natrium.Gameplay.Client.Systems.UI
         protected override void OnCreate()
         {
             base.OnCreate();
-
-            RequireForUpdate<DebugTileSystemExecute>();
         }
 
         protected override void OnStartRunning()
@@ -70,12 +68,16 @@ namespace Natrium.Gameplay.Client.Systems.UI
             foreach (var (rpcAttack, rpcEntity) in SystemAPI.Query<RefRO<RpcAttack>>().WithAll<ReceiveRpcCommandRequest>().WithNone<RpcTileDrawnTag>().WithEntityAccess())
             {
                 var entitySource = Utils.GetEntityPrefab(rpcAttack.ValueRO.NetworkIdSource, EntityManager);
-                var DebugColor = EntityManager.GetComponentData<DebugColor>(entitySource);
 
-                var offset = new float3(0, 1.6f, 0);
-                var gameObject = GameObject.Instantiate(_debugTilePrefab, math.round(rpcAttack.ValueRO.End + offset), Quaternion.identity);
-                gameObject.GetComponentInChildren<SpriteRenderer>().color = new Color(DebugColor.Value.x, DebugColor.Value.y, DebugColor.Value.z);
-                GameObject.Destroy(gameObject, 1.0f);
+                if (entitySource != Entity.Null)
+                {
+                    var DebugColor = EntityManager.GetComponentData<DebugColor>(entitySource);
+
+                    var offset = new float3(0, 1.6f, 0);
+                    var gameObject = GameObject.Instantiate(_debugTilePrefab, math.round(rpcAttack.ValueRO.End + offset), Quaternion.identity);
+                    gameObject.GetComponentInChildren<SpriteRenderer>().color = new Color(DebugColor.Value.x, DebugColor.Value.y, DebugColor.Value.z);
+                    GameObject.Destroy(gameObject, 1.0f);
+                }
 
                 //TODO: UI Should Not consume the rpc, just removing the warning cause no one is consuming it rn
                 _ecb.DestroyEntity(rpcEntity);

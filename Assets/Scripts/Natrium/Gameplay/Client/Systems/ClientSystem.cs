@@ -1,9 +1,7 @@
 using Natrium.Shared;
 using Natrium.Shared.Systems;
 using Unity.Entities;
-using Unity.Collections;
 using Unity.NetCode;
-using Natrium.Gameplay.Client.Components;
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Gameplay.Shared.Utilities;
 using Natrium.Gameplay.Shared;
@@ -24,8 +22,6 @@ namespace Natrium.Gameplay.Client.Systems
         protected override void OnCreate()
         {
             base.OnCreate();
-
-            RequireForUpdate<ClientSystemExecute>();
             RequireForUpdate<SystemsSettings>();
         }
 
@@ -138,11 +134,14 @@ namespace Natrium.Gameplay.Client.Systems
             {
                 var entityPrefab = Utils.GetEntityPrefab(go.NetworkId, EntityManager);
 
-                var prefabGroup = EntityManager.GetBuffer<LinkedEntityGroup>(entityPrefab);
-                ecb.AddComponent(prefabGroup[1].Value, new URPMaterialPropertyBaseColor()
+                if (entityPrefab != Entity.Null)
                 {
-                    Value = new float4(dc.Value, 1.0f)
-                });
+                    var prefabGroup = EntityManager.GetBuffer<LinkedEntityGroup>(entityPrefab);
+                    ecb.AddComponent(prefabGroup[1].Value, new URPMaterialPropertyBaseColor()
+                    {
+                        Value = new float4(dc.Value, 1.0f)
+                    });
+                }
             }
 
             ecb.Playback(EntityManager);

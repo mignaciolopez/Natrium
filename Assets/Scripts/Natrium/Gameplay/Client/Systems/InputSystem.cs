@@ -1,55 +1,48 @@
-using System;
-using Unity.Collections;
+using UnityEngine;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
-using UnityEngine;
 using Natrium.Gameplay.Shared.Components;
+using Natrium.Settings.Input;
 using Natrium.Shared.Systems;
 
 namespace Natrium.Gameplay.Client.Systems
 {
-    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     [UpdateInGroup(typeof(GhostInputSystemGroup))]
     public partial class InputSystem : SystemBase
     {
+        private InputActions _inputActions;
+
         protected override void OnCreate()
         {
-            base.OnCreate();
+            _inputActions = new InputActions();
+        }
 
-            RequireForUpdate<InputSystemExecute>();
+        protected override void OnStartRunning()
+        {
+            _inputActions.Enable();
+        }
+
+        protected override void OnStopRunning()
+        {
+            _inputActions.Disable();
         }
 
         protected override void OnUpdate()
         {
-            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
+           var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
 
-            foreach (var pid in SystemAPI.Query<RefRW<PlayerInput>>().WithAll<GhostOwnerIsLocal>())
+            foreach (var pi in SystemAPI.Query<RefRW<PlayerInputAxis>>().WithAll<GhostOwnerIsLocal, Simulate>())
             {
-                pid.ValueRW = default;
-                
-                //Get Input From Joystick First
-                pid.ValueRW.InputAxis = new float3(Input.GetAxis("JHorizontal"), 0.0f, Input.GetAxis("JVertical"));
-
-                //If there was no Input, Get Input From Keyboard
-                if (pid.ValueRW.InputAxis is { x: 0, z: 0 })
-                {
-                    pid.ValueRW.InputAxis = new float3(Input.GetAxisRaw("Horizontal"), 0.0f, Input.GetAxisRaw("Vertical"));
-                    pid.ValueRW.InputAxis = math.normalizesafe(pid.ValueRW.InputAxis);
-                }
-                
-                if (Input.GetMouseButtonUp(0))
-                    EventSystem.EnqueueEvent(Natrium.Shared.Events.OnPrimaryClick);
+                pi.ValueRW.Value = _inputActions.Map_Gameplay.Axn_PlayerMove.ReadValue<Vector2>();
             }
 
-            if (Input.GetKeyUp(KeyCode.Return))
+            if (UnityEngine.Input.GetKeyUp(KeyCode.Return))
                 EventSystem.EnqueueEvent(Natrium.Shared.Events.OnKeyCodeReturn);
-            if (Input.GetKeyUp(KeyCode.Escape))
+            if (UnityEngine.Input.GetKeyUp(KeyCode.Escape))
                 EventSystem.EnqueueEvent(Natrium.Shared.Events.OnKeyCodeEscape);
-            //if (Input.GetKeyUp(KeyCode.LeftControl) || Input.GetKeyUp(KeyCode.RightControl))
-            //    throw new NotImplementedException("Input KeyCode.LeftControl || KeyCode.RightControl");
 
-            if (Input.GetKeyUp(KeyCode.F11))
+            if (UnityEngine.Input.GetKeyUp(KeyCode.F11))
             {
                 if (Screen.fullScreen)
                     Screen.fullScreenMode = FullScreenMode.Windowed;
@@ -57,7 +50,7 @@ namespace Natrium.Gameplay.Client.Systems
                     Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
             }
 
-            if (Input.GetKeyUp(KeyCode.F2))
+            if (UnityEngine.Input.GetKeyUp(KeyCode.F2))
             {
                 EventSystem.EnqueueEvent(Natrium.Shared.Events.OnSendPing);
             }

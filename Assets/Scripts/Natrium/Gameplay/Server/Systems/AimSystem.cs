@@ -12,8 +12,6 @@ namespace Natrium.Gameplay.Server.Systems
         protected override void OnCreate()
         {
             base.OnCreate();
-
-            RequireForUpdate<AimSystemExecute>();
         }
 
         protected override void OnUpdate()
@@ -22,9 +20,11 @@ namespace Natrium.Gameplay.Server.Systems
 
             foreach (var (clientEntity, rpcAim, rpcEntity) in SystemAPI.Query<ReceiveRpcCommandRequest, RpcAim>().WithEntityAccess())
             {
+                ecb.DestroyEntity(rpcEntity);
+
                 if (rpcAim.MouseWorldPosition is { x: 0, y: 0 })
                 {
-                    Log.Error($"RpcAimAttack.MouseWorldPosition: {rpcAim.MouseWorldPosition}");
+                    Log.Error($"RpcAim.MouseWorldPosition: {rpcAim.MouseWorldPosition}");
                     continue;
                 }
 
@@ -36,12 +36,18 @@ namespace Natrium.Gameplay.Server.Systems
                 start.y = 10.0f; //ToDo: The plus 10 on y axis, comes from the offset of the camara
                 var end = rpcAim.MouseWorldPosition;
 
-                ecb.AddComponent(Utils.GetEntityPrefab(nid.Value, EntityManager), new RayCast { Start = start, End = end });
-                ecb.DestroyEntity(rpcEntity);
+                var entityPrefab = Utils.GetEntityPrefab(nid.Value, EntityManager);
+                if (entityPrefab != Entity.Null)
+                    ecb.AddComponent(entityPrefab, new RayCast { Start = start, End = end });
             }
 
             foreach (var (ro, goSrc, entity) in SystemAPI.Query<RayCastOutput, GhostOwner>().WithEntityAccess())
             {
+                ecb.RemoveComponent<RayCastOutput>(entity);
+
+                if (ro.Hit.Entity == Entity.Null)
+                    Log.Warning($"Hited Entity {ro.Hit.Entity} is {ro.Hit.Entity}");
+
                 var networkIDSource = goSrc.NetworkId;
                 var networkIDTarget = 0;
                 if (EntityManager.HasComponent<GhostOwner>(ro.Hit.Entity))
@@ -49,7 +55,7 @@ namespace Natrium.Gameplay.Server.Systems
 
                 Log.Debug($"{entity}:{networkIDSource} hit {ro.Hit.Entity}:{networkIDTarget}");
 
-                if (SystemAPI.HasComponent<Player>(ro.Hit.Entity))
+                if (SystemAPI.HasComponent<PlayerName>(ro.Hit.Entity))
                 {
                     var rpcEntity = ecb.CreateEntity();
                     ecb.AddComponent(rpcEntity, new RpcAttack
@@ -70,10 +76,11 @@ namespace Natrium.Gameplay.Server.Systems
                         End = ro.End,
                         NetworkIdSource = networkIDSource
                     });
-                    ecb.AddComponent(rpcEntity, new SendRpcCommandRequest { TargetConnection = Utils.GetEntityConnection(networkIDSource, EntityManager) });
-                }
+                    var entityConnection = Utils.GetEntityConnection(networkIDSource, EntityManager);
 
-                ecb.RemoveComponent<RayCastOutput>(entity);
+                    if (entityConnection != Entity.Null)
+                        ecb.AddComponent(rpcEntity, new SendRpcCommandRequest { TargetConnection = entityConnection });
+                }
             }
 
             ecb.Playback(EntityManager);

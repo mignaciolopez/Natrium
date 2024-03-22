@@ -27,8 +27,7 @@ namespace Natrium.Gameplay.Server.Systems
         protected override void OnCreate()
         {
             base.OnCreate();
-            
-            RequireForUpdate<ServerSystemExecute>();
+
             RequireForUpdate<SystemsSettings>();
 
             _networkIdFromEntity = GetComponentLookup<NetworkId>(true);
@@ -154,22 +153,22 @@ namespace Natrium.Gameplay.Server.Systems
                 _ecb.SetComponent(player, new GhostOwner { NetworkId = networkId.Value });
 
                 //TODO: Grab Data From Database
-                var position = new float3(5.0f, 0.0f, 5.0f);
+                var position = new float3(5.0f, 1.0f, 5.0f);
                 _ecb.SetComponent(player, new LocalTransform
                 {
                     Position = position,
                     Rotation = quaternion.identity,
                     Scale = 1.0f
                 });
-                _ecb.SetComponent(player, new Player
+                _ecb.SetComponent(player, new PlayerName
                 {
-                    Name = (FixedString64Bytes)$"Player {networkId.Value}",
+                    Value = (FixedString64Bytes)$"Player {networkId.Value}",
                 });
 
-                _ecb.SetComponent(player, new PlayerPosition
+                _ecb.SetComponent(player, new PlayerTilePosition
                 {
                     Previous = position,
-                    Next = position
+                    Target = position
                 });
 
                 _ecb.SetComponent(player, new Health() { Value = 100 });

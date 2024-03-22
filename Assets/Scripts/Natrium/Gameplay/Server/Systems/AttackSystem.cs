@@ -1,6 +1,4 @@
 using Unity.Entities;
-using Natrium.Gameplay.Shared.Components;
-using Natrium.Gameplay.Server.Components;
 
 namespace Natrium.Gameplay.Server.Systems
 {
@@ -10,8 +8,6 @@ namespace Natrium.Gameplay.Server.Systems
         protected override void OnCreate()
         {
             base.OnCreate();
-
-            RequireForUpdate<AttackSystemExecute>();
         }
 
         protected override void OnUpdate()

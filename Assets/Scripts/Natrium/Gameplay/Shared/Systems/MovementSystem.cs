@@ -9,44 +9,55 @@ namespace Natrium.Gameplay.Shared.Systems
 {
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ServerSimulation)]
-    public partial struct MovementSystem : ISystem
+    public partial struct MovementSystem : ISystem, ISystemStartStop
     {
         private ComponentLookup<MovementFree> _lookUpFree;
         private ComponentLookup<MovementDiagonal> _lookUpDiagonal;
         private ComponentLookup<MovementClassic> _lookUpClassic;
 
+        private BeginInitializationEntityCommandBufferSystem.Singleton _ecbs;
+
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            state.RequireForUpdate<MovementSystemExecute>();
-
             _lookUpFree = state.GetComponentLookup<MovementFree>();
             _lookUpDiagonal = state.GetComponentLookup<MovementDiagonal>();
             _lookUpClassic = state.GetComponentLookup<MovementClassic>();
         }
 
         [BurstCompile]
+        public void OnStartRunning(ref SystemState state)
+        {
+            _ecbs = SystemAPI.GetSingleton<BeginInitializationEntityCommandBufferSystem.Singleton>();
+        }
+
+        [BurstCompile]
+        public void OnStopRunning(ref SystemState state)
+        {
+            
+        }
+
+        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             var dt = SystemAPI.Time.DeltaTime;
+
             _lookUpFree.Update(ref state);
             _lookUpDiagonal.Update(ref state);
             _lookUpClassic.Update(ref state);
 
-            new UpdateMovementTypeJob
+            state.Dependency = new UpdateMovementTypeJob
             {
                 lookUpFree = _lookUpFree,
                 lookUpDiagonal = _lookUpDiagonal,
                 lookUpClassic = _lookUpClassic
-            }.Schedule();
+            }.Schedule(state.Dependency);
 
-            new FreeMovementJob { dt = dt }.Schedule();
-
-            new DiagonalMovementJob { dt = dt }.Schedule();
-
-            new ClassicMovementJob { dt = dt }.Schedule();
+            state.Dependency = new MoveTowardsJob
+            {
+                dt = dt
+            }.Schedule(state.Dependency);
         }
-
     } //MovementSystem
 
     [BurstCompile]
@@ -56,9 +67,9 @@ namespace Natrium.Gameplay.Shared.Systems
         public ComponentLookup<MovementDiagonal> lookUpDiagonal;
         public ComponentLookup<MovementClassic> lookUpClassic;
 
-        private void Execute(RefRO<MovementType>mt, Entity e)
+        private void Execute(in MovementType mt, Entity e)
         {
-            switch (mt.ValueRO.Value)
+            switch (mt.Value)
             {
                 case MovementTypeEnum.Free:
                     lookUpFree.SetComponentEnabled(e, true);
@@ -80,26 +91,12 @@ namespace Natrium.Gameplay.Shared.Systems
     }
 
     [BurstCompile]
-    public partial struct FreeMovementJob : IJobEntity
+    [WithAll(typeof(Simulate))]
+    public partial struct MoveTowardsJob : IJobEntity
     {
         public float dt;
 
-        private void Execute(RefRW<LocalTransform> lt, RefRW<PlayerPosition> p, PlayerInput pi, Speed s, EnabledRefRW<MovementFree> mf, Simulate sim)
-        {
-            lt.ValueRW.Position += pi.InputAxis * s.Value * dt;
-
-            //When in Free Mode needs to keep track for Hot Swapping between modes.
-            p.ValueRW.Next = math.round(lt.ValueRO.Position);
-            p.ValueRW.Previous = p.ValueRW.Next;
-        }
-    }
-
-    [BurstCompile]
-    public partial struct DiagonalMovementJob : IJobEntity
-    {
-        public float dt;
-
-        public float3 MoveTowards(float3 current, float3 target, float maxDistanceDelta)
+        public readonly float3 MoveTowards(float3 current, float3 target, float maxDistanceDelta)
         {
             float num = target.x - current.x;
             float num2 = target.y - current.y;
@@ -114,76 +111,9 @@ namespace Natrium.Gameplay.Shared.Systems
             return new float3(current.x + num / num5 * maxDistanceDelta, current.y + num2 / num5 * maxDistanceDelta, current.z + num3 / num5 * maxDistanceDelta);
         }
 
-        private void Execute(RefRW<LocalTransform> lt, RefRW<PlayerPosition> p, PlayerInput pi, Speed s, EnabledRefRW<MovementDiagonal> md, Simulate sim)
+        private void Execute(ref LocalTransform lt, in PlayerTilePosition ptp, in Speed speed)
         {
-            if (math.distance(lt.ValueRO.Position, p.ValueRO.Next) < s.Value * dt)
-            {
-                lt.ValueRW.Position = p.ValueRO.Next;
-                p.ValueRW.Previous = p.ValueRO.Next;
-
-                switch (pi.InputAxis.x)
-                {
-                    case > 0:
-                        p.ValueRW.Next.x++;
-                        break;
-                    case < 0:
-                        p.ValueRW.Next.x--;
-                        break;
-                }
-
-                switch (pi.InputAxis.z)
-                {
-                    case > 0:
-                        p.ValueRW.Next.z++;
-                        break;
-                    case < 0:
-                        p.ValueRW.Next.z--;
-                        break;
-                }
-            }
-
-            lt.ValueRW.Position = MoveTowards(lt.ValueRW.Position, p.ValueRO.Next, s.Value * dt);
-        }
-    }
-
-    [BurstCompile]
-    public partial struct ClassicMovementJob : IJobEntity
-    {
-        public float dt;
-
-        public float3 MoveTowards(float3 current, float3 target, float maxDistanceDelta)
-        {
-            float num = target.x - current.x;
-            float num2 = target.y - current.y;
-            float num3 = target.z - current.z;
-            float num4 = num * num + num2 * num2 + num3 * num3;
-            if (num4 == 0f || (maxDistanceDelta >= 0f && num4 <= maxDistanceDelta * maxDistanceDelta))
-            {
-                return target;
-            }
-
-            float num5 = math.sqrt(num4);
-            return new float3(current.x + num / num5 * maxDistanceDelta, current.y + num2 / num5 * maxDistanceDelta, current.z + num3 / num5 * maxDistanceDelta);
-        }
-
-        private void Execute(RefRW<LocalTransform> lt, RefRW<PlayerPosition> p, PlayerInput pi, Speed s, EnabledRefRW<MovementClassic> mc, Simulate sim)
-        {
-            if (math.distance(lt.ValueRO.Position, p.ValueRO.Next) < s.Value * dt)
-            {
-                lt.ValueRW.Position = p.ValueRO.Next;
-                p.ValueRW.Previous = p.ValueRO.Next;
-
-                if (pi.InputAxis.z > 0)
-                    p.ValueRW.Next.z++;
-                else if (pi.InputAxis.x > 0)
-                    p.ValueRW.Next.x++;
-                else if (pi.InputAxis.z < 0)
-                    p.ValueRW.Next.z--;
-                else if (pi.InputAxis.x < 0)
-                    p.ValueRW.Next.x--;
-            }
-
-            lt.ValueRW.Position = MoveTowards(lt.ValueRW.Position, p.ValueRO.Next, s.Value * dt);
+            lt.Position = MoveTowards(lt.Position, ptp.Target, speed.Value * dt);
         }
     }
 } // namespace

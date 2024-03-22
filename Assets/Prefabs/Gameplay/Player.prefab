@@ -10,13 +10,13 @@ GameObject:
   m_Component:
   - component: {fileID: 7871738642786136195}
   - component: {fileID: 5456965653443514830}
+  - component: {fileID: -2871026847123482808}
   - component: {fileID: 8472721446830328808}
   - component: {fileID: -5212518871671324676}
   - component: {fileID: 2920929808110160302}
-  - component: {fileID: 1843202963386298000}
   - component: {fileID: -7601274645418501507}
   - component: {fileID: 8584603136881317280}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -32,7 +32,7 @@ Transform:
   m_GameObject: {fileID: 2569002681301233278}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalPosition: {x: 0, y: 1, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children:
@@ -49,6 +49,18 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 8244c41ca85b71240a6e685019e6c74e, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+--- !u!114 &-2871026847123482808
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2569002681301233278}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 87578b463e150264693566cff400372f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   speed: 4
@@ -101,21 +113,8 @@ MonoBehaviour:
   HasOwner: 1
   SupportAutoCommandTarget: 1
   TrackInterpolationDelay: 0
-  GhostGroup: 1
-  UsePreSerialization: 1
---- !u!114 &1843202963386298000
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2569002681301233278}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: bfdaa6c06fe64fbda2b16e07a4ee0b25, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  ComponentOverrides: []
+  GhostGroup: 0
+  UsePreSerialization: 0
 --- !u!114 &-7601274645418501507
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -131,7 +130,7 @@ MonoBehaviour:
   m_ShapeType: 0
   m_PrimitiveCenter:
     x: 0
-    y: 1
+    y: 0
     z: 0
   m_PrimitiveSize:
     x: 1
@@ -162,14 +161,14 @@ MonoBehaviour:
   m_ForceUnique: 0
   m_Material:
     m_SupportsTemplate: 1
-    m_Template: {fileID: 0}
+    m_Template: {fileID: 11400000, guid: 9b38f61d15e7a124f838026dd2ccad7d, type: 2}
     m_CollisionResponse:
       m_Override: 0
-      m_Value: 254
+      m_Value: 0
     m_Friction:
       m_Override: 0
       m_Value:
-        Value: 0.5
+        Value: 0
         CombineMode: 0
     m_Restitution:
       m_Override: 0
@@ -214,7 +213,7 @@ MonoBehaviour:
     m_CollidesWithCategories:
       m_Override: 0
       m_Value:
-        Category00: 1
+        Category00: 0
         Category01: 1
         Category02: 0
         Category03: 0
@@ -321,7 +320,7 @@ GameObject:
   - component: {fileID: 5967832679303059121}
   - component: {fileID: 5788379843054541906}
   - component: {fileID: 3668872421857841211}
-  m_Layer: 0
+  m_Layer: 7
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -337,7 +336,7 @@ Transform:
   m_GameObject: {fileID: 8212942549574998060}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0, y: 1, z: 0}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
   m_LocalScale: {x: 1, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []

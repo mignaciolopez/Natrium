@@ -23,8 +23,6 @@ namespace Natrium.Gameplay.Client.Systems.UI
         {
             base.OnCreate();
 
-            RequireForUpdate<PlayerNameSystemExecute>();
-
             _textEntities = new Dictionary<Entity, GameObject>();
             _namesToRemove = new List<Entity>();
         }
@@ -69,13 +67,13 @@ namespace Natrium.Gameplay.Client.Systems.UI
 
         private void InstantiatePlayerNames()
         {
-            foreach(var (lt, player, dc, e) in SystemAPI.Query<RefRO<LocalTransform>, RefRO<Player>, RefRO<DebugColor>>().WithNone<PlayerTextDrawnTag>().WithEntityAccess())
+            foreach(var (lt, pn, dc, e) in SystemAPI.Query<RefRO<LocalTransform>, RefRO<PlayerName>, RefRO<DebugColor>>().WithNone<PlayerTextDrawnTag>().WithEntityAccess())
             {
                 var text = GameObject.Instantiate(_playerTextPrefab, _UICanvas.transform);
                 text.transform.position = (Vector3)lt.ValueRO.Position + new Vector3(0, 0.5f, -1);
 
                 var tmPro = text.GetComponent<TMP_Text>();
-                tmPro.text = player.ValueRO.Name.ToString();
+                tmPro.text = pn.ValueRO.Value.ToString();
 
                 tmPro.color = new Color(dc.ValueRO.Value.x, dc.ValueRO.Value.y, dc.ValueRO.Value.z);
                 _textEntities.Add(e, text);

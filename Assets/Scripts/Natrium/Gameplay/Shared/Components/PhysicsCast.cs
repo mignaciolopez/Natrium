@@ -10,6 +10,7 @@ namespace Natrium.Gameplay.Shared.Components
     }
     public struct RayCastOutput : IComponentData
     {
+        public bool IsHit;
         public float3 Start;
         public float3 End;
         public Unity.Physics.RaycastHit Hit;
@@ -26,6 +27,7 @@ namespace Natrium.Gameplay.Shared.Components
 
     public struct BoxCastOutput : IComponentData
     {
+        public bool IsHit;
         public Unity.Physics.ColliderCastHit Hit;
     }
 }

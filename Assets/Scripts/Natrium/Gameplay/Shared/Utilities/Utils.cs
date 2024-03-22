@@ -14,7 +14,7 @@ namespace Natrium.Gameplay.Shared.Utilities
             var e = Entity.Null;
             var found = false;
 
-            var entities = entityManager.CreateEntityQuery(typeof(GhostOwner), typeof(Player)).ToEntityArray(Allocator.Temp);
+            var entities = entityManager.CreateEntityQuery(typeof(GhostOwner)).ToEntityArray(Allocator.Temp);
 
             foreach (var entity in entities)
             {
@@ -43,7 +43,7 @@ namespace Natrium.Gameplay.Shared.Utilities
             var e = Entity.Null;
             var found = false;
 
-            var entities = entityManager.CreateEntityQuery(typeof(NetworkId), typeof(NetworkStreamInGame)).ToEntityArray(Allocator.Temp);
+            var entities = entityManager.CreateEntityQuery(typeof(NetworkId)).ToEntityArray(Allocator.Temp);
 
             foreach (var entity in entities)
             {
