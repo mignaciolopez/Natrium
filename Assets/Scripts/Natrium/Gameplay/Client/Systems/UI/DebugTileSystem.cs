@@ -52,7 +52,7 @@ namespace Natrium.Gameplay.Client.Systems.UI
 
         private void DrawDebugTiles()
         {
-            foreach(var (rpcTile, rpcEntity) in SystemAPI.Query<RefRO<RpcTile>>().WithAll<ReceiveRpcCommandRequest>().WithNone<RpcTileDrawnTag>().WithEntityAccess())
+            /*foreach(var (rpcTile, rpcEntity) in SystemAPI.Query<RefRO<RpcTile>>().WithAll<ReceiveRpcCommandRequest>().WithNone<RpcTileDrawnTag>().WithEntityAccess())
             {
                 _debugTile.SetActive(true);
                 _debugTile.transform.position = math.round(rpcTile.ValueRO.End); ;
@@ -60,12 +60,12 @@ namespace Natrium.Gameplay.Client.Systems.UI
 
                 //TODO: UI Should Not consume the rpc, just removing the warning cause no one is consuming it rn
                 _ecb.DestroyEntity(rpcEntity);
-            }
+            }*/
         }
 
         private void DrawDebugAttacks()
         {
-            foreach (var (rpcAttack, rpcEntity) in SystemAPI.Query<RefRO<RpcAttack>>().WithAll<ReceiveRpcCommandRequest>().WithNone<RpcTileDrawnTag>().WithEntityAccess())
+            /*foreach (var (rpcAttack, rpcEntity) in SystemAPI.Query<RefRO<RpcAttack>>().WithAll<ReceiveRpcCommandRequest>().WithNone<RpcTileDrawnTag>().WithEntityAccess())
             {
                 var entitySource = Utils.GetEntityPrefab(rpcAttack.ValueRO.NetworkIdSource, EntityManager);
 
@@ -81,7 +81,7 @@ namespace Natrium.Gameplay.Client.Systems.UI
 
                 //TODO: UI Should Not consume the rpc, just removing the warning cause no one is consuming it rn
                 _ecb.DestroyEntity(rpcEntity);
-            }
+            }*/
         }
     }
 }

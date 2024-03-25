@@ -1,89 +1,109 @@
 using Unity.Entities;
-using Unity.NetCode;
 using Natrium.Gameplay.Shared.Components;
-using Natrium.Gameplay.Shared.Utilities;
 using Natrium.Shared;
+using Unity.Physics;
+using Unity.Burst;
+using Unity.Physics.Systems;
+using Natrium.Gameplay.Server.Components;
+using Unity.Transforms;
+using Unity.Mathematics;
+using Unity.NetCode;
 
 namespace Natrium.Gameplay.Server.Systems
 {
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
-    public partial class AimSystem : SystemBase
+    [UpdateInGroup(typeof(PhysicsSystemGroup))]
+    [UpdateAfter(typeof(PhysicsSimulationGroup))]
+    public partial struct AimSystem : ISystem
     {
-        protected override void OnCreate()
+        private EntityCommandBuffer _ecb;
+
+        [BurstCompile]
+        public void OnCreate(ref SystemState state)
         {
-            base.OnCreate();
+            state.RequireForUpdate<PhysicsWorldSingleton>();
+            //state.RequireForUpdate<PhysicsWorldHistorySingleton>();
+            state.RequireForUpdate<NetworkTime>();
         }
 
-        protected override void OnUpdate()
+        //[BurstCompile]
+        public void OnUpdate(ref SystemState state)
         {
-            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
+            _ecb = new EntityCommandBuffer(Unity.Collections.Allocator.Temp);
+            var networkTime = SystemAPI.GetSingleton<NetworkTime>();
+            if (!networkTime.IsFirstTimeFullyPredictingTick)
+                return;
 
-            foreach (var (clientEntity, rpcAim, rpcEntity) in SystemAPI.Query<ReceiveRpcCommandRequest, RpcAim>().WithEntityAccess())
+            foreach (var (ai, pc, dp, e) in SystemAPI.Query<AimInput, PhysicsCollider, DamagePoints>().WithAll<DamageDealerTag>().WithEntityAccess())
             {
-                ecb.DestroyEntity(rpcEntity);
-
-                if (rpcAim.MouseWorldPosition is { x: 0, y: 0 })
+                if (ai.Input.IsSet)
                 {
-                    Log.Error($"RpcAim.MouseWorldPosition: {rpcAim.MouseWorldPosition}");
-                    continue;
-                }
+                    var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
 
-                var nid = EntityManager.GetComponentData<NetworkId>(clientEntity.SourceConnection);
+                    Log.Debug($"AimInput from {e}: {ai.Value.ToString("0.00", null)}");
 
-                Log.Debug($"RpcAim from {clientEntity.SourceConnection}:{nid.Value} | MouseWorldPosition: {rpcAim.MouseWorldPosition}");
-
-                var start = rpcAim.MouseWorldPosition;
-                start.y = 10.0f; //ToDo: The plus 10 on y axis, comes from the offset of the camara
-                var end = rpcAim.MouseWorldPosition;
-
-                var entityPrefab = Utils.GetEntityPrefab(nid.Value, EntityManager);
-                if (entityPrefab != Entity.Null)
-                    ecb.AddComponent(entityPrefab, new RayCast { Start = start, End = end });
-            }
-
-            foreach (var (ro, goSrc, entity) in SystemAPI.Query<RayCastOutput, GhostOwner>().WithEntityAccess())
-            {
-                ecb.RemoveComponent<RayCastOutput>(entity);
-
-                if (ro.Hit.Entity == Entity.Null)
-                    Log.Warning($"Hited Entity {ro.Hit.Entity} is {ro.Hit.Entity}");
-
-                var networkIDSource = goSrc.NetworkId;
-                var networkIDTarget = 0;
-                if (EntityManager.HasComponent<GhostOwner>(ro.Hit.Entity))
-                    networkIDTarget = EntityManager.GetComponentData<GhostOwner>(ro.Hit.Entity).NetworkId;
-
-                Log.Debug($"{entity}:{networkIDSource} hit {ro.Hit.Entity}:{networkIDTarget}");
-
-                if (SystemAPI.HasComponent<PlayerName>(ro.Hit.Entity))
-                {
-                    var rpcEntity = ecb.CreateEntity();
-                    ecb.AddComponent(rpcEntity, new RpcAttack
+                    var start = ai.Value;
+                    start.y = 10.0f; //ToDo: The plus 10 on y axis, comes from the offset of the camara
+                    var raycastInput = new RaycastInput
                     {
-                        Start = ro.Start,
-                        End = ro.End,
-                        NetworkIdSource = networkIDSource,
-                        NetworkIdTarget = networkIDTarget
-                    });
-                    ecb.AddComponent<SendRpcCommandRequest>(rpcEntity); //Broadcast
-                }
-                else
-                {
-                    var rpcEntity = ecb.CreateEntity();
-                    ecb.AddComponent(rpcEntity, new RpcTile
-                    {
-                        Start = ro.Start,
-                        End = ro.End,
-                        NetworkIdSource = networkIDSource
-                    });
-                    var entityConnection = Utils.GetEntityConnection(networkIDSource, EntityManager);
+                        Start = start,
+                        End = ai.Value,
+                        Filter = pc.Value.Value.GetCollisionFilter()
+                    };
 
-                    if (entityConnection != Entity.Null)
-                        ecb.AddComponent(rpcEntity, new SendRpcCommandRequest { TargetConnection = entityConnection });
+                    if (collisionWorld.CastRay(raycastInput, out var closestHit))
+                    {
+                        if (closestHit.Entity == Entity.Null)// || closestHit.Entity == e)
+                        {
+                            Log.Warning($"Hited Entity {closestHit.Entity} is Null or Self");
+                            continue;
+                        }
+
+                        if (state.EntityManager.HasComponent<AttackableTag>(closestHit.Entity))
+                        {
+                            Log.Debug($"Entity {e} is Dealing Damage to {closestHit.Entity}");
+                            var damageBuffer = state.EntityManager.GetBuffer<DamagePointsBuffer>(closestHit.Entity);
+                            damageBuffer.Add(new DamagePointsBuffer { Value = dp.Value });
+
+                            SpawnDebugData(ref state, e, closestHit);
+                        }
+                    }
                 }
             }
 
-            ecb.Playback(EntityManager);
+            _ecb.Playback(state.EntityManager);
+            _ecb.Dispose();
         }
-    }
+
+        private void SpawnDebugData(ref SystemState state, Entity e, RaycastHit closestHit)
+        {
+            var debugTile = SystemAPI.GetSingleton<DebugAttackPrefab>().Value;
+
+            var tile = _ecb.Instantiate(debugTile);
+
+            var roundedPosition = math.round(closestHit.Position);
+            roundedPosition.y = closestHit.Position.y + 0.1f;
+
+            _ecb.SetComponent(tile, new LocalTransform
+            {
+                Position = roundedPosition,
+                Rotation = quaternion.identity,
+                Scale = 1.0f
+            });
+
+            _ecb.SetComponent(tile, new DestroyOnTimer { Value = 1.0f });
+
+            var DebugColor = state.EntityManager.GetComponentData<DebugColor>(e);
+            var leg = state.GetBufferLookup<LinkedEntityGroup>(true)[e];
+            foreach (var child in leg)
+            {
+                if (state.EntityManager.HasComponent<UnityEngine.SpriteRenderer>(child.Value))
+                {
+                    var sr = state.EntityManager.GetComponentObject<UnityEngine.SpriteRenderer>(child.Value);
+                    sr.color = new UnityEngine.Color(DebugColor.Value.x, DebugColor.Value.y, DebugColor.Value.z);
+                    break;
+                }
+            }
+        }
+    } //AimSystem
 }

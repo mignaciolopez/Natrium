@@ -18,10 +18,9 @@ namespace Natrium.Gameplay.Shared.Components
             var e = GetEntity(TransformUsageFlags.Dynamic);
 
             AddComponent<PlayerName>(e);
-            AddComponent<Health>(e);
-            AddComponent<MaxHealth>(e);
-            AddComponent<DamagePoints>(e);
             AddComponent<DebugColor>(e);
+            AddComponent<MeeleInput>(e);
+            AddComponent<AimInput>(e);
         }
     }
 
@@ -32,31 +31,23 @@ namespace Natrium.Gameplay.Shared.Components
         public FixedString64Bytes Value;
     }
 
-    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.SendToOwner)]
-    public struct Health : IComponentData
-    {
-        [GhostField]
-        public int Value;
-    }
-
-    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.SendToOwner)]
-    public struct MaxHealth : IComponentData
-    {
-        [GhostField]
-        public int Value;
-    }
-
-    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.SendToOwner)]
-    public struct DamagePoints : IComponentData
-    {
-        [GhostField(Quantization = 100)]
-        public float Value;
-    }
-
     [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
     public struct DebugColor : IComponentData
     {
         [GhostField(Quantization = 100)]
         public float3 Value;
+    }
+
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.None)]
+    public struct MeeleInput : IInputComponentData
+    {
+        [GhostField] public InputEvent Input;
+    }
+
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.None)]
+    public struct AimInput : IInputComponentData
+    {
+        [GhostField] public InputEvent Input;
+        [GhostField (Quantization = 100)] public float3 Value; //Mouse World Position
     }
 }

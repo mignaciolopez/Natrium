@@ -24,6 +24,8 @@ namespace Natrium.Gameplay.Server.Systems
 
         private EntityCommandBuffer _ecb;
 
+        private Entity _playerPrefab;
+
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -39,6 +41,8 @@ namespace Natrium.Gameplay.Server.Systems
 
             if (SystemAPI.TryGetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>(out var ecbs))
                 _ecb = ecbs.CreateCommandBuffer(World.Unmanaged);
+
+            _playerPrefab = SystemAPI.GetSingleton<PlayerPrefab>().Value;
 
             Listen();
         }
@@ -59,7 +63,7 @@ namespace Natrium.Gameplay.Server.Systems
             RPC_Connect();
 
             //TODO: delete changemovement()
-            //changemovement();
+            changemovement();
         }
 
         //TODO: delete changemovement()
@@ -138,9 +142,7 @@ namespace Natrium.Gameplay.Server.Systems
 
         private void RPC_Connect()
         {
-            var prefab = SystemAPI.GetSingleton<PlayerSpawnerData>().PlayerPrefab;
-
-            EntityManager.GetName(prefab, out var prefabName);
+            EntityManager.GetName(_playerPrefab, out var prefabName);
 
             foreach (var (rpcConnect, rpcSource, rpcEntity) in SystemAPI.Query<RefRO<RpcConnect>, RefRO<ReceiveRpcCommandRequest>>().WithEntityAccess())
             {
@@ -149,7 +151,7 @@ namespace Natrium.Gameplay.Server.Systems
                 _ecb.AddComponent<NetworkStreamInGame>(rpcSource.ValueRO.SourceConnection);
                 var networkId = _networkIdFromEntity[rpcSource.ValueRO.SourceConnection];
 
-                var player = _ecb.Instantiate(prefab);
+                var player = _ecb.Instantiate(_playerPrefab);
                 _ecb.SetComponent(player, new GhostOwner { NetworkId = networkId.Value });
 
                 //TODO: Grab Data From Database
@@ -171,9 +173,9 @@ namespace Natrium.Gameplay.Server.Systems
                     Target = position
                 });
 
-                _ecb.SetComponent(player, new Health() { Value = 100 });
-                _ecb.SetComponent(player, new MaxHealth() { Value = 100 });
-                _ecb.SetComponent(player, new DamagePoints() { Value = 10.0f });
+                _ecb.SetComponent(player, new MaxHealthPoints() { Value = 100 });
+                _ecb.SetComponent(player, new CurrentHealthPoints() { Value = 100 });
+                _ecb.SetComponent(player, new DamagePoints() { Value = 35 });
 
                 var color = new float3(UnityEngine.Random.Range(0.0f, 1.0f), UnityEngine.Random.Range(0.0f, 1.0f), UnityEngine.Random.Range(0.0f, 1.0f));
 
@@ -189,7 +191,7 @@ namespace Natrium.Gameplay.Server.Systems
 
                 Log.Debug($"Processing RpcConnect for Entity: '{rpcSource.ValueRO.SourceConnection}' " +
                     $"Added NetworkStreamInGame for NetworkId Value: '{networkId.Value}' " +
-                    $"Instantiate prefab: '{prefabName}'" + $"SetComponent: new GhostOwner " +
+                    $"Instantiate _playerPrefab: '{prefabName}'" + $"SetComponent: new GhostOwner " +
                     $"Add LinkedEntityGroup to '{prefabName}'.");
             }
         }
