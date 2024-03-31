@@ -18,7 +18,6 @@ namespace Natrium.Gameplay.Shared.Components
             if (e != Entity.Null)
             {
                 AddComponent(e, new DestroyOnTimer { Value = authoring.Time });
-                AddComponent(e, new DestroyAtTick { });
             }
         }
     }

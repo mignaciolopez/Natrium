@@ -34,7 +34,9 @@ namespace Natrium.Gameplay.Client.Systems
         protected override void OnUpdate()
         {
             if (Camera.main == null)
+            {
                 return;
+            }
 
             var newAimInput = new AimInput();
 
@@ -61,7 +63,6 @@ namespace Natrium.Gameplay.Client.Systems
             if (Camera.main == null)
             {
                 Log.Error($"Camera.main == null");
-                return;
             }
         }
     }

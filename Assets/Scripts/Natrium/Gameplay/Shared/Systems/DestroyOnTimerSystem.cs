@@ -13,24 +13,20 @@ namespace Natrium.Gameplay.Server.Systems
             state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
         }
 
+        //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var ecbs = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
-            var ecb = ecbs.CreateCommandBuffer(state.WorldUnmanaged);
+            var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
+            var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
 
             var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
-            if (currentTick.IsValid)
+
+            foreach (var (destroyAtTick, entity) in SystemAPI.Query<DestroyAtTick>().WithAll<Simulate>()
+                         .WithNone<DestroyEntityTag>().WithEntityAccess())
             {
-                foreach (var (dat, e) in SystemAPI.Query<DestroyAtTick>().WithAll<Simulate>()
-                    .WithNone<DestroyEntityTag>().WithEntityAccess())
+                if (currentTick.Equals(destroyAtTick.Value) || currentTick.IsNewerThan(destroyAtTick.Value))
                 {
-                    if (dat.Value.IsValid)
-                    {
-                        if (currentTick.Equals(dat.Value) || currentTick.IsNewerThan(dat.Value))
-                        {
-                            ecb.AddComponent<DestroyEntityTag>(e);
-                        }
-                    }
+                    ecb.AddComponent<DestroyEntityTag>(entity);
                 }
             }
         }

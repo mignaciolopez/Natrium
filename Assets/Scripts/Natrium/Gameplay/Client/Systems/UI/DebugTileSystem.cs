@@ -5,6 +5,7 @@ using Unity.Entities;
 using UnityEngine;
 using Unity.NetCode;
 using Unity.Mathematics;
+using Unity.Transforms;
 
 namespace Natrium.Gameplay.Client.Systems.UI
 {
@@ -65,23 +66,17 @@ namespace Natrium.Gameplay.Client.Systems.UI
 
         private void DrawDebugAttacks()
         {
-            /*foreach (var (rpcAttack, rpcEntity) in SystemAPI.Query<RefRO<RpcAttack>>().WithAll<ReceiveRpcCommandRequest>().WithNone<RpcTileDrawnTag>().WithEntityAccess())
+            foreach (var (dc, e) in SystemAPI.Query<DebugColor>().WithAll<DebugTileTag>().WithEntityAccess())
             {
-                var entitySource = Utils.GetEntityPrefab(rpcAttack.ValueRO.NetworkIdSource, EntityManager);
-
-                if (entitySource != Entity.Null)
+                var childs = SystemAPI.GetBuffer<LinkedEntityGroup>(e);
+                foreach (var child in childs)
                 {
-                    var DebugColor = EntityManager.GetComponentData<DebugColor>(entitySource);
-
-                    var offset = new float3(0, 1.6f, 0);
-                    var gameObject = GameObject.Instantiate(_debugTilePrefab, math.round(rpcAttack.ValueRO.End + offset), Quaternion.identity);
-                    gameObject.GetComponentInChildren<SpriteRenderer>().color = new Color(DebugColor.Value.x, DebugColor.Value.y, DebugColor.Value.z);
-                    GameObject.Destroy(gameObject, 1.0f);
+                    if (EntityManager.HasComponent<SpriteRenderer>(child.Value))
+                    {
+                        EntityManager.GetComponentObject<SpriteRenderer>(child.Value).color = new Color(dc.Value.x, dc.Value.y, dc.Value.z);
+                    }
                 }
-
-                //TODO: UI Should Not consume the rpc, just removing the warning cause no one is consuming it rn
-                _ecb.DestroyEntity(rpcEntity);
-            }*/
+            }
         }
     }
 }
