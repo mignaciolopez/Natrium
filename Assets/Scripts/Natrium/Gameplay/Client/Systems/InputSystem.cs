@@ -1,9 +1,9 @@
 using UnityEngine;
 using Unity.Entities;
-using Unity.Mathematics;
 using Unity.NetCode;
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Settings.Input;
+using Natrium.Shared;
 using Natrium.Shared.Systems;
 
 namespace Natrium.Gameplay.Client.Systems
@@ -15,19 +15,28 @@ namespace Natrium.Gameplay.Client.Systems
 
         protected override void OnCreate()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnCreate()");
             _inputActions = new InputActions();
         }
 
         protected override void OnStartRunning()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStartRunning()");
             _inputActions.Enable();
         }
 
         protected override void OnStopRunning()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStopRunning()");
             _inputActions.Disable();
         }
 
+        protected override void OnDestroy()
+        {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnDestroy()");
+            base.OnDestroy();
+        }
+        
         protected override void OnUpdate()
         {
            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);

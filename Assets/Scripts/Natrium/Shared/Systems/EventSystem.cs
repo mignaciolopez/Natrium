@@ -19,6 +19,7 @@ namespace Natrium.Shared.Systems
 
         protected override void OnCreate()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnCreate()");
             base.OnCreate();
 
             _logInstance = Log.Instance;
@@ -34,12 +35,14 @@ namespace Natrium.Shared.Systems
 
         protected override void OnStartRunning()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStartRunning()");
             base.OnStartRunning();
             _eventsQueue = new Queue<Tuple<Events, Stream>>();
         }
 
         protected override void OnStopRunning()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStopRunning()");
             base.OnStopRunning();
             _eventsQueue.Clear();
             //_eventsQueue = null;
@@ -47,13 +50,13 @@ namespace Natrium.Shared.Systems
 
         protected override void OnDestroy()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnDestroy()");
             base.OnDestroy();
             //foreach (var evnt in (Events[])Enum.GetValues(typeof(Events)))
             //    _handlers[evnt] = null;
 
             //_handlers.Clear();
             //_handlers = null;
-            Log.Verbose($"[{World.Name}] OnDestroy");
         }
 
         protected override void OnUpdate()

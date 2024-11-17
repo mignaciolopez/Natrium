@@ -21,6 +21,7 @@ namespace Natrium.Gameplay.Client.Systems.UI
         private EntityCommandBuffer _ecb;
         protected override void OnCreate()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnCreate()");
             base.OnCreate();
 
             _textEntities = new Dictionary<Entity, GameObject>();
@@ -29,6 +30,7 @@ namespace Natrium.Gameplay.Client.Systems.UI
 
         protected override void OnStartRunning()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStartRunning()");
             base.OnStartRunning();
 
             _playerTextPrefab = GameObject.FindAnyObjectByType<PlayerTextPrefabAuthoring>().Prefab;
@@ -37,6 +39,7 @@ namespace Natrium.Gameplay.Client.Systems.UI
 
         protected override void OnStopRunning()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStopRunning()");
             base.OnStopRunning();
 
             var ecbs = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
@@ -54,7 +57,13 @@ namespace Natrium.Gameplay.Client.Systems.UI
                 _ecb.RemoveComponent<PlayerTextDrawnTag>(e);
             }
         }
-
+        
+        protected override void OnDestroy()
+        {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnDestroy()");
+            base.OnDestroy();
+        }
+        
         protected override void OnUpdate()
         {
             var ecbs = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();

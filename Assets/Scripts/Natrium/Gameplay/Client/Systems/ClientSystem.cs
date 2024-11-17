@@ -21,12 +21,14 @@ namespace Natrium.Gameplay.Client.Systems
     {
         protected override void OnCreate()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnCreate()");
             base.OnCreate();
             RequireForUpdate<SystemsSettings>();
         }
 
         protected override void OnStartRunning()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStartRunning()");
             base.OnStartRunning();
             EventSystem.Subscribe(Events.OnKeyCodeReturn, OnKeyCodeReturn);
             EventSystem.Subscribe(Events.OnKeyCodeEscape, OnKeyCodeEscape);
@@ -34,11 +36,18 @@ namespace Natrium.Gameplay.Client.Systems
 
         protected override void OnStopRunning()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStopRunning()");
             base.OnStopRunning();
             EventSystem.UnSubscribe(Events.OnKeyCodeReturn, OnKeyCodeReturn);
             EventSystem.UnSubscribe(Events.OnKeyCodeEscape, OnKeyCodeEscape);
         }
 
+        protected override void OnDestroy()
+        {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnDestroy()");
+            base.OnDestroy();
+        }
+        
         protected override void OnUpdate()
         {
             OnConnect(null);

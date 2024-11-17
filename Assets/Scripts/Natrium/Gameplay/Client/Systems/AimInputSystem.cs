@@ -15,22 +15,31 @@ namespace Natrium.Gameplay.Client.Systems
 
         protected override void OnCreate()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnCreate()");
             _inputActions = new InputActions();
             RequireForUpdate<AimInput>();
         }
 
         protected override void OnStartRunning()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStartRunning()");
             _inputActions.Enable();
             _inputActions.Map_Gameplay.Axn_MouseRealease.performed += OnPrimaryMouseRealease;
         }
 
         protected override void OnStopRunning()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStopRunning()");
             _inputActions.Map_Gameplay.Axn_MouseRealease.performed -= OnPrimaryMouseRealease;
             _inputActions.Disable();
         }
 
+        protected override void OnDestroy()
+        {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnDestroy()");
+            base.OnDestroy();
+        }
+        
         protected override void OnUpdate()
         {
             if (Camera.main == null)

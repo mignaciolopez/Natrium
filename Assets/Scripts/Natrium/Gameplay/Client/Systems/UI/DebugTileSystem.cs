@@ -1,6 +1,7 @@
 using Natrium.Gameplay.Client.Components.UI;
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Gameplay.Shared.Utilities;
+using Natrium.Shared;
 using Unity.Entities;
 using UnityEngine;
 using Unity.NetCode;
@@ -19,11 +20,13 @@ namespace Natrium.Gameplay.Client.Systems.UI
         private EntityCommandBuffer _ecb;
         protected override void OnCreate()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnCreate()");
             base.OnCreate();
         }
 
         protected override void OnStartRunning()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStartRunning()");
             base.OnStartRunning();
 
             _debugTilePrefab = GameObject.FindAnyObjectByType<DebugTilePrefabAuthoring>().Prefab;
@@ -33,6 +36,7 @@ namespace Natrium.Gameplay.Client.Systems.UI
 
         protected override void OnStopRunning()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStopRunning()");
             base.OnStopRunning();
 
             var ecbs = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
@@ -42,6 +46,12 @@ namespace Natrium.Gameplay.Client.Systems.UI
                 GameObject.Destroy(_debugTile);
         }
 
+        protected override void OnDestroy()
+        {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnDestroy()");
+            base.OnDestroy();
+        }
+        
         protected override void OnUpdate()
         {
             var ecbs = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();

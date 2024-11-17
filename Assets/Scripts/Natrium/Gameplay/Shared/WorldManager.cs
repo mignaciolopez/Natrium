@@ -15,21 +15,26 @@ namespace Natrium.Gameplay.Shared
     public class WorldManager : MonoBehaviour
     {
         private Role _role = Role.ServerAndClient;
+        public const string SERVER_NAME = "Natrium Server"; 
+        public const string CLIENT_NAME = "Natrium Client"; 
         public static World ServerWorld = null;
         public static World ClientWorld = null;
 
         private void Awake()
         {
+            Log.Verbose("WorldManager.Awake()");
             UpdateCurrentRole();
             InitWorlds();
         }
 
         private bool InitWorlds()
         {
+            Log.Verbose("WorldManager.InitWorlds()");
             foreach (var world in World.All)
             {
                 if (world.Flags == WorldFlags.Game)
                 {
+                    Log.Debug($"WorldManager.InitWorlds Disposing: {world.Name}");
                     world.Dispose();
                     break;
                 }
@@ -37,34 +42,33 @@ namespace Natrium.Gameplay.Shared
 
             if (_role == Role.ServerAndClient || _role == Role.Server)
             {
-                ServerWorld = ClientServerBootstrap.CreateServerWorld("Natrium Server");
-                DefaultWorldInitialization.AddSystemsToRootLevelSystemGroups(ServerWorld, DefaultWorldInitialization.GetAllSystems(WorldSystemFilterFlags.ServerSimulation));
+                Log.Debug($"WorldManager.InitWorlds Creating World: {SERVER_NAME}");
+                ServerWorld = ClientServerBootstrap.CreateServerWorld(SERVER_NAME);
 
                 if (ServerWorld == null)
                 {
-                    Log.Error($"Error ClientServerBootstrap.CreateServerWorld(\"ServerWorld\")", "WorldManager", this);
+                    Log.Error($"Error ClientServerBootstrap.CreateServerWorld({SERVER_NAME});", name, gameObject);
                     return false;
                 }
+                World.DefaultGameObjectInjectionWorld = ServerWorld;
+                Log.Debug($"WorldManager.InitWorlds Set DefaultGameObjectInjectionWorld to: {ServerWorld.Name}");
             }
 
             if (_role == Role.ServerAndClient || _role == Role.Client)
             {
-                ClientWorld = ClientServerBootstrap.CreateClientWorld("Natrium Client");
-                DefaultWorldInitialization.AddSystemsToRootLevelSystemGroups(ClientWorld, DefaultWorldInitialization.GetAllSystems(WorldSystemFilterFlags.ClientSimulation));
+                Log.Debug($"WorldManager.InitWorlds Creating World: {CLIENT_NAME}");
+                ClientWorld = ClientServerBootstrap.CreateClientWorld(CLIENT_NAME);
                 if (ClientWorld == null)
                 {
-                    Log.Error($"Error ClientServerBootstrap.CreateClientWorld(\"ClientWorld\");", "WorldManager", this);
+                    Log.Error($"Error ClientServerBootstrap.CreateClientWorld({CLIENT_NAME});", name, gameObject);
                     return false;
                 }
-            }
 
-            if (ServerWorld != null)
-            {
-                World.DefaultGameObjectInjectionWorld = ServerWorld;
-            }
-            else if (ClientWorld != null)
-            {
-                World.DefaultGameObjectInjectionWorld = ClientWorld;
+                if (World.DefaultGameObjectInjectionWorld != ServerWorld)
+                {
+                    World.DefaultGameObjectInjectionWorld = ClientWorld;
+                    Log.Debug($"WorldManager.InitWorlds Set DefaultGameObjectInjectionWorld to: {ClientWorld.Name}");
+                }
             }
 
             return true;
@@ -72,6 +76,7 @@ namespace Natrium.Gameplay.Shared
 
         private void UpdateCurrentRole()
         {
+            Log.Verbose("WorldManager.UpdateCurrentRole()");
             switch (Application.platform)
             {
                 case RuntimePlatform.WindowsServer:
@@ -101,6 +106,7 @@ namespace Natrium.Gameplay.Shared
                         break;
                     }
             }
+            Log.Debug($"WorldManager.UpdateCurrentRole to: {_role}");
         }
     }
 }

@@ -129,6 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 225703031}
   - component: {fileID: 225703032}
+  - component: {fileID: 225703033}
   m_Layer: 0
   m_Name: WorldManager
   m_TagString: Untagged
@@ -163,6 +164,19 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2db6380c5f01d744a86444b6ecba810c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &225703033
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 225703030}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6d22fe1802f646eeb96208b5b2315fd6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ForceAutomaticBootstrapInScene: 0
 --- !u!1 &330585543
 GameObject:
   m_ObjectHideFlags: 0

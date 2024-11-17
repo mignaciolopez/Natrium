@@ -12,18 +12,34 @@ namespace Natrium.Gameplay.Server.Systems
 {
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
-    public partial struct AimSystem : ISystem
+    public partial struct AimSystem : ISystem, ISystemStartStop
     {
         private EntityCommandBuffer _ecb;
 
         [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnCreate()");
             state.RequireForUpdate<PhysicsWorldSingleton>();
             state.RequireForUpdate<PhysicsWorldHistorySingleton>();
             state.RequireForUpdate<NetworkTime>();
         }
 
+        public void OnStartRunning(ref SystemState state)
+        {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnStartRunning()");
+        }
+
+        public void OnStopRunning(ref SystemState state)
+        {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnStopRunning()");
+        }
+
+        public void OnDestroy(ref SystemState state)
+        {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnDestroy()");
+        }
+        
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {

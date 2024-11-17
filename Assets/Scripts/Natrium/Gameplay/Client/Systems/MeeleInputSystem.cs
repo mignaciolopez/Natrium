@@ -15,22 +15,30 @@ namespace Natrium.Gameplay.Client.Systems
 
         protected override void OnCreate()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnCreate()");
             _inputActions = new InputActions();
             RequireForUpdate<MeeleInput>();
         }
 
         protected override void OnStartRunning()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStartRunning()");
             _inputActions.Enable();
             
         }
 
         protected override void OnStopRunning()
         {
-            
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStopRunning()");
             _inputActions.Disable();
         }
 
+        protected override void OnDestroy()
+        {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnDestroy()");
+            base.OnDestroy();
+        }
+        
         protected override void OnUpdate()
         {
             //Use this approach on Update or use OnPrimaryMouseRealease but not both

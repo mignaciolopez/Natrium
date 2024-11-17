@@ -28,6 +28,7 @@ namespace Natrium.Gameplay.Server.Systems
 
         protected override void OnCreate()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnCreate()");
             base.OnCreate();
 
             RequireForUpdate<SystemsSettings>();
@@ -37,6 +38,7 @@ namespace Natrium.Gameplay.Server.Systems
 
         protected override void OnStartRunning()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStartRunning()");
             base.OnStartRunning();
 
             if (SystemAPI.TryGetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>(out var ecbs))
@@ -49,9 +51,16 @@ namespace Natrium.Gameplay.Server.Systems
 
         protected override void OnStopRunning()
         {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStopRunning()");
             base.OnStopRunning();
         }
 
+        protected override void OnDestroy()
+        {
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnDestroy()");
+            base.OnDestroy();
+        }
+        
         protected override void OnUpdate()
         {
             if (SystemAPI.TryGetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>(out var ecbs))
