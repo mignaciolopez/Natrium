@@ -9,11 +9,11 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 3875185888791430411}
-  - component: {fileID: 5580900733525595344}
+  - component: {fileID: 7483335248275890753}
   - component: {fileID: 3313861592051166287}
   - component: {fileID: 703161728766102934}
-  - component: {fileID: 7938270793113587531}
-  m_Layer: 0
+  - component: {fileID: 2704323327017975960}
+  m_Layer: 5
   m_Name: Debug Tile
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -36,7 +36,7 @@ Transform:
   - {fileID: 6424816187144201019}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &5580900733525595344
+--- !u!114 &7483335248275890753
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -45,7 +45,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 466884796676510809}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c23d36f3cc196434a9394e169111c3a6, type: 3}
+  m_Script: {fileID: 11500000, guid: d4596cb0b321ea44085a1659dafa8da9, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
   Time: 1
@@ -77,13 +77,15 @@ MonoBehaviour:
   SupportedGhostModes: 3
   OptimizationMode: 0
   Importance: 1
-  prefabId: 9f89132c455940148988f9112185ad5f
+  prefabId: 8a0894d97e6ccff43b7612260099b8f3
   HasOwner: 0
   SupportAutoCommandTarget: 1
   TrackInterpolationDelay: 0
   GhostGroup: 0
   UsePreSerialization: 0
---- !u!114 &7938270793113587531
+  RollbackPredictedSpawnedGhostState: 0
+  RollbackPredictionOnStructuralChanges: 1
+--- !u!114 &2704323327017975960
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -92,7 +94,7 @@ MonoBehaviour:
   m_GameObject: {fileID: 466884796676510809}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 9d85441b0d15a534d8903d45976d1540, type: 3}
+  m_Script: {fileID: 11500000, guid: 3261afaeca68dae4fa38a98e6e6fe939, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
 --- !u!1 &1658877146842009756
@@ -105,7 +107,7 @@ GameObject:
   m_Component:
   - component: {fileID: 6424816187144201019}
   - component: {fileID: 1065580924853438849}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Square
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -144,6 +146,9 @@ SpriteRenderer:
   m_ReflectionProbeUsage: 1
   m_RayTracingMode: 0
   m_RayTraceProcedural: 0
+  m_RayTracingAccelStructBuildFlagsOverride: 0
+  m_RayTracingAccelStructBuildFlags: 1
+  m_SmallMeshCulling: 1
   m_RenderingLayerMask: 4294967295
   m_RendererPriority: 0
   m_Materials:
@@ -168,13 +173,12 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6,
-    type: 3}
+  m_Sprite: {fileID: 10913, guid: 0000000000000000f000000000000000, type: 0}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
-  m_Size: {x: 1, y: 1}
+  m_Size: {x: 0.2, y: 0.2}
   m_AdaptiveModeThreshold: 0.5
   m_SpriteTileMode: 0
   m_WasSpriteAssigned: 1

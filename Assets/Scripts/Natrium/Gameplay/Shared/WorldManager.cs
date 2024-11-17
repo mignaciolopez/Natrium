@@ -37,7 +37,9 @@ namespace Natrium.Gameplay.Shared
 
             if (_role == Role.ServerAndClient || _role == Role.Server)
             {
-                ServerWorld = ClientServerBootstrap.CreateServerWorld("ServerWorld");
+                ServerWorld = ClientServerBootstrap.CreateServerWorld("Natrium Server");
+                DefaultWorldInitialization.AddSystemsToRootLevelSystemGroups(ServerWorld, DefaultWorldInitialization.GetAllSystems(WorldSystemFilterFlags.ServerSimulation));
+
                 if (ServerWorld == null)
                 {
                     Log.Error($"Error ClientServerBootstrap.CreateServerWorld(\"ServerWorld\")", "WorldManager", this);
@@ -47,7 +49,8 @@ namespace Natrium.Gameplay.Shared
 
             if (_role == Role.ServerAndClient || _role == Role.Client)
             {
-                ClientWorld = ClientServerBootstrap.CreateClientWorld("ClientWorld");
+                ClientWorld = ClientServerBootstrap.CreateClientWorld("Natrium Client");
+                DefaultWorldInitialization.AddSystemsToRootLevelSystemGroups(ClientWorld, DefaultWorldInitialization.GetAllSystems(WorldSystemFilterFlags.ClientSimulation));
                 if (ClientWorld == null)
                 {
                     Log.Error($"Error ClientServerBootstrap.CreateClientWorld(\"ClientWorld\");", "WorldManager", this);
