@@ -37,14 +37,12 @@ namespace Natrium.Gameplay.Shared.Components
         [GhostField(Quantization = 100)]
         public float3 Value;
     }
-
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.None)]
+    
     public struct MeeleInput : IInputComponentData
     {
         [GhostField] public InputEvent Input;
     }
-
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToNonOwner)]
+    
     public struct AimInput : IInputComponentData
     {
         [GhostField] public InputEvent AimInputEvent;

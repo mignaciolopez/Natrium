@@ -16,7 +16,7 @@ namespace Natrium.Gameplay.Server.Systems
     {
         private EntityCommandBuffer _ecb;
 
-        [BurstCompile]
+        //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnCreate()");
@@ -80,7 +80,7 @@ namespace Natrium.Gameplay.Server.Systems
                             var damageBuffer = state.EntityManager.GetBuffer<DamagePointsBuffer>(closestHit.Entity);
                             damageBuffer.Add(new DamagePointsBuffer { Value = dp.Value });
 
-                            SpawnDebugData(ref state, e, closestHit);
+                            //SpawnDebugData(ref state, e, closestHit);
                         }
                     }
                 }

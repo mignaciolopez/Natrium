@@ -57,8 +57,8 @@ namespace Natrium.Gameplay.Client.Systems.UI
             var ecbs = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
             _ecb = ecbs.CreateCommandBuffer(World.Unmanaged);
 
-            DrawDebugTiles();
-            DrawDebugAttacks();
+            //DrawDebugTiles();
+            //DrawDebugAttacks();
         }
 
         private void DrawDebugTiles()
