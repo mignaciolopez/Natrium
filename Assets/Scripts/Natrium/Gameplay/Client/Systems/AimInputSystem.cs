@@ -48,6 +48,9 @@ namespace Natrium.Gameplay.Client.Systems
         {
             foreach (var aimInput in SystemAPI.Query<RefRW<AimInput>>().WithAll<GhostOwnerIsLocal>())
             {
+                //Manually reset AimInputEvent due to wrong documentation.
+                //It is not being reset after being processed.
+                //https://discussions.unity.com/t/inputevent-does-not-fire-exactly-once/929531/3
                 aimInput.ValueRW.AimInputEvent = default;
                 
                 if (_inputActions.Map_Gameplay.Axn_MouseRealease.WasPerformedThisFrame())
