@@ -10,8 +10,8 @@ using Unity.NetCode;
 
 namespace Natrium.Gameplay.Server.Systems
 {
-    [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
+    [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct AimSystem : ISystem, ISystemStartStop
     {
         private EntityCommandBuffer _ecb;
@@ -20,6 +20,7 @@ namespace Natrium.Gameplay.Server.Systems
         public void OnCreate(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnCreate()");
+            state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
             state.RequireForUpdate<PhysicsWorldSingleton>();
             state.RequireForUpdate<PhysicsWorldHistorySingleton>();
             state.RequireForUpdate<NetworkTime>();
@@ -47,23 +48,21 @@ namespace Natrium.Gameplay.Server.Systems
             _ecb = ecbs.CreateCommandBuffer(state.WorldUnmanaged);
 
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
-            if (!networkTime.IsFirstTimeFullyPredictingTick)
-                return;
 
-            foreach (var (ai, pc, dp, e) in SystemAPI.Query<AimInput, PhysicsCollider, DamagePoints>().WithAll<Simulate, DamageDealerTag>().WithEntityAccess())
+            foreach (var (ai, pc, dp, e) in SystemAPI.Query<RefRW<AimInput>, PhysicsCollider, DamagePoints>().WithAll<Simulate, DamageDealerTag>().WithEntityAccess())
             {
-                if (ai.Input.IsSet)
+                if (ai.ValueRO.AimInputEvent.IsSet)
                 {
                     var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
 
-                    Log.Debug($"AimInput from {e}: {ai.Value.ToString("0.00", null)}");
+                    Log.Debug($"AimInput from {e}: {ai.ValueRO.Value.ToString("0.00", null)}");
 
-                    var start = ai.Value;
+                    var start = ai.ValueRO.Value;
                     start.y = 10.0f; //ToDo: The plus 10 on y axis, comes from the offset of the camara
                     var raycastInput = new RaycastInput
                     {
                         Start = start,
-                        End = ai.Value,
+                        End = ai.ValueRO.Value,
                         Filter = pc.Value.Value.GetCollisionFilter()
                     };
 

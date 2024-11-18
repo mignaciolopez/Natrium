@@ -4,74 +4,73 @@ using UnityEngine;
 using Natrium.Shared;
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Settings.Input;
+using Unity.Mathematics;
 using UnityEngine.InputSystem;
 
 namespace Natrium.Gameplay.Client.Systems
 {
-    [UpdateInGroup(typeof(GhostInputSystemGroup))]
+    [UpdateInGroup(typeof(GhostInputSystemGroup))] //This group only executes on Client.
     public partial class AimInputSystem : SystemBase
     {
         private InputActions _inputActions;
 
         protected override void OnCreate()
         {
+            base.OnCreate();
             Log.Verbose($"[{World.Name}] | {this.ToString()}.OnCreate()");
             _inputActions = new InputActions();
+            RequireForUpdate<GhostOwnerIsLocal>();
             RequireForUpdate<AimInput>();
         }
 
         protected override void OnStartRunning()
         {
+            base.OnStartRunning();
             Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStartRunning()");
             _inputActions.Enable();
-            _inputActions.Map_Gameplay.Axn_MouseRealease.performed += OnPrimaryMouseRealease;
         }
 
         protected override void OnStopRunning()
         {
+            base.OnStopRunning();
             Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStopRunning()");
-            _inputActions.Map_Gameplay.Axn_MouseRealease.performed -= OnPrimaryMouseRealease;
             _inputActions.Disable();
         }
 
         protected override void OnDestroy()
         {
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnDestroy()");
             base.OnDestroy();
+            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnDestroy()");
+            _inputActions.Dispose();
         }
-        
+
         protected override void OnUpdate()
         {
-            if (Camera.main == null)
+            foreach (var aimInput in SystemAPI.Query<RefRW<AimInput>>().WithAll<GhostOwnerIsLocal>())
             {
-                return;
-            }
+                aimInput.ValueRW.AimInputEvent = default;
+                
+                if (_inputActions.Map_Gameplay.Axn_MouseRealease.WasPerformedThisFrame())
+                {
+                    Log.Verbose($"[{World.Name}] | OnPrimaryMouseRelease()");
 
-            var newAimInput = new AimInput();
-
-            if (_inputActions.Map_Gameplay.Axn_MouseRealease.WasPerformedThisFrame())
-            {
-                var mouseInputPosition = _inputActions.Map_Gameplay.Axn_MousePosition.ReadValue<Vector2>();
-                var mousePosition = new Vector3(mouseInputPosition.x, mouseInputPosition.y, Camera.main.transform.position.y);
-                var mouseWorldPosition = Camera.main.ScreenToWorldPoint(mousePosition);
-
-                Log.Debug($"mouseInputPosition {mouseInputPosition}, mousePosition {mousePosition}, mouseWorldPosition {mouseWorldPosition}");
-
-                newAimInput.Value = mouseWorldPosition;
-                newAimInput.Input.Set();
-            }
-
-            foreach (var ai in SystemAPI.Query<RefRW<AimInput>>())
-            {
-                ai.ValueRW = newAimInput;
-            }
-        }
-
-        private void OnPrimaryMouseRealease(InputAction.CallbackContext context)
-        {
-            if (Camera.main == null)
-            {
-                Log.Error($"Camera.main == null");
+                    if (Camera.main == null)
+                    {
+                        Log.Error($"[{World.Name}] | Camera.main is null.");
+                        return;
+                    }
+                        
+                    var mouseInputPosition = _inputActions.Map_Gameplay.Axn_MousePosition.ReadValue<Vector2>();
+                    var mousePosition = new Vector3(mouseInputPosition.x, mouseInputPosition.y, Camera.main.transform.position.y);
+                    var mouseWorldPosition = (float3)Camera.main.ScreenToWorldPoint(mousePosition);
+            
+                    Log.Debug($"mouseInputPosition: {mouseInputPosition}\n" +
+                              $"mousePosition: {mousePosition}\n" +
+                              $"mouseWorldPosition: {mouseWorldPosition}");
+                        
+                    aimInput.ValueRW.AimInputEvent.Set();
+                    aimInput.ValueRW.Value = mouseWorldPosition;
+                }
             }
         }
     }
