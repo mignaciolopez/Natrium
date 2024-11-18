@@ -44,9 +44,10 @@ namespace Natrium.Gameplay.Shared.Components
         [GhostField] public InputEvent Input;
     }
 
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToNonOwner)]
     public struct AimInput : IInputComponentData
     {
-        public InputEvent AimInputEvent;
+        [GhostField] public InputEvent AimInputEvent;
         [GhostField (Quantization = 0)] public float3 Value; //Mouse World Position
     }
 }

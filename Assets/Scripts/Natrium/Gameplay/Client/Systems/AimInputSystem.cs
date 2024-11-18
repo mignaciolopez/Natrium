@@ -1,3 +1,4 @@
+using System.Globalization;
 using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
@@ -5,7 +6,6 @@ using Natrium.Shared;
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Settings.Input;
 using Unity.Mathematics;
-using UnityEngine.InputSystem;
 
 namespace Natrium.Gameplay.Client.Systems
 {
@@ -67,9 +67,9 @@ namespace Natrium.Gameplay.Client.Systems
                     var mousePosition = new Vector3(mouseInputPosition.x, mouseInputPosition.y, Camera.main.transform.position.y);
                     var mouseWorldPosition = (float3)Camera.main.ScreenToWorldPoint(mousePosition);
             
-                    Log.Debug($"mouseInputPosition: {mouseInputPosition}\n" +
-                              $"mousePosition: {mousePosition}\n" +
-                              $"mouseWorldPosition: {mouseWorldPosition}");
+                    Log.Debug($"mouseWorldPosition: {mouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}\n" +
+                              $"mouseInputPosition: {mouseInputPosition}\n" + 
+                              $"mousePosition: {mousePosition}\n");
                         
                     aimInput.ValueRW.AimInputEvent.Set();
                     aimInput.ValueRW.Value = mouseWorldPosition;
