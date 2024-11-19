@@ -17,16 +17,19 @@ MonoBehaviour:
   ClientServerTickRate:
     SimulationTickRate: 60
     PredictedFixedStepSimulationTickRatio: 1
-    NetworkTickRate: 60
+    NetworkTickRate: 0
     MaxSimulationStepsPerFrame: 1
     MaxSimulationStepBatchSize: 4
     TargetFrameRateMode: 0
+    m_SendSnapshotsForCatchUpTicks: 0
+    HandshakeApprovalTimeoutMS: 5000
   ClientTickRate:
     InterpolationTimeNetTicks: 2
     InterpolationTimeMS: 0
     MaxExtrapolationTimeSimTicks: 20
     MaxPredictAheadTimeMS: 500
     TargetCommandSlack: 2
+    NumAdditionalCommandsToSend: 2
     MaxPredictionStepBatchSizeRepeatedTick: 0
     MaxPredictionStepBatchSizeFirstTimeTick: 0
     InterpolationDelayJitterScale: 1.25
@@ -43,4 +46,12 @@ MonoBehaviour:
     MinDistanceScaledSendImportance: 0
     MaxSendChunks: 0
     MaxSendEntities: 0
+    m_ForceSingleBaseline: 0
+    m_ForcePreSerialize: 0
+    m_KeepSnapshotHistoryOnStructuralChange: 1
+    m_EnablePerComponentProfiling: 0
     CleanupConnectionStatePerTick: 1
+    m_FirstSendImportanceMultiplier: 1
+    m_IrrelevantImportanceDownScale: 1
+    m_TempStreamSize: 8192
+    m_UseCustomSerializer: 0
