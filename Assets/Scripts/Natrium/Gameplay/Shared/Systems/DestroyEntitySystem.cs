@@ -4,7 +4,7 @@ using Unity.NetCode;
 using Unity.Transforms;
 using Unity.Mathematics;
 
-namespace Natrium.Gameplay.Server.Systems
+namespace Natrium.Gameplay.Shared.Systems
 {
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup), OrderLast = true)]
     public partial struct DestroyEntitySystem : ISystem

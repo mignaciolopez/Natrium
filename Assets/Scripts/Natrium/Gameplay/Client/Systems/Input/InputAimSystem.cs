@@ -7,10 +7,10 @@ using Natrium.Gameplay.Shared.Components.Input;
 using Natrium.Settings.Input;
 using Unity.Mathematics;
 
-namespace Natrium.Gameplay.Client.Systems
+namespace Natrium.Gameplay.Client.Systems.Input
 {
     [UpdateInGroup(typeof(GhostInputSystemGroup))] //This group only executes on Client.
-    public partial class AimInputSystem : SystemBase
+    public partial class InputAimSystem : SystemBase
     {
         private InputActions _inputActions;
 

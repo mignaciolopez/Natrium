@@ -6,10 +6,10 @@ using Natrium.Settings.Input;
 using Natrium.Shared;
 using Natrium.Shared.Systems;
 
-namespace Natrium.Gameplay.Client.Systems
+namespace Natrium.Gameplay.Client.Systems.Input
 {
     [UpdateInGroup(typeof(GhostInputSystemGroup))]
-    public partial class InputSystem : SystemBase
+    public partial class InputMoveSystem : SystemBase
     {
         private InputActions _inputActions;
 

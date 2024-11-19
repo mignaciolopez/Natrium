@@ -15,7 +15,7 @@ namespace Natrium.Gameplay.Shared.Systems
         public void OnUpdate(ref SystemState state)
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
-            var simulationTickRate = NetCodeConfig.Global.ClientServerTickRate.SimulationTickRate;
+            var simulationTickRate = 60;// NetCodeConfig.Global.ClientServerTickRate.SimulationTickRate;
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
             var currentTick = networkTime.ServerTick;
 

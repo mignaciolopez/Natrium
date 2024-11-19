@@ -1,15 +1,13 @@
 using Unity.Entities;
 using Unity.NetCode;
-using UnityEngine;
 using Natrium.Shared;
 using Natrium.Gameplay.Shared.Components.Input;
 using Natrium.Settings.Input;
-using UnityEngine.InputSystem;
 
-namespace Natrium.Gameplay.Client.Systems
+namespace Natrium.Gameplay.Client.Systems.Input
 {
     [UpdateInGroup(typeof(GhostInputSystemGroup))]
-    public partial class MeeleInputSystem : SystemBase
+    public partial class InputMeeleSystem : SystemBase
     {
         private InputActions _inputActions;
 

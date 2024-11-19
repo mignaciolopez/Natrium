@@ -2,7 +2,7 @@ using Natrium.Gameplay.Shared.Components;
 using Unity.Entities;
 using Unity.NetCode;
 
-namespace Natrium.Gameplay.Server.Systems
+namespace Natrium.Gameplay.Shared.Systems
 {
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
     public partial struct DestroyOnTimerSystem : ISystem
