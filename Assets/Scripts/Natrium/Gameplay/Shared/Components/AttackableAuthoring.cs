@@ -51,14 +51,14 @@ namespace Natrium.Gameplay.Shared.Components
     [GhostComponent(PrefabType = GhostPrefabType.All)]
     public struct DamagePointsBuffer : IBufferElementData
     {
-        public int Value;
+        public float Value;
     }
 
     [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.SendToNonOwner)]
     public struct DamagePointsTick : ICommandData
     {
         public NetworkTick Tick { get; set; }
-        public int Value;
+        public float Value;
     }
 
     [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]

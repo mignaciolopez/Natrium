@@ -1,7 +1,9 @@
+using System.Globalization;
 using Unity.Entities;
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Gameplay.Shared.Components.Input;
 using Natrium.Shared;
+using Unity.Mathematics;
 using Unity.Physics;
 //using Unity.Burst;
 using Unity.NetCode;
@@ -47,40 +49,38 @@ namespace Natrium.Gameplay.Server.Systems
         public void OnUpdate(ref SystemState state)
         {
             //var ecb = _bsEcbS.CreateCommandBuffer(state.WorldUnmanaged);
-
-            //var networkTime = SystemAPI.GetSingleton<NetworkTime>();
-
+            var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
+            
             foreach (var (ai, pc, dp, e) in SystemAPI.Query<RefRW<InputAim>, RefRO<PhysicsCollider>, RefRO<DamagePoints>>().WithAll<Simulate, DamageDealerTag>().WithEntityAccess())
             {
-                if (ai.ValueRO.InputEvent.IsSet)
+                if (!ai.ValueRO.InputEvent.IsSet)
+                    continue;
+
+                Log.Debug($"AimInput from {e}: {ai.ValueRO.MouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}");
+
+                var offset = new float3(0, 10, 0); //ToDo: The plus 10 on y axis, comes from the offset of the camara
+                var raycastInput = new RaycastInput
                 {
-                    var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
+                    Start = ai.ValueRO.MouseWorldPosition + offset,
+                    End = ai.ValueRO.MouseWorldPosition,
+                    Filter = pc.ValueRO.Value.Value.GetCollisionFilter()
+                };
 
-                    Log.Debug($"AimInput from {e}: {ai.ValueRO.MouseWorldPosition.ToString("0.00", null)}");
-
-                    var start = ai.ValueRO.MouseWorldPosition;
-                    start.y = 10.0f; //ToDo: The plus 10 on y axis, comes from the offset of the camara
-                    var raycastInput = new RaycastInput
+                if (collisionWorld.CastRay(raycastInput, out var closestHit))
+                {
+                    Log.Debug($"AimInput from: {e} -> Collides with: {closestHit.Entity}");
+                    
+                    if (closestHit.Entity == Entity.Null)// || closestHit.Entity == e)
                     {
-                        Start = start,
-                        End = ai.ValueRO.MouseWorldPosition,
-                        Filter = pc.ValueRO.Value.Value.GetCollisionFilter()
-                    };
+                        Log.Warning($"Collision with {closestHit.Entity} is Null or Self");
+                        continue;
+                    }
 
-                    if (collisionWorld.CastRay(raycastInput, out var closestHit))
+                    if (state.EntityManager.HasComponent<AttackableTag>(closestHit.Entity))
                     {
-                        if (closestHit.Entity == Entity.Null)// || closestHit.Entity == e)
-                        {
-                            Log.Warning($"Hit Entity {closestHit.Entity} is Null or Self");
-                            continue;
-                        }
-
-                        if (state.EntityManager.HasComponent<AttackableTag>(closestHit.Entity))
-                        {
-                            Log.Debug($"Entity {e} is Dealing Damage to {closestHit.Entity}");
-                            var damageBuffer = state.EntityManager.GetBuffer<DamagePointsBuffer>(closestHit.Entity);
-                            damageBuffer.Add(new DamagePointsBuffer { Value = dp.ValueRO.Value });
-                        }
+                        Log.Debug($"{e} is Dealing Damage on {closestHit.Entity}");
+                        var damageBuffer = state.EntityManager.GetBuffer<DamagePointsBuffer>(closestHit.Entity);
+                        damageBuffer.Add(new DamagePointsBuffer { Value = dp.ValueRO.Value });
                     }
                 }
             }

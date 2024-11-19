@@ -7,6 +7,7 @@ namespace Natrium.Gameplay.Client.Components.UI.Debug
     public class DebugPrefabsAuthoring : MonoBehaviour
     {
         public GameObject aimInputPrefab;
+        public GameObject damagePrefab;
         
         public class Baker : Baker<DebugPrefabsAuthoring>
         {
@@ -19,12 +20,22 @@ namespace Natrium.Gameplay.Client.Components.UI.Debug
                     {
                         Prefab = GetEntity(authoring.aimInputPrefab, TransformUsageFlags.Dynamic)
                     });
+                    
+                    AddComponent(e, new DamagePrefab
+                    {
+                        Prefab = GetEntity(authoring.damagePrefab, TransformUsageFlags.Dynamic)
+                    });
                 }
             }
         }
     }
 
     public struct DebugAimInputPrefab : IComponentData
+    {
+        public Entity Prefab;
+    }
+    
+    public struct DamagePrefab : IComponentData
     {
         public Entity Prefab;
     }

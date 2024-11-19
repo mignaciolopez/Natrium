@@ -7,6 +7,7 @@ namespace Natrium.Gameplay.Shared.Components
     [DisallowMultipleComponent]
     public class DamageDealerAuthoring : MonoBehaviour
     {
+        public float damagePoints = 1.0f;
     }
 
     public class DamageDealerBaker : Baker<DamageDealerAuthoring>
@@ -17,16 +18,19 @@ namespace Natrium.Gameplay.Shared.Components
             if (e != Entity.Null)
             {
                 AddComponent<DamageDealerTag>(e);
-                AddComponent<DamagePoints>(e);
+                AddComponent(e, new DamagePoints
+                {
+                    Value = authoring.damagePoints
+                });
             }
         }
     }
 
     public struct DamageDealerTag : IComponentData { }
 
-    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.SendToOwner)]
+    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
     public struct DamagePoints : IComponentData
     {
-        [GhostField] public int Value;
+        [GhostField] public float Value;
     }
 }
