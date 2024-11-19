@@ -184,7 +184,7 @@ namespace Natrium.Gameplay.Server.Systems
 
                 _ecb.SetComponent(player, new MaxHealthPoints() { Value = 100 });
                 _ecb.SetComponent(player, new CurrentHealthPoints() { Value = 100 });
-                _ecb.SetComponent(player, new DamagePoints() { Value = 35 });
+                _ecb.SetComponent(player, new DamagePoints() { Value = 1 });
 
                 var color = new float3(UnityEngine.Random.Range(0.0f, 1.0f), UnityEngine.Random.Range(0.0f, 1.0f), UnityEngine.Random.Range(0.0f, 1.0f));
 

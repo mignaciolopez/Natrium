@@ -1,17 +1,39 @@
 using Natrium.Gameplay.Shared.Components;
+using Natrium.Shared;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 
-namespace Natrium.Gameplay.Shared.Systems
+namespace Natrium.Gameplay.Shared.Systems.Initializers
 {
-    public partial struct InitializeDestroyOnTimerSystem : ISystem
+    public partial struct InitializeDestroyOnTimerSystem : ISystem, ISystemStartStop
     {
+        //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnCreate()");
             state.RequireForUpdate<NetworkTime>();
         }
 
+        //[BurstCompile]
+        public void OnStartRunning(ref SystemState state)
+        {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnStartRunning()");
+        }
+
+        //[BurstCompile]
+        public void OnStopRunning(ref SystemState state)
+        {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnStopRunning()");
+        }
+
+        //[BurstCompile]
+        public void OnDestroy(ref SystemState state)
+        {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnDestroy()");
+        }
+
+        //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
