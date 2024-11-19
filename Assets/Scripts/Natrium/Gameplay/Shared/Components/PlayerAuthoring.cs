@@ -9,18 +9,17 @@ namespace Natrium.Gameplay.Shared.Components
     [DisallowMultipleComponent]
     public class PlayerAuthoring : MonoBehaviour
     {
-    }
-
-    public class PlayerBaker : Baker<PlayerAuthoring>
-    {
-        public override void Bake(PlayerAuthoring authoring)
+        
+        
+        public class Baker : Baker<PlayerAuthoring>
         {
-            var e = GetEntity(TransformUsageFlags.Dynamic);
+            public override void Bake(PlayerAuthoring authoring)
+            {
+                var e = GetEntity(TransformUsageFlags.Dynamic);
 
-            AddComponent<PlayerName>(e);
-            AddComponent<DebugColor>(e);
-            AddComponent<MeeleInput>(e);
-            AddComponent<AimInput>(e);
+                AddComponent<PlayerName>(e);
+                AddComponent<DebugColor>(e);
+            }
         }
     }
 
@@ -36,16 +35,5 @@ namespace Natrium.Gameplay.Shared.Components
     {
         [GhostField(Quantization = 100)]
         public float3 Value;
-    }
-    
-    public struct MeeleInput : IInputComponentData
-    {
-        [GhostField] public InputEvent Input;
-    }
-    
-    public struct AimInput : IInputComponentData
-    {
-        [GhostField] public InputEvent AimInputEvent;
-        [GhostField (Quantization = 0)] public float3 Value; //Mouse World Position
     }
 }

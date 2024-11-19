@@ -7,7 +7,6 @@ namespace Natrium.Gameplay.Server.Components
     public class PrefabsAuthoring : MonoBehaviour
     {
         public GameObject PlayerPrefab;
-        public GameObject DebugAttackPrefab;
     }
 
     public class PlayerSpawnerBaker : Baker<PrefabsAuthoring>
@@ -21,21 +20,11 @@ namespace Natrium.Gameplay.Server.Components
                 {
                     Value = GetEntity(authoring.PlayerPrefab, TransformUsageFlags.Dynamic)
                 });
-
-                AddComponent(e, new DebugAttackPrefab
-                {
-                    Value = GetEntity(authoring.DebugAttackPrefab, TransformUsageFlags.Dynamic)
-                });
             }
         }
     }
 
     public struct PlayerPrefab : IComponentData
-    {
-        public Entity Value;
-    }
-
-    public struct DebugAttackPrefab : IComponentData
     {
         public Entity Value;
     }

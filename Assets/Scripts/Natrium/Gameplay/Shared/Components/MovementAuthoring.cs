@@ -25,8 +25,6 @@ namespace Natrium.Gameplay.Shared.Components
         {
             var e = GetEntity(TransformUsageFlags.Dynamic);
 
-            AddComponent<PlayerInputAxis>(e);
-
             AddComponent(e, new Speed
             {
                 Value = authoring.speed
@@ -69,13 +67,6 @@ namespace Natrium.Gameplay.Shared.Components
     {
         [GhostField(Quantization = 100)]
         public float Value;
-    }
-
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.None)]
-    public struct PlayerInputAxis : IInputComponentData
-    {
-        [GhostField(Quantization = 0)]
-        public float2 Value;
     }
 
     [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToOwner)]

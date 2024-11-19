@@ -1,5 +1,5 @@
 using Natrium.Gameplay.Shared.Components;
-using Natrium.Shared;
+using Natrium.Gameplay.Shared.Components.Input;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -38,14 +38,14 @@ namespace Natrium.Gameplay.Shared.Systems
 
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
 
-            foreach (var (ptp, lt, pia, speed, pc, e) in SystemAPI.Query<RefRW<PlayerTilePosition>, LocalTransform, PlayerInputAxis, Speed, PhysicsCollider>().WithAll<Simulate, GhostOwner, MovementDiagonal>().WithEntityAccess())
+            foreach (var (ptp, lt, pia, speed, pc, e) in SystemAPI.Query<RefRW<PlayerTilePosition>, LocalTransform, InputMove, Speed, PhysicsCollider>().WithAll<Simulate, GhostOwner, MovementDiagonal>().WithEntityAccess())
             {
                 if (math.distance(lt.Position, ptp.ValueRO.Target) < speed.Value * dt)
                 {
                     ptp.ValueRW.Target = math.round(lt.Position);
                     ptp.ValueRW.Previous = ptp.ValueRO.Target;
 
-                    var input = new float3(pia.Value.x, 0.0f, pia.Value.y);
+                    var input = new float3(pia.InputAxis.x, 0.0f, pia.InputAxis.y);
 
                     switch (input.x)
                     {

@@ -1,7 +1,7 @@
 using UnityEngine;
 using Unity.Entities;
 
-namespace Natrium.Gameplay.Client.Components.UI
+namespace Natrium.Gameplay.Client.Components.UI.Debug
 {
     [DisallowMultipleComponent]
     public class DebugPrefabsAuthoring : MonoBehaviour

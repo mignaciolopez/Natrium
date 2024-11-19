@@ -1,7 +1,7 @@
 using UnityEngine;
 using Unity.Entities;
 using Unity.NetCode;
-using Natrium.Gameplay.Shared.Components;
+using Natrium.Gameplay.Shared.Components.Input;
 using Natrium.Settings.Input;
 using Natrium.Shared;
 using Natrium.Shared.Systems;
@@ -41,9 +41,9 @@ namespace Natrium.Gameplay.Client.Systems
         {
            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
 
-            foreach (var pi in SystemAPI.Query<RefRW<PlayerInputAxis>>().WithAll<GhostOwnerIsLocal, Simulate>())
+            foreach (var pi in SystemAPI.Query<RefRW<InputMove>>().WithAll<GhostOwnerIsLocal, Simulate>())
             {
-                pi.ValueRW.Value = _inputActions.Map_Gameplay.Axn_PlayerMove.ReadValue<Vector2>();
+                pi.ValueRW.InputAxis = _inputActions.Map_Gameplay.Axn_PlayerMove.ReadValue<Vector2>();
             }
 
             if (UnityEngine.Input.GetKeyUp(KeyCode.Return))

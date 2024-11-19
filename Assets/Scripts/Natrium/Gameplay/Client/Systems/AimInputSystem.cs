@@ -3,7 +3,7 @@ using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
 using Natrium.Shared;
-using Natrium.Gameplay.Shared.Components;
+using Natrium.Gameplay.Shared.Components.Input;
 using Natrium.Settings.Input;
 using Unity.Mathematics;
 
@@ -20,7 +20,7 @@ namespace Natrium.Gameplay.Client.Systems
             Log.Verbose($"[{World.Name}] | {this.ToString()}.OnCreate()");
             _inputActions = new InputActions();
             RequireForUpdate<GhostOwnerIsLocal>();
-            RequireForUpdate<AimInput>();
+            RequireForUpdate<InputAim>();
         }
 
         protected override void OnStartRunning()
@@ -46,12 +46,12 @@ namespace Natrium.Gameplay.Client.Systems
 
         protected override void OnUpdate()
         {
-            foreach (var aimInput in SystemAPI.Query<RefRW<AimInput>>().WithAll<GhostOwnerIsLocal>())
+            foreach (var aimInput in SystemAPI.Query<RefRW<InputAim>>().WithAll<GhostOwnerIsLocal>())
             {
                 //Manually reset AimInputEvent due to wrong documentation.
                 //It is not being reset after being processed.
                 //https://discussions.unity.com/t/inputevent-does-not-fire-exactly-once/929531/3
-                aimInput.ValueRW.AimInputEvent = default;
+                aimInput.ValueRW.InputEvent = default;
                 
                 if (_inputActions.Map_Gameplay.Axn_MouseRealease.WasPerformedThisFrame())
                 {
@@ -71,8 +71,8 @@ namespace Natrium.Gameplay.Client.Systems
                               $"mouseInputPosition: {mouseInputPosition}\n" + 
                               $"mousePosition: {mousePosition}\n");
                         
-                    aimInput.ValueRW.AimInputEvent.Set();
-                    aimInput.ValueRW.Value = mouseWorldPosition;
+                    aimInput.ValueRW.InputEvent.Set();
+                    aimInput.ValueRW.MouseWorldPosition = mouseWorldPosition;
                 }
             }
         }

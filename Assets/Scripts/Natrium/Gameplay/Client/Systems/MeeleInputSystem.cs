@@ -2,7 +2,7 @@ using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
 using Natrium.Shared;
-using Natrium.Gameplay.Shared.Components;
+using Natrium.Gameplay.Shared.Components.Input;
 using Natrium.Settings.Input;
 using UnityEngine.InputSystem;
 
@@ -17,7 +17,7 @@ namespace Natrium.Gameplay.Client.Systems
         {
             Log.Verbose($"[{World.Name}] | {this.ToString()}.OnCreate()");
             _inputActions = new InputActions();
-            RequireForUpdate<MeeleInput>();
+            RequireForUpdate<InputMeele>();
         }
 
         protected override void OnStartRunning()
