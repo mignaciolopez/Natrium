@@ -15,7 +15,7 @@ namespace Natrium.Gameplay.Client.Systems.Input
         {
             Log.Verbose($"[{World.Name}] | {this.ToString()}.OnCreate()");
             _inputActions = new InputActions();
-            RequireForUpdate<InputMeele>();
+            //RequireForUpdate<InputMeele>();
         }
 
         protected override void OnStartRunning()

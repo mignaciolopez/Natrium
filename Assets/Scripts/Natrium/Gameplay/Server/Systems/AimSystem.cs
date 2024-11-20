@@ -7,6 +7,7 @@ using Unity.Mathematics;
 using Unity.Physics;
 //using Unity.Burst;
 using Unity.NetCode;
+using UnityEngine;
 
 namespace Natrium.Gameplay.Server.Systems
 {
@@ -49,20 +50,30 @@ namespace Natrium.Gameplay.Server.Systems
         public void OnUpdate(ref SystemState state)
         {
             //var ecb = _bsEcbS.CreateCommandBuffer(state.WorldUnmanaged);
-            var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
-            
-            foreach (var (ai, pc, dp, e) in SystemAPI.Query<RefRW<InputAim>, RefRO<PhysicsCollider>, RefRO<DamagePoints>>().WithAll<Simulate, DamageDealerTag>().WithEntityAccess())
+            var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
+            if (!currentTick.IsValid)
             {
-                if (!ai.ValueRO.InputEvent.IsSet)
+                Log.Warning($"currentTick is Invalid!");
+                return;
+            }
+            
+            var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
+            foreach (var (inputAims, pc, dp, e) in SystemAPI.Query<DynamicBuffer<InputAim>, RefRO<PhysicsCollider>, RefRO<DamagePoints>>().WithAll<Simulate, DamageDealerTag>().WithEntityAccess())
+            {
+                inputAims.GetDataAtTick(currentTick, out var inputAimAtTick);
+                if (!inputAimAtTick.Set)
+                {
+                    //Log.Debug($"inputAimAtTick {currentTick} is not Set.");
                     continue;
+                }
 
-                Log.Debug($"AimInput from {e}: {ai.ValueRO.MouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}");
+                Log.Debug($"AimInput from {e}: {inputAimAtTick.MouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}");
 
                 var offset = new float3(0, 10, 0); //ToDo: The plus 10 on y axis, comes from the offset of the camara
                 var raycastInput = new RaycastInput
                 {
-                    Start = ai.ValueRO.MouseWorldPosition + offset,
-                    End = ai.ValueRO.MouseWorldPosition,
+                    Start = inputAimAtTick.MouseWorldPosition + offset,
+                    End = inputAimAtTick.MouseWorldPosition,
                     Filter = pc.ValueRO.Value.Value.GetCollisionFilter()
                 };
 
@@ -79,6 +90,7 @@ namespace Natrium.Gameplay.Server.Systems
                     if (state.EntityManager.HasComponent<AttackableTag>(closestHit.Entity))
                     {
                         Log.Debug($"{e} is Dealing Damage on {closestHit.Entity}");
+                        //Debug.Break();
                         var damageBuffer = state.EntityManager.GetBuffer<DamagePointsBuffer>(closestHit.Entity);
                         damageBuffer.Add(new DamagePointsBuffer { Value = dp.ValueRO.Value });
                     }

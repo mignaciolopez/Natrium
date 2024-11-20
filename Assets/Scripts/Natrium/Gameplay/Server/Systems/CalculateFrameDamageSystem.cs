@@ -37,32 +37,37 @@ namespace Natrium.Gameplay.Server.Systems
         {
             var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
 
-            foreach (var (dpb, dpt, e) in SystemAPI.Query<DynamicBuffer<DamagePointsBuffer>, DynamicBuffer<DamagePointsTick>>()
-                .WithAll<Simulate>().WithEntityAccess())
+            if (!currentTick.IsValid)
+                return;
+            
+            foreach (var (damagePointsBuffer, damagePointsAtTicks) in 
+                     SystemAPI.Query<DynamicBuffer<DamagePointsBuffer>, DynamicBuffer<DamagePointsAtTick>>()
+                         .WithAll<Simulate>())
             {
-                if (currentTick.IsValid)
+                if (damagePointsBuffer.IsEmpty)
                 {
-                    if (dpb.IsEmpty)
+                    damagePointsAtTicks.AddCommandData(new DamagePointsAtTick
                     {
-                        dpt.AddCommandData(new DamagePointsTick { Tick = currentTick, Value = 0 });
-                    }
-                    else
+                        Tick = currentTick,
+                        Value = 0
+                    });
+                }
+                else
+                {
+                    var totalDamage = .0f;
+                    if (damagePointsAtTicks.GetDataAtTick(currentTick, out var damagePointAtTick))
                     {
-                        var totalDamage = .0f;
-                        if (dpt.GetDataAtTick(currentTick, out var damagePointsTick))
-                        {
-                            totalDamage = damagePointsTick.Value;
-                        }
-
-                        foreach (var dp in dpb)
-                        {
-                            totalDamage += dp.Value;
-                        }
-
-                        dpt.AddCommandData(new DamagePointsTick { Tick = currentTick, Value = totalDamage });
-
-                        dpb.Clear();
+                        totalDamage = damagePointAtTick.Value;
                     }
+
+                    foreach (var dp in damagePointsBuffer)
+                    {
+                        totalDamage += dp.Value;
+                    }
+
+                    damagePointsAtTicks.AddCommandData(new DamagePointsAtTick { Tick = currentTick, Value = totalDamage });
+
+                    damagePointsBuffer.Clear();
                 }
             }
         }

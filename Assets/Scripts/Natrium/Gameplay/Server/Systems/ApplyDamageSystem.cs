@@ -41,7 +41,7 @@ namespace Natrium.Gameplay.Server.Systems
             var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (cHP, dpt, e) in SystemAPI.Query<RefRW<CurrentHealthPoints>, DynamicBuffer<DamagePointsTick>>()
+            foreach (var (cHP, dpt, e) in SystemAPI.Query<RefRW<CurrentHealthPoints>, DynamicBuffer<DamagePointsAtTick>>()
                 .WithAll<Simulate>().WithEntityAccess())
             {
                 if (!dpt.GetDataAtTick(currentTick, out var damagePointsTick)) continue;

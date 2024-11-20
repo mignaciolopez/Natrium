@@ -4,7 +4,7 @@ namespace Natrium.Shared
 {
     public class FPS : MonoBehaviour
     {
-        public int targetFrameRate = 30;
+        public int targetFrameRate = 15;
 
         private void Update()
         {

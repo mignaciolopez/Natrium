@@ -1,4 +1,5 @@
 using System.Globalization;
+using Natrium.Gameplay.Client.Components;
 using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
@@ -13,7 +14,7 @@ namespace Natrium.Gameplay.Client.Systems.Input
     public partial class InputAimSystem : SystemBase
     {
         private InputActions _inputActions;
-
+        private MainCamera _mainCamera;
         protected override void OnCreate()
         {
             base.OnCreate();
@@ -21,6 +22,8 @@ namespace Natrium.Gameplay.Client.Systems.Input
             _inputActions = new InputActions();
             RequireForUpdate<GhostOwnerIsLocal>();
             RequireForUpdate<InputAim>();
+            RequireForUpdate<NetworkTime>();
+            RequireForUpdate<MainCameraTag>();
         }
 
         protected override void OnStartRunning()
@@ -28,6 +31,8 @@ namespace Natrium.Gameplay.Client.Systems.Input
             base.OnStartRunning();
             Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStartRunning()");
             _inputActions.Enable();
+            var mainCameraEntity = SystemAPI.GetSingletonEntity<MainCameraTag>();
+            _mainCamera = EntityManager.GetComponentObject<MainCamera>(mainCameraEntity);
         }
 
         protected override void OnStopRunning()
@@ -46,34 +51,40 @@ namespace Natrium.Gameplay.Client.Systems.Input
 
         protected override void OnUpdate()
         {
-            foreach (var aimInput in SystemAPI.Query<RefRW<InputAim>>().WithAll<GhostOwnerIsLocal>())
+            var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
+            if (!currentTick.IsValid)
             {
-                //Manually reset AimInputEvent due to wrong documentation.
-                //It is not being reset after being processed.
-                //https://discussions.unity.com/t/inputevent-does-not-fire-exactly-once/929531/3
-                aimInput.ValueRW.InputEvent = default;
-                
-                if (_inputActions.Map_Gameplay.Axn_MouseRealease.WasPerformedThisFrame())
-                {
-                    Log.Verbose($"[{World.Name}] | OnPrimaryMouseRelease()");
+                Log.Warning($"currentTick is Invalid!");
+                return;
+            }
 
-                    if (Camera.main == null)
-                    {
-                        Log.Error($"[{World.Name}] | Camera.main is null.");
-                        return;
-                    }
-                        
-                    var mouseInputPosition = _inputActions.Map_Gameplay.Axn_MousePosition.ReadValue<Vector2>();
-                    var mousePosition = new Vector3(mouseInputPosition.x, mouseInputPosition.y, Camera.main.transform.position.y);
-                    var mouseWorldPosition = (float3)Camera.main.ScreenToWorldPoint(mousePosition);
+            foreach (var inputAim in SystemAPI.Query<DynamicBuffer<InputAim>>().WithAll<GhostOwnerIsLocal>())
+            {
+                inputAim.AddCommandData(new InputAim
+                {
+                    Tick = currentTick,
+                    Set = false,
+                });
+
+                if (!_inputActions.Map_Gameplay.Axn_MouseRealease.WasPerformedThisFrame())
+                    continue;
+                
+                Log.Verbose($"[{World.Name}] | OnPrimaryMouseRelease()");
+                    
+                var mouseInputPosition = _inputActions.Map_Gameplay.Axn_MousePosition.ReadValue<Vector2>();
+                var mousePosition = new Vector3(mouseInputPosition.x, mouseInputPosition.y, _mainCamera.Camera.transform.position.y);
+                var mouseWorldPosition = (float3)_mainCamera.Camera.ScreenToWorldPoint(mousePosition);
             
-                    Log.Debug($"mouseWorldPosition: {mouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}\n" +
-                              $"mouseInputPosition: {mouseInputPosition}\n" + 
-                              $"mousePosition: {mousePosition}\n");
-                        
-                    aimInput.ValueRW.InputEvent.Set();
-                    aimInput.ValueRW.MouseWorldPosition = mouseWorldPosition;
-                }
+                Log.Debug($"mouseWorldPosition: {mouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}\n" +
+                          $"mouseInputPosition: {mouseInputPosition}\n" + 
+                          $"mousePosition: {mousePosition}\n");
+
+                inputAim.AddCommandData(new InputAim
+                {
+                    Tick = currentTick,
+                    Set = true,
+                    MouseWorldPosition = mouseWorldPosition
+                });
             }
         }
     }

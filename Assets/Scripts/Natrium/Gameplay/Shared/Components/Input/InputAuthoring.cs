@@ -15,27 +15,33 @@ namespace Natrium.Gameplay.Shared.Components.Input
             {
                 var e = GetEntity(TransformUsageFlags.Dynamic);
                 AddComponent<InputMove>(e);
-                AddComponent<InputMeele>(e);
                 AddComponent<InputAim>(e);
             }
         }
     }
 
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.None)]
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
     public struct InputMove : IInputComponentData
     {
         [GhostField(Quantization = 0)]
         public float2 InputAxis;
     }
-    
-    public struct InputMeele : IInputComponentData
-    {
-        [GhostField] public InputEvent InputEvent;
-    }
 
-    public struct InputAim : IInputComponentData
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
+    public struct InputAim : ICommandData
     {
-        [GhostField] public InputEvent InputEvent;
-        [GhostField(Quantization = 0)] public float3 MouseWorldPosition;
+        public NetworkTick Tick { get; set; }
+        public bool Set;
+        public float3 MouseWorldPosition;
     }
+    
+    //IInputComponentData vs ICommandData
+    //Both needs to set a bool or an InputEvent to false on every frame.
+    //IInputComponentData set InputEvent = default.
+    //ICommandData set a bool to false, also can use InputEvent.
+    //When the event takes place in the gameplay we set to true the event/bool
+    //and we set the network tick
+    //They are basically the same shit. I see no Difference.
+    //OwnerSendType = SendToOwnerType.SendToNonOwner) has no effect.
+    //It does not replicate to all clients.
 }

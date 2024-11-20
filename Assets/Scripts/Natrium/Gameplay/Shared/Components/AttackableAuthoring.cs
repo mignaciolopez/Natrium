@@ -27,7 +27,7 @@ namespace Natrium.Gameplay.Shared.Components
                 AddComponent<CurrentHealthPoints>(e);
                 AddComponent<MaxHealthPoints>(e);
                 AddBuffer<DamagePointsBuffer>(e);
-                AddBuffer<DamagePointsTick>(e);
+                AddBuffer<DamagePointsAtTick>(e);
                 AddComponent<CitizenShip>(e);
             }
         }
@@ -54,8 +54,8 @@ namespace Natrium.Gameplay.Shared.Components
         public float Value;
     }
 
-    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.SendToNonOwner)]
-    public struct DamagePointsTick : ICommandData
+    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
+    public struct DamagePointsAtTick : ICommandData
     {
         public NetworkTick Tick { get; set; }
         public float Value;

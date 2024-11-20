@@ -10,7 +10,7 @@ using Unity.Transforms;
 
 namespace Natrium.Gameplay.Client.Systems.UI.Debug
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
+    [UpdateInGroup(typeof(PredictedSimulationSystemGroup), OrderLast = true)]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct DebugAimSystem : ISystem, ISystemStartStop
     {
@@ -46,25 +46,41 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            QueryAndShowAimInputs(ref state);
+            QueryAndShowInputAims(ref state);
         }
 
         //[BurstCompile]
-        private void QueryAndShowAimInputs(ref SystemState state)
+        private void QueryAndShowInputAims(ref SystemState state)
         {
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
-            if (!networkTime.IsFirstTimeFullyPredictingTick) return;
-            
-            foreach (var (aimInput, debugColor) in SystemAPI.Query<RefRO<InputAim>, RefRO<DebugColor>>())
+            if (!networkTime.IsFirstTimeFullyPredictingTick)
             {
-                if (!aimInput.ValueRO.InputEvent.IsSet)
+                //Log.Debug($"IsFirstTimeFullyPredictingTick is false");
+                return;
+            }
+            
+            var currentTick = networkTime.ServerTick;
+            if (!currentTick.IsValid)
+            {
+                Log.Warning($"currentTick is Invalid!");
+                return;
+            }
+            
+            foreach (var (inputAims, debugColor)
+                     in SystemAPI.Query<DynamicBuffer<InputAim>, RefRO<DebugColor>>())
+            {
+                inputAims.GetDataAtTick(currentTick, out var inputAimAtTick);
+                if (!inputAimAtTick.Set)
+                {
+                    //Log.Debug($"inputAimAtTick {currentTick} is not Set.");
                     continue;
+                }
                 
                 var prefab = SystemAPI.GetSingleton<DebugAimInputPrefab>().Prefab;
                 var e = state.EntityManager.Instantiate(prefab);
                 state.EntityManager.SetComponentData(e, new LocalTransform
                 {
-                    Position = new float3(aimInput.ValueRO.MouseWorldPosition.x, 5.0f, aimInput.ValueRO.MouseWorldPosition.z),
+                    Position = new float3(inputAimAtTick.MouseWorldPosition.x, 5.0f, inputAimAtTick.MouseWorldPosition.z),
                     Rotation = quaternion.identity,
                     Scale = 1.0f
                 });

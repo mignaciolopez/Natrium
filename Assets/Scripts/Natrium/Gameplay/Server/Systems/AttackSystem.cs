@@ -1,8 +1,11 @@
 using Natrium.Shared;
 using Unity.Entities;
+using Unity.NetCode;
 
 namespace Natrium.Gameplay.Server.Systems
 {
+    [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
+    [UpdateAfter(typeof(AimSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial class AttackSystem : SystemBase
     {
