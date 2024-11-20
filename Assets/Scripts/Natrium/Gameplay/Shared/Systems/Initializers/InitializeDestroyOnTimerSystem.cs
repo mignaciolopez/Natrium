@@ -37,12 +37,13 @@ namespace Natrium.Gameplay.Shared.Systems.Initializers
         public void OnUpdate(ref SystemState state)
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
-            var simulationTickRate = NetCodeConfig.Global.ClientServerTickRate.SimulationTickRate;
+            var simulationTickRate = 15;//NetCodeConfig.Global.ClientServerTickRate.SimulationTickRate;
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
             var currentTick = networkTime.ServerTick;
 
             foreach (var (dot, e) in SystemAPI.Query<DestroyOnTimer>().WithNone<DestroyAtTick>().WithEntityAccess())
             {
+                Log.Debug($"[{state.WorldUnmanaged.Name}] | Initializing DestroyOnTimer on: {e}");
                 var lifeTimeInTicks = (uint)(dot.Value * simulationTickRate);
                 var targetTick = currentTick;
                 targetTick.Add(lifeTimeInTicks);

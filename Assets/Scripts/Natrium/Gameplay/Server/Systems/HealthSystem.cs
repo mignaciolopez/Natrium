@@ -1,30 +1,26 @@
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Shared;
-using Unity.Burst;
 using Unity.Entities;
 using Unity.NetCode;
+using Unity.Collections;
 
 namespace Natrium.Gameplay.Server.Systems
 {
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup), OrderLast = true)]
-    [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
-    public partial struct DestroyEntitySystem : ISystem, ISystemStartStop
+    [UpdateAfter(typeof(CalculateFrameDamageSystem))]
+    public partial struct HealthSystem : ISystem, ISystemStartStop
     {
-        private BeginSimulationEntityCommandBufferSystem.Singleton _bsEcbS;
-        
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnCreate()");
             state.RequireForUpdate<NetworkTime>();
-            state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
         }
 
         //[BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnStartRunning()");
-            _bsEcbS = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         }
 
         //[BurstCompile]
@@ -39,26 +35,23 @@ namespace Natrium.Gameplay.Server.Systems
             Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnDestroy()");
         }
 
-        [BurstCompile]
+        //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var networkTime = SystemAPI.GetSingleton<NetworkTime>();
-            if (!networkTime.IsFirstTimeFullyPredictingTick)
-                return;
-            
-            var ecb = _bsEcbS.CreateCommandBuffer(state.WorldUnmanaged);
-            new DestroyEntitySystemJob { ECB = ecb }.Schedule();
-        }
-    }
+            var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
+            var ecb = new EntityCommandBuffer(Allocator.Temp);
 
-    [BurstCompile]
-    [WithAll(typeof(DestroyEntityTag), typeof(GhostOwner))] //Server Is authoritative and can destroy a GhostOwner
-    public partial struct DestroyEntitySystemJob : IJobEntity
-    {
-        public EntityCommandBuffer ECB;
-        private void Execute(Entity e)
-        {
-            ECB.DestroyEntity(e);
+            foreach (var (currentHealthPoints, damagePointsAtTicks) 
+                     in SystemAPI.Query<RefRW<CurrentHealthPoints>, DynamicBuffer<DamagePointsAtTick>>()
+                         .WithAll<Simulate>())
+            {
+                if (!damagePointsAtTicks.GetDataAtTick(currentTick, out var damagePointsAtTick)) continue;
+                if (damagePointsAtTick.Tick != currentTick) continue;
+                currentHealthPoints.ValueRW.Value -= (int)damagePointsAtTick.Value;
+            }
+
+            ecb.Playback(state.EntityManager);
+            ecb.Dispose();
         }
     }
 }

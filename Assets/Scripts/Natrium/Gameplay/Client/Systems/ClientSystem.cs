@@ -11,6 +11,7 @@ using System;
 using Unity.Mathematics;
 using Unity.Rendering;
 using System.Net.Sockets;
+using Natrium.Gameplay.Shared.Components.Debug;
 
 namespace Natrium.Gameplay.Client.Systems
 {
@@ -51,7 +52,7 @@ namespace Natrium.Gameplay.Client.Systems
         protected override void OnUpdate()
         {
             OnConnect(null);
-            ApplyColor();
+            InitializePlayer();
         }
 
         private void OnKeyCodeReturn(Stream stream)
@@ -135,10 +136,32 @@ namespace Natrium.Gameplay.Client.Systems
             throw new NotImplementedException("OnDisconnected");
         }
 
-        private void ApplyColor()
+        private void InitializePlayer()
         {
             var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
+            
+            foreach (var (player, entity) in SystemAPI.Query<PlayerTag>().WithNone<InitialezedPlayerTag>().WithEntityAccess())
+            {
+                Log.Debug($"[{World.Name}] | Initializing Player {entity}");
+                foreach (var child in SystemAPI.GetBuffer<LinkedEntityGroup>(entity))
+                {
+                    if (!EntityManager.HasComponent<DebugTag>(child.Value))
+                    {
+                        Log.Verbose($"[{World.Name}] | No DebugTag on {child.Value}");
+                        continue;
+                    }
 
+                    Log.Debug($"[{World.Name}] | Disabling {child.Value}");
+                    ecb.AddComponent<Disabled>(child.Value);
+                }
+                ecb.AddComponent<InitialezedPlayerTag>(entity);
+            }
+            
+            ecb.Playback(EntityManager);
+            ecb.Dispose();
+            
+            ecb = new EntityCommandBuffer(WorldUpdateAllocator);
+            
             foreach (var (go, dc) in SystemAPI.Query<GhostOwner, DebugColor>().WithNone<URPMaterialPropertyBaseColor>())
             {
                 var entityPrefab = Utils.GetEntityPrefab(go.NetworkId, EntityManager);
@@ -154,6 +177,7 @@ namespace Natrium.Gameplay.Client.Systems
             }
 
             ecb.Playback(EntityManager);
+            ecb.Dispose();
         }
     }
 }

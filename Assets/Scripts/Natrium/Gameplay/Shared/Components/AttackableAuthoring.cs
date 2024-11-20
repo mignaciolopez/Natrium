@@ -23,6 +23,8 @@ namespace Natrium.Gameplay.Shared.Components
             var e = GetEntity(TransformUsageFlags.Dynamic);
             if (e != Entity.Null)
             {
+                AddComponent<Attack>(e);
+                SetComponentEnabled<Attack>(e, false);
                 AddComponent<AttackableTag>(e);
                 AddComponent<CurrentHealthPoints>(e);
                 AddComponent<MaxHealthPoints>(e);
@@ -65,5 +67,17 @@ namespace Natrium.Gameplay.Shared.Components
     public struct CitizenShip : IComponentData
     {
         [GhostField] public CitizenShipEnum Value;
+    }
+    
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
+    public struct Attack : IComponentData, IEnableableComponent
+    {
+        public Entity SourceServerEntity; //Internal Server Use Only
+    }
+
+    public struct RPCAttack : IRpcCommand
+    {
+        public int NetworkIdSource;
+        public int NetworkIdTarget;
     }
 }

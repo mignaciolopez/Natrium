@@ -1,14 +1,12 @@
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Shared;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
-using Unity.Collections;
 
-namespace Natrium.Gameplay.Server.Systems
+namespace Natrium.Gameplay.Shared.Systems.Initializers
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup), OrderLast = true)]
-    [UpdateAfter(typeof(CalculateFrameDamageSystem))]
-    public partial struct ApplyDamageSystem : ISystem, ISystemStartStop
+    public partial struct InitializeAutoDisableOnTimerSystem : ISystem, ISystemStartStop
     {
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
@@ -38,15 +36,18 @@ namespace Natrium.Gameplay.Server.Systems
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
             var ecb = new EntityCommandBuffer(Allocator.Temp);
+            var simulationTickRate = 15;//NetCodeConfig.Global.ClientServerTickRate.SimulationTickRate;
+            var networkTime = SystemAPI.GetSingleton<NetworkTime>();
+            var currentTick = networkTime.ServerTick;
 
-            foreach (var (cHP, dpt, e) in SystemAPI.Query<RefRW<CurrentHealthPoints>, DynamicBuffer<DamagePointsAtTick>>()
-                .WithAll<Simulate>().WithEntityAccess())
+            foreach (var (dot, e) in SystemAPI.Query<DisableOnTimer>().WithNone<DisableAtTick>().WithEntityAccess())
             {
-                if (!dpt.GetDataAtTick(currentTick, out var damagePointsTick)) continue;
-                if (damagePointsTick.Tick != currentTick) continue;
-                cHP.ValueRW.Value -= (int)damagePointsTick.Value;
+                Log.Debug($"[{state.WorldUnmanaged.Name}] | Initializing DisableOnTimer on: {e}");
+                var lifeTimeInTicks = (uint)(dot.Value * simulationTickRate);
+                var targetTick = currentTick;
+                targetTick.Add(lifeTimeInTicks);
+                ecb.AddComponent(e, new DisableAtTick { Value = targetTick });
             }
 
             ecb.Playback(state.EntityManager);

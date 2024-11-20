@@ -49,7 +49,8 @@ namespace Natrium.Gameplay.Server.Systems
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            //var ecb = _bsEcbS.CreateCommandBuffer(state.WorldUnmanaged);
+            var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
+            
             var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
             if (!currentTick.IsValid)
             {
@@ -58,7 +59,9 @@ namespace Natrium.Gameplay.Server.Systems
             }
             
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
-            foreach (var (inputAims, pc, dp, e) in SystemAPI.Query<DynamicBuffer<InputAim>, RefRO<PhysicsCollider>, RefRO<DamagePoints>>().WithAll<Simulate, DamageDealerTag>().WithEntityAccess())
+            foreach (var (inputAims, pc, e) 
+                     in SystemAPI.Query<DynamicBuffer<InputAim>, RefRO<PhysicsCollider>>()
+                         .WithAll<Simulate, DamageDealerTag>().WithEntityAccess())
             {
                 inputAims.GetDataAtTick(currentTick, out var inputAimAtTick);
                 if (!inputAimAtTick.Set)
@@ -81,21 +84,25 @@ namespace Natrium.Gameplay.Server.Systems
                 {
                     Log.Debug($"AimInput from: {e} -> Collides with: {closestHit.Entity}");
                     
-                    if (closestHit.Entity == Entity.Null)// || closestHit.Entity == e)
+                    if (closestHit.Entity == Entity.Null)
                     {
-                        Log.Warning($"Collision with {closestHit.Entity} is Null or Self");
+                        Log.Warning($"Collision with {closestHit.Entity} is Null");
                         continue;
                     }
 
-                    if (state.EntityManager.HasComponent<AttackableTag>(closestHit.Entity))
+                    if (state.EntityManager.HasComponent<Attack>(closestHit.Entity))
                     {
-                        Log.Debug($"{e} is Dealing Damage on {closestHit.Entity}");
-                        //Debug.Break();
-                        var damageBuffer = state.EntityManager.GetBuffer<DamagePointsBuffer>(closestHit.Entity);
-                        damageBuffer.Add(new DamagePointsBuffer { Value = dp.ValueRO.Value });
+                        ecb.SetComponentEnabled<Attack>(closestHit.Entity, true);
+                        ecb.SetComponent(closestHit.Entity, new Attack
+                        {
+                            SourceServerEntity = e
+                        });
                     }
                 }
             }
+            
+            ecb.Playback(state.EntityManager);
+            ecb.Dispose();
         }
     } //AimSystem
 }

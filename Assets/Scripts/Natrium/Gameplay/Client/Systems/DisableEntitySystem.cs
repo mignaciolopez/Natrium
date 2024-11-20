@@ -8,7 +8,7 @@ namespace Natrium.Gameplay.Client.Systems
 {
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup), OrderLast = true)]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
-    public partial struct DestroyEntitySystem : ISystem, ISystemStartStop
+    public partial struct DisableEntitySystem : ISystem, ISystemStartStop
     {
         private BeginSimulationEntityCommandBufferSystem.Singleton _bsEcbS;
         
@@ -47,20 +47,21 @@ namespace Natrium.Gameplay.Client.Systems
                 return;
             
             var ecb = _bsEcbS.CreateCommandBuffer(state.WorldUnmanaged);
-            new DestroyEntityJob { ECB = ecb }.Schedule();
+            new DisableEntityJob { ECB = ecb }.Schedule();
         }
     }
 
-    [BurstCompile]
-    [WithAll(typeof(DestroyEntityTag))]
-    [WithNone( typeof(GhostOwner))] //Excluding GhostOwners, Client should Never Destroy authoritative data from the server
-    public partial struct DestroyEntityJob : IJobEntity
+    //[BurstCompile]
+    [WithAll(typeof(DisableAtTick))]
+    [WithNone( typeof(GhostOwner), typeof(Disabled))] //Excluding GhostOwners, Client should never disable authoritative data from the server.
+    public partial struct DisableEntityJob : IJobEntity
     {
         public EntityCommandBuffer ECB;
         private void Execute(Entity e)
         {
-            //Log.Debug($"[{this}] | Destroying {e}");
-            ECB.DestroyEntity(e);
+            //Log.Debug($"[{this}] | Disabling {e}");
+            ECB.AddComponent<Disabled>(e);
+            ECB.RemoveComponent<DisableAtTick>(e);
         }
     }
 }
