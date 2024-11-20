@@ -1,4 +1,5 @@
 using Natrium.Gameplay.Shared.Components;
+using Natrium.Gameplay.Shared.Utilities;
 using Natrium.Shared;
 using Unity.Entities;
 using Unity.NetCode;
@@ -41,13 +42,18 @@ namespace Natrium.Gameplay.Server.Systems
             var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (currentHealthPoints, damagePointsAtTicks) 
+            foreach (var (currentHealthPoints, damagePointsAtTicks, e) 
                      in SystemAPI.Query<RefRW<CurrentHealthPoints>, DynamicBuffer<DamagePointsAtTick>>()
-                         .WithAll<Simulate>())
+                         .WithAll<Simulate>().WithEntityAccess())
             {
                 if (!damagePointsAtTicks.GetDataAtTick(currentTick, out var damagePointsAtTick)) continue;
                 if (damagePointsAtTick.Tick != currentTick) continue;
                 currentHealthPoints.ValueRW.Value -= (int)damagePointsAtTick.Value;
+
+                if (currentHealthPoints.ValueRW.Value <= 0)
+                {
+                    
+                }
             }
 
             ecb.Playback(state.EntityManager);

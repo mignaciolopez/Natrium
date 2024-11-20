@@ -52,7 +52,7 @@ namespace Natrium.Gameplay.Server.Systems
     }
 
     [BurstCompile]
-    [WithAll(typeof(DestroyEntityTag), typeof(GhostOwner))] //Server Is authoritative and can destroy a GhostOwner
+    [WithAll(typeof(DestroyEntityTag))] //Server Is authoritative and can destroy a GhostOwner
     public partial struct DestroyEntitySystemJob : IJobEntity
     {
         public EntityCommandBuffer ECB;
