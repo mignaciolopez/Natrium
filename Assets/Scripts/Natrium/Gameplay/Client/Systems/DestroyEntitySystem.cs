@@ -12,7 +12,7 @@ namespace Natrium.Gameplay.Client.Systems
     {
         private BeginSimulationEntityCommandBufferSystem.Singleton _bsEcbS;
         
-        [BurstCompile]
+        //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnCreate()");
@@ -20,20 +20,20 @@ namespace Natrium.Gameplay.Client.Systems
             state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
         }
 
-        [BurstCompile]
+        //[BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnStartRunning()");
             _bsEcbS = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         }
 
-        [BurstCompile]
+        //[BurstCompile]
         public void OnStopRunning(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnStopRunning()");
         }
 
-        [BurstCompile]
+        //[BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnDestroy()");
