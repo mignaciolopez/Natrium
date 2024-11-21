@@ -11,7 +11,6 @@ using Unity.Networking.Transport;
 using System.Net;
 using System;
 using System.Net.Sockets;
-using Natrium.Gameplay.Shared.Components.Debug;
 
 namespace Natrium.Gameplay.Server.Systems
 {
@@ -94,15 +93,18 @@ namespace Natrium.Gameplay.Server.Systems
         private void Resurrect()
         {
             var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
+            const float range = 2.0f;
             
-            foreach (var (lt, dt, e) in SystemAPI.Query<LocalTransform, EnabledRefRO<DeathTag>>()
+            foreach (var (ltw, dt, e) in SystemAPI.Query<LocalToWorld, EnabledRefRO<DeathTag>>()
                          .WithDisabled<ResurrectTag>().WithEntityAccess())
             {
-                if (lt.Position.x < 2 && lt.Position.y < 2 &&
-                    lt.Position.x > -2 && lt.Position.y > -2)
+                if (ltw.Position.x > -range && ltw.Position.x < range)
                 {
-                    Log.Debug($"Setting ResurrectTag to true on {e}");
-                    ecb.SetComponentEnabled<ResurrectTag>(e, true);
+                    if (ltw.Position.z > -range && ltw.Position.z < range)
+                    {
+                        Log.Debug($"Setting ResurrectTag to true on {e}");
+                        ecb.SetComponentEnabled<ResurrectTag>(e, true);
+                    }
                 }
             }
             
@@ -198,15 +200,31 @@ namespace Natrium.Gameplay.Server.Systems
                     Target = position
                 });
 
-                ecb.SetComponent(player, new HealthPoints() { Value = 10, MaxValue = 10 });
-                ecb.SetComponent(player, new DamagePoints() { Value = 1 });
+                var healthPoints = EntityManager.GetComponentData<HealthPoints>(_playerPrefab);
+                ecb.SetComponent(player, new HealthPoints
+                {
+                    Value = healthPoints.MaxValue,
+                    MaxValue = healthPoints.MaxValue
+                });
+                
+                var damagePoints = EntityManager.GetComponentData<DamagePoints>(_playerPrefab);
+                ecb.SetComponent(player, new DamagePoints
+                {
+                    Value = damagePoints.Value
+                });
 
-                var color = new float3(UnityEngine.Random.Range(0.0f, 1.0f), UnityEngine.Random.Range(0.0f, 1.0f), UnityEngine.Random.Range(0.0f, 1.0f));
+                var color = new float4(
+                    UnityEngine.Random.Range(0.0f, 1.0f),
+                    UnityEngine.Random.Range(0.0f, 1.0f),
+                    UnityEngine.Random.Range(0.0f, 1.0f),
+                    1.0f);
 
+                var debugColor = EntityManager.GetComponentData<DebugColor>(_playerPrefab);
                 ecb.SetComponent(player, new DebugColor
                 {
                     Value = color,
-                    StartValue = color
+                    StartValue = color,
+                    DeathValue = debugColor.DeathValue
                 });
 
                 // Add the player to the linked entity group so it is destroyed automatically on disconnect

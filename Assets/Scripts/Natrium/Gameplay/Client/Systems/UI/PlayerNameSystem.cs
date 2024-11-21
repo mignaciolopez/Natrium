@@ -6,6 +6,7 @@ using Natrium.Shared;
 using Unity.Transforms;
 using UnityEngine;
 using System.Collections.Generic;
+using Natrium.Shared.Extensions;
 
 namespace Natrium.Gameplay.Client.Systems.UI
 {
@@ -84,7 +85,7 @@ namespace Natrium.Gameplay.Client.Systems.UI
                 var tmPro = text.GetComponent<TMP_Text>();
                 tmPro.text = pn.ValueRO.Value.ToString();
 
-                tmPro.color = new Color(dc.ValueRO.StartValue.x, dc.ValueRO.StartValue.y, dc.ValueRO.StartValue.z);
+                tmPro.color = dc.ValueRO.StartValue.ToColor();
                 _textEntities.Add(e, text);
 
                 _ecb.AddComponent<PlayerTextDrawnTag>(e);

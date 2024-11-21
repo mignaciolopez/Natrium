@@ -1,3 +1,4 @@
+using Natrium.Shared.Extensions;
 using Unity.Collections;
 using UnityEngine;
 using Unity.Entities;
@@ -9,7 +10,7 @@ namespace Natrium.Gameplay.Shared.Components
     [DisallowMultipleComponent]
     public class PlayerAuthoring : MonoBehaviour
     {
-        public Color deathColor = Color.black;
+        public Color deathColor;
         
         public class Baker : Baker<PlayerAuthoring>
         {
@@ -20,7 +21,7 @@ namespace Natrium.Gameplay.Shared.Components
                 AddComponent<PlayerName>(e);
                 AddComponent(e, new DebugColor
                 {
-                    DeathValue = new float3(authoring.deathColor.r,authoring.deathColor.g, authoring.deathColor.b)
+                    DeathValue = authoring.deathColor.ToFloat4()
                 });
             }
         }
@@ -38,15 +39,15 @@ namespace Natrium.Gameplay.Shared.Components
     }
 
     [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
-    public struct DebugColor : IComponentData //Todo Refactor this a class (ComponentObject)
+    public struct DebugColor : IComponentData
     {
         [GhostField(Quantization = 100)]
-        public float3 Value;
+        public float4 Value;
         
         [GhostField(Quantization = 100)]
-        public float3 StartValue;
+        public float4 StartValue;
         
         [GhostField(Quantization = 100)]
-        public float3 DeathValue;
+        public float4 DeathValue;
     }
 }

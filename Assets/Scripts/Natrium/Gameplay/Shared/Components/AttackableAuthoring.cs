@@ -14,26 +14,29 @@ namespace Natrium.Gameplay.Shared.Components
     [DisallowMultipleComponent]
     public class AttackableAuthoring : MonoBehaviour
     {
-    }
-
-    public class AttackableBaker : Baker<AttackableAuthoring>
-    {
-        public override void Bake(AttackableAuthoring authoring)
+        public int healthPoints;
+        public class Baker : Baker<AttackableAuthoring>
         {
-            var e = GetEntity(TransformUsageFlags.Dynamic);
-            if (e != Entity.Null)
+            public override void Bake(AttackableAuthoring authoring)
             {
-                AddComponent<Attack>(e);
-                SetComponentEnabled<Attack>(e, false);
-                AddComponent<AttackableTag>(e);
-                AddComponent<HealthPoints>(e);
-                AddBuffer<DamagePointsBuffer>(e);
-                AddBuffer<DamagePointsAtTick>(e);
-                AddComponent<CitizenShip>(e);
+                var e = GetEntity(TransformUsageFlags.Dynamic);
+                if (e != Entity.Null)
+                {
+                    AddComponent<Attack>(e);
+                    SetComponentEnabled<Attack>(e, false);
+                    AddComponent<AttackableTag>(e);
+                    AddComponent(e, new HealthPoints
+                    {
+                        MaxValue = authoring.healthPoints
+                    });
+                    AddBuffer<DamagePointsBuffer>(e);
+                    AddBuffer<DamagePointsAtTick>(e);
+                    AddComponent<CitizenShip>(e);
+                }
             }
         }
     }
-
+    
     [GhostComponent(PrefabType = GhostPrefabType.All)]
     public struct AttackableTag : IComponentData { }
 

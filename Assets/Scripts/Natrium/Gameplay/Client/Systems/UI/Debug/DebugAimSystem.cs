@@ -7,6 +7,7 @@ using Unity.Entities;
 using Unity.NetCode;
 using Unity.Mathematics;
 using Unity.Transforms;
+using Natrium.Shared.Extensions;
 
 namespace Natrium.Gameplay.Client.Systems.UI.Debug
 {
@@ -90,8 +91,11 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
                     if (!state.EntityManager.HasComponent<UnityEngine.SpriteRenderer>(child.Value))
                         continue;
                         
+                    var color = debugColor.ValueRO.StartValue.ToColor();
+                    color.a = 0.2f;
+                    
                     var spriteRenderer = state.EntityManager.GetComponentObject<UnityEngine.SpriteRenderer>(child.Value);
-                    spriteRenderer.color = new UnityEngine.Color(debugColor.ValueRO.StartValue.x, debugColor.ValueRO.StartValue.y, debugColor.ValueRO.StartValue.z, 0.5f);
+                    spriteRenderer.color = color;
                 }
             }
         }

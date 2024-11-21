@@ -171,7 +171,7 @@ namespace Natrium.Gameplay.Client.Systems
                     var prefabGroup = EntityManager.GetBuffer<LinkedEntityGroup>(entityPrefab);
                     ecb.AddComponent(prefabGroup[1].Value, new URPMaterialPropertyBaseColor()
                     {
-                        Value = new float4(dc.Value, 1.0f)
+                        Value = dc.Value
                     });
                 }
             }
