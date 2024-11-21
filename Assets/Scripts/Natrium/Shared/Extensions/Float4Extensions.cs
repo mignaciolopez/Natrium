@@ -12,7 +12,7 @@ namespace Natrium.Shared.Extensions
         {
             return new float4(color.r, color.g, color.b, color.a);
         }
-    
+
         public static Color ToColor(this float4 value)
         {
             return new Color(value.x, value.y, value.z, value.w);

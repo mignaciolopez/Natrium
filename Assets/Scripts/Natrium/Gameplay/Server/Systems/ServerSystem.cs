@@ -182,22 +182,16 @@ namespace Natrium.Gameplay.Server.Systems
                 ecb.SetComponent(player, new GhostOwner { NetworkId = networkId.Value });
 
                 //TODO: Grab Data From Database
-                var position = new float3(6.0f, 1.0f, 6.0f);
-                ecb.SetComponent(player, new LocalTransform
-                {
-                    Position = position,
-                    Rotation = quaternion.identity,
-                    Scale = 1.0f
-                });
                 ecb.SetComponent(player, new PlayerName
                 {
                     Value = (FixedString64Bytes)$"Player {networkId.Value}",
                 });
 
+                var localTransform = EntityManager.GetComponentData<LocalTransform>(_playerPrefab);
                 ecb.SetComponent(player, new PlayerTilePosition
                 {
-                    Previous = position,
-                    Target = position
+                    Previous = localTransform.Position,
+                    Target = localTransform.Position
                 });
 
                 var healthPoints = EntityManager.GetComponentData<HealthPoints>(_playerPrefab);
@@ -218,7 +212,6 @@ namespace Natrium.Gameplay.Server.Systems
                     UnityEngine.Random.Range(0.0f, 1.0f),
                     UnityEngine.Random.Range(0.0f, 1.0f),
                     1.0f);
-
                 var debugColor = EntityManager.GetComponentData<DebugColor>(_playerPrefab);
                 ecb.SetComponent(player, new DebugColor
                 {
