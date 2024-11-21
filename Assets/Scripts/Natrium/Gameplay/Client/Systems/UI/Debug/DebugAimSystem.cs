@@ -91,7 +91,7 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
                         continue;
                         
                     var spriteRenderer = state.EntityManager.GetComponentObject<UnityEngine.SpriteRenderer>(child.Value);
-                    spriteRenderer.color = new UnityEngine.Color(debugColor.ValueRO.Value.x, debugColor.ValueRO.Value.y, debugColor.ValueRO.Value.z, 0.5f);
+                    spriteRenderer.color = new UnityEngine.Color(debugColor.ValueRO.StartValue.x, debugColor.ValueRO.StartValue.y, debugColor.ValueRO.StartValue.z, 0.5f);
                 }
             }
         }

@@ -84,7 +84,7 @@ namespace Natrium.Gameplay.Client.Systems.UI
                 var tmPro = text.GetComponent<TMP_Text>();
                 tmPro.text = pn.ValueRO.Value.ToString();
 
-                tmPro.color = new Color(dc.ValueRO.Value.x, dc.ValueRO.Value.y, dc.ValueRO.Value.z);
+                tmPro.color = new Color(dc.ValueRO.StartValue.x, dc.ValueRO.StartValue.y, dc.ValueRO.StartValue.z);
                 _textEntities.Add(e, text);
 
                 _ecb.AddComponent<PlayerTextDrawnTag>(e);

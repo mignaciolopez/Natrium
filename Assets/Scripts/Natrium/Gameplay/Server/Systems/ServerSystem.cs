@@ -98,8 +98,8 @@ namespace Natrium.Gameplay.Server.Systems
             foreach (var (lt, dt, e) in SystemAPI.Query<LocalTransform, EnabledRefRO<DeathTag>>()
                          .WithDisabled<ResurrectTag>().WithEntityAccess())
             {
-                if (lt.Position.x < 3 && lt.Position.y < 3 &&
-                    lt.Position.x > -3 && lt.Position.y > -3)
+                if (lt.Position.x < 2 && lt.Position.y < 2 &&
+                    lt.Position.x > -2 && lt.Position.y > -2)
                 {
                     Log.Debug($"Setting ResurrectTag to true on {e}");
                     ecb.SetComponentEnabled<ResurrectTag>(e, true);
@@ -180,7 +180,7 @@ namespace Natrium.Gameplay.Server.Systems
                 ecb.SetComponent(player, new GhostOwner { NetworkId = networkId.Value });
 
                 //TODO: Grab Data From Database
-                var position = new float3(5.0f, 1.0f, 5.0f);
+                var position = new float3(6.0f, 1.0f, 6.0f);
                 ecb.SetComponent(player, new LocalTransform
                 {
                     Position = position,
