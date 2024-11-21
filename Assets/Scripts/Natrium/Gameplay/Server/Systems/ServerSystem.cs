@@ -63,8 +63,9 @@ namespace Natrium.Gameplay.Server.Systems
             GetListeningStatus();
             RPC_Connect();
 
-            //TODO: delete changemovement()
+            //TODO: delete changemovement(), Resurrect()
             //changemovement();
+            Resurrect();
         }
 
         //TODO: delete changemovement()
@@ -88,6 +89,25 @@ namespace Natrium.Gameplay.Server.Systems
                     mt.ValueRW.Value = (MovementTypeEnum)currentMT;
                 }
             }
+        }
+
+        private void Resurrect()
+        {
+            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
+            
+            foreach (var (lt, dt, e) in SystemAPI.Query<LocalTransform, EnabledRefRO<DeathTag>>()
+                         .WithDisabled<ResurrectTag>().WithEntityAccess())
+            {
+                if (lt.Position.x < 3 && lt.Position.y < 3 &&
+                    lt.Position.x > -3 && lt.Position.y > -3)
+                {
+                    Log.Debug($"Setting ResurrectTag to true on {e}");
+                    ecb.SetComponentEnabled<ResurrectTag>(e, true);
+                }
+            }
+            
+            ecb.Playback(EntityManager);
+            ecb.Dispose();
         }
 
         private void Listen()
@@ -178,8 +198,7 @@ namespace Natrium.Gameplay.Server.Systems
                     Target = position
                 });
 
-                ecb.SetComponent(player, new MaxHealthPoints() { Value = 10 });
-                ecb.SetComponent(player, new CurrentHealthPoints() { Value = 10 });
+                ecb.SetComponent(player, new HealthPoints() { Value = 10, MaxValue = 10 });
                 ecb.SetComponent(player, new DamagePoints() { Value = 1 });
 
                 var color = new float3(UnityEngine.Random.Range(0.0f, 1.0f), UnityEngine.Random.Range(0.0f, 1.0f), UnityEngine.Random.Range(0.0f, 1.0f));

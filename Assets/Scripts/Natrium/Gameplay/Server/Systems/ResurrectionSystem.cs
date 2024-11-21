@@ -8,9 +8,8 @@ using Unity.Physics;
 namespace Natrium.Gameplay.Server.Systems
 {
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup), OrderLast = true)]
-    [UpdateAfter(typeof(HealthSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
-    public partial struct DeathSystem : ISystem, ISystemStartStop
+    public partial struct ResurrectionSystem : ISystem, ISystemStartStop
     {
         private EndSimulationEntityCommandBufferSystem.Singleton _esEcbS;
         
@@ -48,21 +47,32 @@ namespace Natrium.Gameplay.Server.Systems
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
 
             foreach (var (movementType, speed, debugColor,
-                         physicsCollider, dt, e)
-                     in SystemAPI.Query<RefRW<MovementType>, RefRW<Speed>, RefRW<DebugColor>,
-                             RefRW<PhysicsCollider>, RefRO<DeathTag>>()
-                         .WithDisabled<ResurrectTag>().WithNone<DeathInitialized>().WithEntityAccess())
+                         physicsCollider, hp,dt, rt, e)
+                     in SystemAPI.Query<RefRW<MovementType>, RefRW<Speed>, RefRW<DebugColor>, RefRW<PhysicsCollider>,
+                        RefRW<HealthPoints>, EnabledRefRW<DeathTag>, EnabledRefRW<ResurrectTag>>()
+                         .WithEntityAccess())
             {
-                Log.Debug($"Killing {e}");
-                movementType.ValueRW.Value = MovementTypeEnum.Free;
-                speed.ValueRW.Value = 8.0f;
-                debugColor.ValueRW.Value = debugColor.ValueRO.DeathValue;
+                Log.Debug($"Resurrecting {e}");
+
+                hp.ValueRW.Value = hp.ValueRO.MaxValue;
                 
-                ecb.SetComponentEnabled<Attack>(e, false);
+                movementType.ValueRW.Value = MovementTypeEnum.Classic;
+                speed.ValueRW.Value = 4.0f;
+                debugColor.ValueRW.Value = debugColor.ValueRO.StartValue;
+                
+                ecb.SetComponentEnabled<Attack>(e, true);
                 var collisionFilter = physicsCollider.ValueRO.Value.Value.GetCollisionFilter();
-                collisionFilter.CollidesWith = 0u;
+                collisionFilter.CollidesWith = ~0u;
                 physicsCollider.ValueRW.Value.Value.SetCollisionFilter(collisionFilter);
-                ecb.AddComponent<DeathInitialized>(e);
+                
+                Log.Debug($"Setting DeathTag to false on {e}");
+                dt.ValueRW = false;
+                Log.Debug($"Setting ResurrectTag to false on {e}");
+                rt.ValueRW = false;
+                
+                ecb.RemoveComponent<DeathInitialized>(e);
+                //ecb.SetComponentEnabled<DeathTag>(e, false);
+                //ecb.SetComponentEnabled<ResurrectTag>(e, false);
             }
             
             ecb.Playback(state.EntityManager);

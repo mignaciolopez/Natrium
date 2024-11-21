@@ -26,8 +26,7 @@ namespace Natrium.Gameplay.Shared.Components
                 AddComponent<Attack>(e);
                 SetComponentEnabled<Attack>(e, false);
                 AddComponent<AttackableTag>(e);
-                AddComponent<CurrentHealthPoints>(e);
-                AddComponent<MaxHealthPoints>(e);
+                AddComponent<HealthPoints>(e);
                 AddBuffer<DamagePointsBuffer>(e);
                 AddBuffer<DamagePointsAtTick>(e);
                 AddComponent<CitizenShip>(e);
@@ -38,15 +37,10 @@ namespace Natrium.Gameplay.Shared.Components
     [GhostComponent(PrefabType = GhostPrefabType.All)]
     public struct AttackableTag : IComponentData { }
 
-    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.SendToOwner)]
-    public struct CurrentHealthPoints : IComponentData
+    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
+    public struct HealthPoints : IComponentData
     {
-        [GhostField] public int Value;
-    }
-
-    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.SendToOwner)]
-    public struct MaxHealthPoints : IComponentData
-    {
+        public int MaxValue;
         [GhostField] public int Value;
     }
 

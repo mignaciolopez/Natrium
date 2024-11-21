@@ -42,17 +42,18 @@ namespace Natrium.Gameplay.Server.Systems
             var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (currentHealthPoints, damagePointsAtTicks, e) 
-                     in SystemAPI.Query<RefRW<CurrentHealthPoints>, DynamicBuffer<DamagePointsAtTick>>()
+            foreach (var (healthPoints, damagePointsAtTicks, e) 
+                     in SystemAPI.Query<RefRW<HealthPoints>, DynamicBuffer<DamagePointsAtTick>>()
                          .WithAll<Simulate>().WithDisabled<DeathTag>().WithEntityAccess())
             {
                 if (!damagePointsAtTicks.GetDataAtTick(currentTick, out var damagePointsAtTick)) continue;
                 if (damagePointsAtTick.Tick != currentTick) continue;
-                currentHealthPoints.ValueRW.Value -= (int)damagePointsAtTick.Value;
+                healthPoints.ValueRW.Value -= (int)damagePointsAtTick.Value;
 
-                if (currentHealthPoints.ValueRO.Value <= 0)
+                if (healthPoints.ValueRO.Value <= 0)
                 {
-                    currentHealthPoints.ValueRW.Value = 0;
+                    healthPoints.ValueRW.Value = 0;
+                    Log.Debug($"Setting DeathTag to True on {e}");
                     ecb.SetComponentEnabled<DeathTag>(e, true);
                 }
             }
