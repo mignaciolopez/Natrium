@@ -3,18 +3,22 @@ using Natrium.Shared;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Collections;
+using Unity.Physics;
 
 namespace Natrium.Gameplay.Server.Systems
 {
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup), OrderLast = true)]
-    [UpdateAfter(typeof(CalculateFrameDamageSystem))]
+    [UpdateAfter(typeof(HealthSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
-    public partial struct HealthSystem : ISystem, ISystemStartStop
+    public partial struct DeathSystem : ISystem, ISystemStartStop
     {
+        private EndSimulationEntityCommandBufferSystem.Singleton _esEcbS;
+        
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnCreate()");
+            state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
             state.RequireForUpdate<NetworkTime>();
         }
 
@@ -22,6 +26,7 @@ namespace Natrium.Gameplay.Server.Systems
         public void OnStartRunning(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnStartRunning()");
+            _esEcbS = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
         }
 
         //[BurstCompile]
@@ -42,23 +47,24 @@ namespace Natrium.Gameplay.Server.Systems
             var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
             var ecb = new EntityCommandBuffer(Allocator.Temp);
 
-            foreach (var (currentHealthPoints, damagePointsAtTicks, e) 
-                     in SystemAPI.Query<RefRW<CurrentHealthPoints>, DynamicBuffer<DamagePointsAtTick>>()
-                         .WithAll<Simulate>().WithDisabled<DeathTag>().WithEntityAccess())
+            foreach (var (movementType, speed, debugColor, physicsCollider, e)
+                     in SystemAPI.Query<RefRW<MovementType>, RefRW<Speed>, RefRW<DebugColor>, RefRW<PhysicsCollider>>()
+                         .WithAll<DeathTag>().WithEntityAccess())
             {
-                if (!damagePointsAtTicks.GetDataAtTick(currentTick, out var damagePointsAtTick)) continue;
-                if (damagePointsAtTick.Tick != currentTick) continue;
-                currentHealthPoints.ValueRW.Value -= (int)damagePointsAtTick.Value;
-
-                if (currentHealthPoints.ValueRO.Value <= 0)
-                {
-                    currentHealthPoints.ValueRW.Value = 0;
-                    ecb.SetComponentEnabled<DeathTag>(e, true);
-                }
+                
+                movementType.ValueRW.Value = MovementTypeEnum.Free;
+                speed.ValueRW.Value = 8.0f;
+                debugColor.ValueRW.Value = debugColor.ValueRO.DeathValue;
+                
+                ecb.SetComponentEnabled<Attack>(e, false);
+                var collisionFilter = physicsCollider.ValueRO.Value.Value.GetCollisionFilter();
+                collisionFilter.CollidesWith = 0u;
+                physicsCollider.ValueRW.Value.Value.SetCollisionFilter(collisionFilter);
             }
-
+            
             ecb.Playback(state.EntityManager);
             ecb.Dispose();
         }
     }
+    
 }

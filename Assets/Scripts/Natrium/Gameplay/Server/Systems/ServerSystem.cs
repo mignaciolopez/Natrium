@@ -64,7 +64,7 @@ namespace Natrium.Gameplay.Server.Systems
             RPC_Connect();
 
             //TODO: delete changemovement()
-            changemovement();
+            //changemovement();
         }
 
         //TODO: delete changemovement()
@@ -186,7 +186,8 @@ namespace Natrium.Gameplay.Server.Systems
 
                 ecb.SetComponent(player, new DebugColor
                 {
-                    Value = color
+                    Value = color,
+                    StartValue = color
                 });
 
                 // Add the player to the linked entity group so it is destroyed automatically on disconnect

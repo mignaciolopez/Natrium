@@ -90,7 +90,8 @@ namespace Natrium.Gameplay.Server.Systems
                         continue;
                     }
 
-                    if (state.EntityManager.HasComponent<Attack>(closestHit.Entity))
+                    if (state.EntityManager.HasComponent<Attack>(closestHit.Entity) && 
+                        !state.EntityManager.IsComponentEnabled<DeathTag>(closestHit.Entity))
                     {
                         ecb.SetComponentEnabled<Attack>(closestHit.Entity, true);
                         ecb.SetComponent(closestHit.Entity, new Attack

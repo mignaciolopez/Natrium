@@ -9,7 +9,7 @@ namespace Natrium.Gameplay.Shared.Components
     [DisallowMultipleComponent]
     public class PlayerAuthoring : MonoBehaviour
     {
-        
+        public Color deathColor = Color.black;
         
         public class Baker : Baker<PlayerAuthoring>
         {
@@ -18,7 +18,10 @@ namespace Natrium.Gameplay.Shared.Components
                 var e = GetEntity(TransformUsageFlags.Dynamic);
                 AddComponent<PlayerTag>(e);
                 AddComponent<PlayerName>(e);
-                AddComponent<DebugColor>(e);
+                AddComponent(e, new DebugColor
+                {
+                    DeathValue = new float3(authoring.deathColor.r,authoring.deathColor.g, authoring.deathColor.b)
+                });
             }
         }
     }
@@ -35,9 +38,15 @@ namespace Natrium.Gameplay.Shared.Components
     }
 
     [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
-    public struct DebugColor : IComponentData
+    public struct DebugColor : IComponentData //Todo Refactor this a class (ComponentObject)
     {
         [GhostField(Quantization = 100)]
         public float3 Value;
+        
+        [GhostField(Quantization = 100)]
+        public float3 StartValue;
+        
+        [GhostField(Quantization = 100)]
+        public float3 DeathValue;
     }
 }

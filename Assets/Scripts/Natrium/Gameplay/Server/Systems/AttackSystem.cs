@@ -38,7 +38,11 @@ namespace Natrium.Gameplay.Server.Systems
         {
             var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
             
-            foreach (var (attack, ghostOwner, e) in SystemAPI.Query<RefRO<Attack>, RefRO<GhostOwner>>().WithAll<AttackableTag>().WithEntityAccess())
+            foreach (var (attack, ghostOwner, e) 
+                     in SystemAPI.Query<RefRO<Attack>, RefRO<GhostOwner>>()
+                         .WithAll<AttackableTag>()
+                         .WithDisabled<DeathTag>()
+                         .WithEntityAccess())
             {
                 ecb.SetComponentEnabled<Attack>(e, false);
                 if (attack.ValueRO.SourceServerEntity == e)

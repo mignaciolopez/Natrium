@@ -6,6 +6,7 @@ using Unity.NetCode;
 namespace Natrium.Gameplay.Server.Systems
 {
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup), OrderLast = true)]
+    [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct CalculateFrameDamageSystem : ISystem, ISystemStartStop
     {
         //[BurstCompile]
