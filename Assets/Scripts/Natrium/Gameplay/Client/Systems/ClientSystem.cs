@@ -137,30 +137,8 @@ namespace Natrium.Gameplay.Client.Systems
         }
 
         private void InitializePlayer()
-        {
+        {   
             var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
-            
-            foreach (var (player, entity) in SystemAPI.Query<PlayerTag>().WithNone<InitialezedPlayerTag>().WithEntityAccess())
-            {
-                Log.Debug($"[{World.Name}] | Initializing Player {entity}");
-                foreach (var child in SystemAPI.GetBuffer<LinkedEntityGroup>(entity))
-                {
-                    if (!EntityManager.HasComponent<DebugTag>(child.Value))
-                    {
-                        Log.Verbose($"[{World.Name}] | No DebugTag on {child.Value}");
-                        continue;
-                    }
-
-                    Log.Debug($"[{World.Name}] | Disabling {child.Value}");
-                    ecb.AddComponent<Disabled>(child.Value);
-                }
-                ecb.AddComponent<InitialezedPlayerTag>(entity);
-            }
-            
-            ecb.Playback(EntityManager);
-            ecb.Dispose();
-            
-            ecb = new EntityCommandBuffer(WorldUpdateAllocator);
             
             foreach (var (go, dc) in SystemAPI.Query<GhostOwner, DebugColor>().WithNone<URPMaterialPropertyBaseColor>())
             {
