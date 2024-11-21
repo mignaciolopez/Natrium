@@ -45,6 +45,10 @@ namespace Natrium.Gameplay.Server.Systems
                          .WithEntityAccess())
             {
                 ecb.SetComponentEnabled<Attack>(e, false);
+                
+                if (attack.ValueRO.SourceServerEntity == Entity.Null)
+                    continue;
+                
                 if (attack.ValueRO.SourceServerEntity == e)
                 {
                     Log.Warning($"{e} is attacking itself.");

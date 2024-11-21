@@ -58,7 +58,9 @@ namespace Natrium.Gameplay.Server.Systems
                 speed.ValueRW.Value = 8.0f;
                 debugColor.ValueRW.Value = debugColor.ValueRO.DeathValue;
                 
+                ecb.SetComponent(e, new Attack());
                 ecb.SetComponentEnabled<Attack>(e, false);
+                
                 var collisionFilter = physicsCollider.ValueRO.Value.Value.GetCollisionFilter();
                 collisionFilter.CollidesWith = 0u;
                 physicsCollider.ValueRW.Value.Value.SetCollisionFilter(collisionFilter);
