@@ -19,7 +19,7 @@ namespace Natrium.Gameplay.Shared.Components.Input
             }
         }
     }
-
+    
     [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
     public struct InputMove : IInputComponentData
     {

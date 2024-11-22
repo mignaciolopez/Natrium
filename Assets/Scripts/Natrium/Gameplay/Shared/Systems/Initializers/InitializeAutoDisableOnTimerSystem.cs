@@ -41,10 +41,10 @@ namespace Natrium.Gameplay.Shared.Systems.Initializers
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
             var currentTick = networkTime.ServerTick;
 
-            foreach (var (dot, e) in SystemAPI.Query<DisableOnTimer>().WithNone<DisableAtTick>().WithEntityAccess())
+            foreach (var (dot, e) in SystemAPI.Query<RefRO<DisableOnTimer>>().WithNone<DisableAtTick>().WithEntityAccess())
             {
                 Log.Debug($"[{state.WorldUnmanaged.Name}] | Initializing DisableOnTimer on: {e}");
-                var lifeTimeInTicks = (uint)(dot.Value * simulationTickRate);
+                var lifeTimeInTicks = (uint)(dot.ValueRO.Value * simulationTickRate);
                 var targetTick = currentTick;
                 targetTick.Add(lifeTimeInTicks);
                 ecb.AddComponent(e, new DisableAtTick { Value = targetTick });

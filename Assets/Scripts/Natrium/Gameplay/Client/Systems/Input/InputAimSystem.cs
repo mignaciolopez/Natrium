@@ -16,12 +16,14 @@ namespace Natrium.Gameplay.Client.Systems.Input
     {
         private InputActions _inputActions;
         private MainCamera _mainCamera;
+        private Entity _entityLocalPlayer;
         protected override void OnCreate()
         {
             base.OnCreate();
             Log.Verbose($"[{World.Name}] | {this.ToString()}.OnCreate()");
             _inputActions = new InputActions();
             RequireForUpdate<GhostOwnerIsLocal>();
+            RequireForUpdate<PlayerTag>();
             RequireForUpdate<InputAim>();
             RequireForUpdate<NetworkTime>();
             RequireForUpdate<MainCameraTag>();
@@ -34,6 +36,11 @@ namespace Natrium.Gameplay.Client.Systems.Input
             _inputActions.Enable();
             var mainCameraEntity = SystemAPI.GetSingletonEntity<MainCameraTag>();
             _mainCamera = EntityManager.GetComponentObject<MainCamera>(mainCameraEntity);
+            foreach (var (playerTag, entity) in SystemAPI.Query<RefRO<PlayerTag>>()
+                         .WithAll<PlayerTag, GhostOwnerIsLocal>().WithEntityAccess())
+            {
+                _entityLocalPlayer = entity;
+            }
         }
 
         protected override void OnStopRunning()
@@ -53,33 +60,26 @@ namespace Natrium.Gameplay.Client.Systems.Input
         protected override void OnUpdate()
         {
             var currentTick = SystemAPI.GetSingleton<NetworkTime>().InterpolationTick;
-            if (!currentTick.IsValid)
-            {
-                Log.Warning($"currentTick is Invalid!");
-                return;
-            }
+            var inputAim = EntityManager.GetBuffer<InputAim>(_entityLocalPlayer);
 
-            foreach (var inputAim in SystemAPI.Query<DynamicBuffer<InputAim>>().WithAll<PlayerTag, GhostOwnerIsLocal>())
-            {
-                var mouseInputPosition = _inputActions.Map_Gameplay.Axn_MousePosition.ReadValue<Vector2>();
-                var mousePosition = new Vector3(mouseInputPosition.x, mouseInputPosition.y, _mainCamera.Camera.transform.position.y);
-                var mouseWorldPosition = (float3)_mainCamera.Camera.ScreenToWorldPoint(mousePosition);
+            var mouseInputPosition = _inputActions.Map_Gameplay.Axn_MousePosition.ReadValue<Vector2>();
+            var mousePosition = new Vector3(mouseInputPosition.x, mouseInputPosition.y, _mainCamera.Camera.transform.position.y);
+            var mouseWorldPosition = (float3)_mainCamera.Camera.ScreenToWorldPoint(mousePosition);
 
-                inputAim.AddCommandData(new InputAim
-                {
-                    Tick = currentTick,
-                    Set = _inputActions.Map_Gameplay.Axn_MouseRealease.WasPerformedThisFrame(),
-                    MouseWorldPosition = mouseWorldPosition
-                });
+            inputAim.AddCommandData(new InputAim
+            {
+                Tick = currentTick,
+                Set = _inputActions.Map_Gameplay.Axn_MouseRealease.WasPerformedThisFrame(),
+                MouseWorldPosition = mouseWorldPosition
+            });
                 
-                if (_inputActions.Map_Gameplay.Axn_MouseRealease.WasPerformedThisFrame())
-                {
-                    Log.Verbose($"[{World.Name}] | OnPrimaryMouseRelease()");
-                    
-                    Log.Debug($"mouseWorldPosition: {mouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}\n" +
-                              $"mouseInputPosition: {mouseInputPosition}\n" + 
-                              $"mousePosition: {mousePosition}\n");
-                }
+            if (_inputActions.Map_Gameplay.Axn_MouseRealease.WasPerformedThisFrame())
+            {
+                Log.Verbose($"[{World.Name}] | OnPrimaryMouseRelease()");
+                
+                Log.Debug($"mouseWorldPosition: {mouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}\n" +
+                          $"mouseInputPosition: {mouseInputPosition}\n" + 
+                          $"mousePosition: {mousePosition}\n");
             }
         }
     }

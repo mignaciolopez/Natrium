@@ -8,10 +8,8 @@ using Natrium.Gameplay.Shared;
 using System.Net;
 using Unity.Networking.Transport;
 using System;
-using Unity.Mathematics;
 using Unity.Rendering;
 using System.Net.Sockets;
-using Natrium.Gameplay.Shared.Components.Debug;
 
 namespace Natrium.Gameplay.Client.Systems
 {
