@@ -8,6 +8,8 @@ namespace Natrium.Gameplay.Shared.Systems.Initializers
 {
     public partial struct InitializeAutoDisableOnTimerSystem : ISystem, ISystemStartStop
     {
+        private int _simulationTickRate;
+        
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
@@ -19,6 +21,7 @@ namespace Natrium.Gameplay.Shared.Systems.Initializers
         public void OnStartRunning(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnStartRunning()");
+            _simulationTickRate = NetCodeConfig.Global.ClientServerTickRate.SimulationTickRate;
         }
 
         //[BurstCompile]
@@ -37,14 +40,14 @@ namespace Natrium.Gameplay.Shared.Systems.Initializers
         public void OnUpdate(ref SystemState state)
         {
             var ecb = new EntityCommandBuffer(Allocator.Temp);
-            var simulationTickRate = NetCodeConfig.Global.ClientServerTickRate.SimulationTickRate;
+            
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
-            var currentTick = networkTime.ServerTick;
+            var currentTick = state.WorldUnmanaged.IsServer() ? networkTime.ServerTick : networkTime.InterpolationTick;
 
             foreach (var (dot, e) in SystemAPI.Query<RefRO<DisableOnTimer>>().WithNone<DisableAtTick>().WithEntityAccess())
             {
-                Log.Debug($"[{state.WorldUnmanaged.Name}] | Initializing DisableOnTimer on: {e}");
-                var lifeTimeInTicks = (uint)(dot.ValueRO.Value * simulationTickRate);
+                Log.Debug($"[{state.WorldUnmanaged.Name}] | Initializing {e} DisableOnTimer on tick: {currentTick}");
+                var lifeTimeInTicks = (uint)(dot.ValueRO.Value * _simulationTickRate);
                 var targetTick = currentTick;
                 targetTick.Add(lifeTimeInTicks);
                 ecb.AddComponent(e, new DisableAtTick { Value = targetTick });

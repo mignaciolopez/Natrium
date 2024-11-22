@@ -10,21 +10,17 @@ namespace Natrium.Gameplay.Client.Systems
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct DisableEntitySystem : ISystem, ISystemStartStop
     {
-        private BeginSimulationEntityCommandBufferSystem.Singleton _bsEcbS;
-        
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnCreate()");
             state.RequireForUpdate<NetworkTime>();
-            state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
         }
 
         //[BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnStartRunning()");
-            _bsEcbS = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         }
 
         //[BurstCompile]
@@ -39,29 +35,27 @@ namespace Natrium.Gameplay.Client.Systems
             Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnDestroy()");
         }
 
-        [BurstCompile]
+        //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
+            var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
-            if (!networkTime.IsFirstTimeFullyPredictingTick)
-                return;
+            var currentTick = state.WorldUnmanaged.IsServer() ? networkTime.ServerTick : networkTime.InterpolationTick;
             
-            var ecb = _bsEcbS.CreateCommandBuffer(state.WorldUnmanaged);
-            new DisableEntityJob { ECB = ecb }.Schedule();
-        }
-    }
+            foreach (var (disableAtTick, e) in SystemAPI.Query<RefRO<DisableAtTick>>()
+                         .WithNone<GhostOwner, Disabled>().WithEntityAccess())//Excluding GhostOwners, Client should never disable authoritative data from the server.
+            {
+                if (!currentTick.IsNewerThan(disableAtTick.ValueRO.Value))
+                    continue;
 
-    //[BurstCompile]
-    [WithAll(typeof(DisableAtTick))]
-    [WithNone( typeof(GhostOwner), typeof(Disabled))] //Excluding GhostOwners, Client should never disable authoritative data from the server.
-    public partial struct DisableEntityJob : IJobEntity
-    {
-        public EntityCommandBuffer ECB;
-        private void Execute(Entity e)
-        {
-            //Log.Debug($"[{this}] | Disabling {e}");
-            ECB.AddComponent<Disabled>(e);
-            ECB.RemoveComponent<DisableAtTick>(e);
+                Log.Debug($"currentTick: {currentTick}");
+                Log.Debug($"Disabling {e} on tick: {disableAtTick.ValueRO.Value}");
+                ecb.AddComponent<Disabled>(e);
+                ecb.RemoveComponent<DisableAtTick>(e);
+            }
+            
+            ecb.Playback(state.EntityManager);
+            ecb.Dispose();
         }
     }
 }
