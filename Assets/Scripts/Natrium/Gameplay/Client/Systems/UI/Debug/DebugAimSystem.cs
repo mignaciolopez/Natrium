@@ -15,6 +15,7 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct DebugAimSystem : ISystem, ISystemStartStop
     {
+        private NetworkTick _previousNetworkTick;
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
@@ -23,13 +24,14 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
             state.RequireForUpdate<NetworkTime>();
             state.RequireForUpdate<InputAim>();
             state.RequireForUpdate<DebugColor>();
-            state.RequireForUpdate<BeginInitializationEntityCommandBufferSystem.Singleton>();
         }
 
         //[BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnStartRunning()");
+            _previousNetworkTick = SystemAPI.GetSingleton<NetworkTime>().InterpolationTick;
+            Log.Debug($"Starting network tick: {_previousNetworkTick}");
         }
 
         //[BurstCompile]
@@ -54,21 +56,17 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         private void QueryAndShowInputAims(ref SystemState state)
         {
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
-            if (!networkTime.IsFirstTimeFullyPredictingTick)
+            var currentTick = networkTime.InterpolationTick;
+            if (!currentTick.IsNewerThan(_previousNetworkTick))
             {
-                //Log.Debug($"IsFirstTimeFullyPredictingTick is false");
+                //Log.Debug($"currentTick {currentTick} is not newer than {_previousNetworkTick}. Skipping.");
                 return;
             }
-            
-            var currentTick = networkTime.ServerTick;
-            if (!currentTick.IsValid)
-            {
-                Log.Warning($"currentTick is Invalid!");
-                return;
-            }
+            _previousNetworkTick = currentTick;
             
             foreach (var (inputAims, debugColor)
-                     in SystemAPI.Query<DynamicBuffer<InputAim>, RefRO<DebugColor>>())
+                     in SystemAPI.Query<DynamicBuffer<InputAim>, RefRO<DebugColor>>()
+                         .WithAll<PlayerTag, GhostOwnerIsLocal>())
             {
                 inputAims.GetDataAtTick(currentTick, out var inputAimAtTick);
                 if (!inputAimAtTick.Set)
@@ -77,6 +75,7 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
                     continue;
                 }
                 
+                Log.Debug($"Processing InputAim on Tick: {currentTick}");
                 var prefab = SystemAPI.GetSingleton<DebugAimInputPrefab>().Prefab;
                 var e = state.EntityManager.Instantiate(prefab);
                 state.EntityManager.SetComponentData(e, new LocalTransform
@@ -92,7 +91,7 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
                         continue;
                         
                     var color = debugColor.ValueRO.StartValue.ToColor();
-                    color.a = 0.2f;
+                    color.a = 0.5f;
                     
                     var spriteRenderer = state.EntityManager.GetComponentObject<UnityEngine.SpriteRenderer>(child.Value);
                     spriteRenderer.color = color;

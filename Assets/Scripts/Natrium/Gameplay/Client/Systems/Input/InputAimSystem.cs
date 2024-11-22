@@ -1,5 +1,6 @@
 using System.Globalization;
 using Natrium.Gameplay.Client.Components;
+using Natrium.Gameplay.Shared.Components;
 using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
@@ -51,40 +52,34 @@ namespace Natrium.Gameplay.Client.Systems.Input
 
         protected override void OnUpdate()
         {
-            var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
+            var currentTick = SystemAPI.GetSingleton<NetworkTime>().InterpolationTick;
             if (!currentTick.IsValid)
             {
                 Log.Warning($"currentTick is Invalid!");
                 return;
             }
 
-            foreach (var inputAim in SystemAPI.Query<DynamicBuffer<InputAim>>().WithAll<GhostOwnerIsLocal>())
+            foreach (var inputAim in SystemAPI.Query<DynamicBuffer<InputAim>>().WithAll<PlayerTag, GhostOwnerIsLocal>())
             {
-                inputAim.AddCommandData(new InputAim
-                {
-                    Tick = currentTick,
-                    Set = false,
-                });
-
-                if (!_inputActions.Map_Gameplay.Axn_MouseRealease.WasPerformedThisFrame())
-                    continue;
-                
-                Log.Verbose($"[{World.Name}] | OnPrimaryMouseRelease()");
-                    
                 var mouseInputPosition = _inputActions.Map_Gameplay.Axn_MousePosition.ReadValue<Vector2>();
                 var mousePosition = new Vector3(mouseInputPosition.x, mouseInputPosition.y, _mainCamera.Camera.transform.position.y);
                 var mouseWorldPosition = (float3)_mainCamera.Camera.ScreenToWorldPoint(mousePosition);
-            
-                Log.Debug($"mouseWorldPosition: {mouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}\n" +
-                          $"mouseInputPosition: {mouseInputPosition}\n" + 
-                          $"mousePosition: {mousePosition}\n");
 
                 inputAim.AddCommandData(new InputAim
                 {
                     Tick = currentTick,
-                    Set = true,
+                    Set = _inputActions.Map_Gameplay.Axn_MouseRealease.WasPerformedThisFrame(),
                     MouseWorldPosition = mouseWorldPosition
                 });
+                
+                if (_inputActions.Map_Gameplay.Axn_MouseRealease.WasPerformedThisFrame())
+                {
+                    Log.Verbose($"[{World.Name}] | OnPrimaryMouseRelease()");
+                    
+                    Log.Debug($"mouseWorldPosition: {mouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}\n" +
+                              $"mouseInputPosition: {mouseInputPosition}\n" + 
+                              $"mousePosition: {mousePosition}\n");
+                }
             }
         }
     }
