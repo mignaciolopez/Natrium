@@ -77,7 +77,9 @@ namespace Natrium.Gameplay.Client.Systems.UI
 
         private void InstantiatePlayerNames()
         {
-            foreach(var (lt, pn, dc, e) in SystemAPI.Query<RefRO<LocalTransform>, RefRO<PlayerName>, RefRO<DebugColor>>().WithNone<PlayerTextDrawnTag>().WithEntityAccess())
+            foreach(var (lt, pn, e) 
+                    in SystemAPI.Query<RefRO<LocalTransform>, RefRO<PlayerName>>()
+                        .WithNone<PlayerTextDrawnTag>().WithEntityAccess())
             {
                 var text = GameObject.Instantiate(_playerTextPrefab, _UICanvas.transform);
                 text.transform.position = (Vector3)lt.ValueRO.Position + new Vector3(0, 0.5f, -1);
@@ -85,7 +87,16 @@ namespace Natrium.Gameplay.Client.Systems.UI
                 var tmPro = text.GetComponent<TMP_Text>();
                 tmPro.text = pn.ValueRO.Value.ToString();
 
-                tmPro.color = dc.ValueRO.StartValue.ToColor();
+                foreach (var child in EntityManager.GetBuffer<Child>(e))
+                {
+                    if (EntityManager.HasComponent<MaterialPropertyBaseColor>(child.Value))
+                    {
+                        var color = EntityManager.GetComponentData<MaterialPropertyBaseColor>(child.Value).Value;
+                        tmPro.color = color.ToColor();
+                        break;
+                    }
+                }
+
                 _textEntities.Add(e, text);
 
                 _ecb.AddComponent<PlayerTextDrawnTag>(e);
@@ -113,10 +124,25 @@ namespace Natrium.Gameplay.Client.Systems.UI
 
         private void UpdatePlayerNamesPositions()
         {
-            foreach (var (lt, e) in SystemAPI.Query<RefRO<LocalTransform>>().WithAll<PlayerTextDrawnTag>().WithEntityAccess())
+            foreach (var (lt, e) 
+                     in SystemAPI.Query<RefRO<LocalTransform>>().WithAll<PlayerTextDrawnTag>().WithEntityAccess())
             {
                 if (_textEntities.ContainsKey(e))
-                    _textEntities[e].transform.position = (Vector3)lt.ValueRO.Position + new Vector3(0, 0.5f, -1);
+                {
+                    var gameObject = _textEntities[e];
+                    gameObject.transform.position = (Vector3)lt.ValueRO.Position + new Vector3(0, 0.5f, -1);
+                    
+                    var tmPro = gameObject.GetComponent<TMP_Text>(); //Todo: Update on Death rather than on everyFrame
+                    foreach (var child in EntityManager.GetBuffer<Child>(e))
+                    {
+                        if (EntityManager.HasComponent<MaterialPropertyBaseColor>(child.Value))
+                        {
+                            var color = EntityManager.GetComponentData<MaterialPropertyBaseColor>(child.Value).Value;
+                            tmPro.color = color.ToColor();
+                            break;
+                        }
+                    }
+                }
                 else
                     Log.Error($"TMP_Text do not exist for entity: {e}");
             }

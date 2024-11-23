@@ -23,7 +23,6 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
             state.RequireForUpdate<DebugAimInputPrefab>();
             state.RequireForUpdate<NetworkTime>();
             state.RequireForUpdate<InputAim>();
-            state.RequireForUpdate<DebugColor>();
         }
 
         //[BurstCompile]
@@ -64,9 +63,9 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
             }
             _previousNetworkTick = currentTick;
             
-            foreach (var (inputAims, debugColor)
-                     in SystemAPI.Query<DynamicBuffer<InputAim>, RefRO<DebugColor>>()
-                         .WithAll<PlayerTag, GhostOwnerIsLocal>())
+            foreach (var (inputAims, e)
+                     in SystemAPI.Query<DynamicBuffer<InputAim>>()
+                         .WithAll<PlayerTag, GhostOwnerIsLocal>().WithEntityAccess())
             {
                 inputAims.GetDataAtTick(currentTick, out var inputAimAtTick);
                 if (!inputAimAtTick.Set)
@@ -77,22 +76,31 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
                 
                 Log.Debug($"Processing InputAim on Tick: {currentTick}");
                 var prefab = SystemAPI.GetSingleton<DebugAimInputPrefab>().Prefab;
-                var e = state.EntityManager.Instantiate(prefab);
-                state.EntityManager.SetComponentData(e, new LocalTransform
+                var prefabEntity = state.EntityManager.Instantiate(prefab);
+                state.EntityManager.SetComponentData(prefabEntity, new LocalTransform
                 {
                     Position = new float3(inputAimAtTick.MouseWorldPosition.x, 5.0f, inputAimAtTick.MouseWorldPosition.z),
                     Rotation = quaternion.identity,
                     Scale = 1.0f
                 });
-                    
-                foreach (var child in SystemAPI.GetBuffer<LinkedEntityGroup>(e))
+
+                var color = UnityEngine.Color.white;
+                
+                foreach (var child in state.EntityManager.GetBuffer<Child>(e))
+                {
+                    if (state.EntityManager.HasComponent<MaterialPropertyBaseColor>(child.Value))
+                    {
+                        color = state.EntityManager.GetComponentData<MaterialPropertyBaseColor>(child.Value).Value.ToColor();
+                        color.a = 0.5f;
+                        break;
+                    }
+                }
+                
+                foreach (var child in SystemAPI.GetBuffer<LinkedEntityGroup>(prefabEntity))
                 {
                     if (!state.EntityManager.HasComponent<UnityEngine.SpriteRenderer>(child.Value))
                         continue;
-                        
-                    var color = debugColor.ValueRO.StartValue.ToColor();
-                    color.a = 0.5f;
-                    
+
                     var spriteRenderer = state.EntityManager.GetComponentObject<UnityEngine.SpriteRenderer>(child.Value);
                     spriteRenderer.color = color;
                 }

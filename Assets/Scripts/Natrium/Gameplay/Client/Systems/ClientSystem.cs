@@ -50,7 +50,6 @@ namespace Natrium.Gameplay.Client.Systems
         protected override void OnUpdate()
         {
             OnConnect(null);
-            InitializePlayer();
         }
 
         private void OnKeyCodeReturn(Stream stream)
@@ -132,28 +131,6 @@ namespace Natrium.Gameplay.Client.Systems
         private void OnDisconnect(Stream stream)
         {
             throw new NotImplementedException("OnDisconnected");
-        }
-
-        private void InitializePlayer()
-        {   
-            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
-            
-            foreach (var (go, dc) in SystemAPI.Query<GhostOwner, DebugColor>().WithNone<URPMaterialPropertyBaseColor>())
-            {
-                var entityPrefab = Utils.GetEntityPrefab(go.NetworkId, EntityManager);
-
-                if (entityPrefab != Entity.Null)
-                {
-                    var prefabGroup = EntityManager.GetBuffer<LinkedEntityGroup>(entityPrefab);
-                    ecb.AddComponent(prefabGroup[1].Value, new URPMaterialPropertyBaseColor()
-                    {
-                        Value = dc.Value
-                    });
-                }
-            }
-
-            ecb.Playback(EntityManager);
-            ecb.Dispose();
         }
     }
 }

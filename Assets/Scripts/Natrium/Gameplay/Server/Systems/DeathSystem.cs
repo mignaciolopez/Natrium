@@ -1,9 +1,11 @@
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Shared;
+using Natrium.Shared.Extensions;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Collections;
 using Unity.Physics;
+using Unity.Transforms;
 
 namespace Natrium.Gameplay.Server.Systems
 {
@@ -47,16 +49,26 @@ namespace Natrium.Gameplay.Server.Systems
             var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
 
-            foreach (var (movementType, speed, debugColor,
+            foreach (var (movementType, speed,
                          physicsCollider, dt, e)
-                     in SystemAPI.Query<RefRW<MovementType>, RefRW<Speed>, RefRW<DebugColor>,
+                     in SystemAPI.Query<RefRW<MovementType>, RefRW<Speed>,
                              RefRW<PhysicsCollider>, RefRO<DeathTag>>()
                          .WithDisabled<ResurrectTag>().WithNone<DeathInitialized>().WithEntityAccess())
             {
                 Log.Debug($"Killing {e}");
+
+                foreach (var child in state.EntityManager.GetBuffer<Child>(e))
+                {
+                    if (!state.EntityManager.HasComponent<MaterialPropertyBaseColor>(child.Value))
+                        continue;
+
+                    var a = state.EntityManager.GetComponentData<MaterialPropertyBaseColor>(child.Value);
+                    var b = state.EntityManager.GetComponentData<ColorDeath>(child.Value);
+                    a.Value = b.Value.ToFloat4();
+                    state.EntityManager.SetComponentData(child.Value, a);
+                }
                 movementType.ValueRW.Value = MovementTypeEnum.Free;
                 speed.ValueRW.Value = 8.0f;
-                debugColor.ValueRW.Value = debugColor.ValueRO.DeathValue;
                 
                 ecb.SetComponent(e, new Attack());
                 ecb.SetComponentEnabled<Attack>(e, false);

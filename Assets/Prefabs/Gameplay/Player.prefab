@@ -22,7 +22,7 @@ GameObject:
   - component: {fileID: 6223849125932508216}
   - component: {fileID: 3381390213380631795}
   - component: {fileID: 8760383816627924292}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Player
   m_TagString: Player
   m_Icon: {fileID: 0}
@@ -70,7 +70,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 665b6a8cabd5a5e47a81e024a8944439, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  deathColor: {r: 0.4943396, g: 0.4943396, b: 0.4943396, a: 0.078431375}
 --- !u!114 &5251433322067245298
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -260,7 +259,7 @@ GameObject:
   - component: {fileID: 5255219473469502747}
   - component: {fileID: 6443637674718806453}
   - component: {fileID: 2453940758016135836}
-  m_Layer: 7
+  m_Layer: 0
   m_Name: Debug Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -371,7 +370,9 @@ GameObject:
   - component: {fileID: 5967832679303059121}
   - component: {fileID: 5788379843054541906}
   - component: {fileID: 3668872421857841211}
-  m_Layer: 7
+  - component: {fileID: 3538093635442516095}
+  - component: {fileID: 8259286375883912815}
+  m_Layer: 0
   m_Name: Cube
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -446,3 +447,34 @@ MeshRenderer:
   m_SortingLayer: 0
   m_SortingOrder: 0
   m_AdditionalVertexStreams: {fileID: 0}
+--- !u!114 &3538093635442516095
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8212942549574998060}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: bfdaa6c06fe64fbda2b16e07a4ee0b25, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ComponentOverrides:
+  - FullTypeName: Natrium.Gameplay.Shared.Components.MaterialPropertyBaseColor
+    EntityIndex: 0
+    PrefabType: -1
+    SendTypeOptimization: -1
+    VariantHash: 652863606279114138
+--- !u!114 &8259286375883912815
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8212942549574998060}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7bb2f2f6ca6f4f18863b635c39babdaa, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  deathColor: {r: 0.554717, g: 0.554717, b: 0.554717, a: 0.101960786}

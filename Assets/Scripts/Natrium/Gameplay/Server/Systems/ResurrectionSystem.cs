@@ -1,9 +1,11 @@
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Shared;
+using Natrium.Shared.Extensions;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Collections;
 using Unity.Physics;
+using Unity.Transforms;
 
 namespace Natrium.Gameplay.Server.Systems
 {
@@ -46,19 +48,29 @@ namespace Natrium.Gameplay.Server.Systems
             var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
 
-            foreach (var (movementType, speed, debugColor,
+            foreach (var (movementType, speed,
                          physicsCollider, hp,dt, rt, e)
-                     in SystemAPI.Query<RefRW<MovementType>, RefRW<Speed>, RefRW<DebugColor>, RefRW<PhysicsCollider>,
+                     in SystemAPI.Query<RefRW<MovementType>, RefRW<Speed>, RefRW<PhysicsCollider>,
                         RefRW<HealthPoints>, EnabledRefRW<DeathTag>, EnabledRefRW<ResurrectTag>>()
                          .WithEntityAccess())
             {
                 Log.Debug($"Resurrecting {e}");
 
+                foreach (var child in state.EntityManager.GetBuffer<Child>(e))
+                {
+                    if (!state.EntityManager.HasComponent<MaterialPropertyBaseColor>(child.Value))
+                        continue;
+
+                    var a = state.EntityManager.GetComponentData<MaterialPropertyBaseColor>(child.Value);
+                    var b = state.EntityManager.GetComponentData<ColorAlive>(child.Value);
+                    a.Value = b.Value.ToFloat4();
+                    state.EntityManager.SetComponentData(child.Value, a);
+                }
+                
                 hp.ValueRW.Value = hp.ValueRO.MaxValue;
                 
                 movementType.ValueRW.Value = MovementTypeEnum.Classic;
                 speed.ValueRW.Value = 4.0f;
-                debugColor.ValueRW.Value = debugColor.ValueRO.StartValue;
                 
                 ecb.SetComponentEnabled<Attack>(e, true);
                 var collisionFilter = physicsCollider.ValueRO.Value.Value.GetCollisionFilter();
@@ -66,13 +78,11 @@ namespace Natrium.Gameplay.Server.Systems
                 physicsCollider.ValueRW.Value.Value.SetCollisionFilter(collisionFilter);
                 
                 Log.Debug($"Setting DeathTag to false on {e}");
-                dt.ValueRW = false;
+                ecb.SetComponentEnabled<DeathTag>(e, false);
                 Log.Debug($"Setting ResurrectTag to false on {e}");
-                rt.ValueRW = false;
+                ecb.SetComponentEnabled<ResurrectTag>(e, false);
                 
                 ecb.RemoveComponent<DeathInitialized>(e);
-                //ecb.SetComponentEnabled<DeathTag>(e, false);
-                //ecb.SetComponentEnabled<ResurrectTag>(e, false);
             }
             
             ecb.Playback(state.EntityManager);

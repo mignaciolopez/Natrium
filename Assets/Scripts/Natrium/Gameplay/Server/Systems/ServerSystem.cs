@@ -11,6 +11,7 @@ using Unity.Networking.Transport;
 using System.Net;
 using System;
 using System.Net.Sockets;
+using Natrium.Shared.Extensions;
 
 namespace Natrium.Gameplay.Server.Systems
 {
@@ -61,7 +62,6 @@ namespace Natrium.Gameplay.Server.Systems
 
             GetListeningStatus();
             RPC_Connect();
-
             //TODO: delete changemovement(), Resurrect()
             //changemovement();
             Resurrect();
@@ -171,38 +171,46 @@ namespace Natrium.Gameplay.Server.Systems
             EntityManager.GetName(_playerPrefab, out var prefabName);
             var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
 
+            //EntitiesJournaling.Enabled = true;
             foreach (var (rpcConnect, rpcSource, rpcEntity) in SystemAPI.Query<RefRO<RpcConnect>, RefRO<ReceiveRpcCommandRequest>>().WithEntityAccess())
             {
-                Log.Debug($"Processing {rpcSource.ValueRO.SourceConnection}'s RpcConnect");
-
+                Log.Debug($"Processing RpcConnect for {rpcSource.ValueRO.SourceConnection}");
+                
+                var networkId = _networkIdFromEntity[rpcSource.ValueRO.SourceConnection].Value;
+                
+                Log.Debug($"Adding NetworkStreamInGame for NetworkId: {networkId}");
                 ecb.AddComponent<NetworkStreamInGame>(rpcSource.ValueRO.SourceConnection);
-                var networkId = _networkIdFromEntity[rpcSource.ValueRO.SourceConnection];
 
-                var player = ecb.Instantiate(_playerPrefab);
-                ecb.SetComponent(player, new GhostOwner { NetworkId = networkId.Value });
+                Log.Debug($"Instantiating prefab: {prefabName}");
+                var player = EntityManager.Instantiate(_playerPrefab);
+                
+                EntityManager.SetComponentData(player, new GhostOwner
+                {
+                    NetworkId = networkId
+                });
 
                 //TODO: Grab Data From Database
-                ecb.SetComponent(player, new PlayerName
+                EntityManager.SetComponentData(player, new PlayerName
                 {
-                    Value = (FixedString64Bytes)$"Player {networkId.Value}",
+                    Value = (FixedString64Bytes)$"Player {networkId}",
                 });
 
                 var localTransform = EntityManager.GetComponentData<LocalTransform>(_playerPrefab);
-                ecb.SetComponent(player, new PlayerTilePosition
+                EntityManager.SetComponentData(player, new PlayerTilePosition
                 {
                     Previous = localTransform.Position,
                     Target = localTransform.Position
                 });
 
                 var healthPoints = EntityManager.GetComponentData<HealthPoints>(_playerPrefab);
-                ecb.SetComponent(player, new HealthPoints
+                EntityManager.SetComponentData(player, new HealthPoints
                 {
                     Value = healthPoints.MaxValue,
                     MaxValue = healthPoints.MaxValue
                 });
                 
                 var damagePoints = EntityManager.GetComponentData<DamagePoints>(_playerPrefab);
-                ecb.SetComponent(player, new DamagePoints
+                EntityManager.SetComponentData(player, new DamagePoints
                 {
                     Value = damagePoints.Value
                 });
@@ -212,25 +220,32 @@ namespace Natrium.Gameplay.Server.Systems
                     UnityEngine.Random.Range(0.0f, 1.0f),
                     UnityEngine.Random.Range(0.0f, 1.0f),
                     1.0f);
-                var debugColor = EntityManager.GetComponentData<DebugColor>(_playerPrefab);
-                ecb.SetComponent(player, new DebugColor
+                foreach (var linkedEntityGroup in EntityManager.GetBuffer<LinkedEntityGroup>(player))
                 {
-                    Value = color,
-                    StartValue = color,
-                    DeathValue = debugColor.DeathValue
-                });
-
+                    if (EntityManager.HasComponent<MaterialPropertyBaseColor>(linkedEntityGroup.Value))
+                    {
+                        EntityManager.SetComponentData(linkedEntityGroup.Value, new MaterialPropertyBaseColor
+                        {
+                            Value = color
+                        });
+                    }
+                    
+                    if (EntityManager.HasComponent<ColorAlive>(linkedEntityGroup.Value))
+                    {
+                        EntityManager.SetComponentData(linkedEntityGroup.Value, new ColorAlive
+                        {
+                            Value = color.ToColor()
+                        });
+                    }
+                }
+                
                 // Add the player to the linked entity group so it is destroyed automatically on disconnect
-                ecb.AppendToBuffer(rpcSource.ValueRO.SourceConnection, new LinkedEntityGroup { Value = player });
+                //ecb.AppendToBuffer(rpcSource.ValueRO.SourceConnection, new LinkedEntityGroup { Value = player });
+                EntityManager.GetBuffer<LinkedEntityGroup>(rpcSource.ValueRO.SourceConnection).Add(player);
 
                 ecb.DestroyEntity(rpcEntity);
-
-                Log.Debug($"Processing RpcConnect for Entity: '{rpcSource.ValueRO.SourceConnection}' " +
-                    $"Added NetworkStreamInGame for NetworkId Value: '{networkId.Value}' " +
-                    $"Instantiate _playerPrefab: '{prefabName}'" + $"SetComponent: new GhostOwner " +
-                    $"Add LinkedEntityGroup to '{prefabName}'.");
             }
-            
+
             ecb.Playback(EntityManager);
             ecb.Dispose();
         }
