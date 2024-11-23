@@ -16,6 +16,7 @@ namespace Natrium.Gameplay.Shared.Components.Input
                 var e = GetEntity(TransformUsageFlags.Dynamic);
                 AddComponent<InputMove>(e);
                 AddComponent<InputAim>(e);
+                AddComponent<InputMelee>(e);
             }
         }
     }
@@ -33,6 +34,13 @@ namespace Natrium.Gameplay.Shared.Components.Input
         public NetworkTick Tick { get; set; }
         public bool Set;
         public float3 MouseWorldPosition;
+    }
+    
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
+    public struct InputMelee : ICommandData
+    {
+        public NetworkTick Tick { get; set; }
+        public bool Set;
     }
     
     //IInputComponentData vs ICommandData

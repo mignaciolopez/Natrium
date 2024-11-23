@@ -57,7 +57,7 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         {
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
             var currentTick = networkTime.InterpolationTick;
-            if (!currentTick.IsNewerThan(_previousNetworkTick))
+            if (currentTick.TickIndexForValidTick == _previousNetworkTick.TickIndexForValidTick)
             {
                 //Log.Debug($"currentTick {currentTick} is not newer than {_previousNetworkTick}. Skipping.");
                 return;
