@@ -13,8 +13,9 @@ GameObject:
   - component: {fileID: 2520918639760987634}
   - component: {fileID: 5251433322067245298}
   - component: {fileID: 9143057427787799275}
-  - component: {fileID: 2460893893609142918}
+  - component: {fileID: -3317126216060359405}
   - component: {fileID: 6763121300277520687}
+  - component: {fileID: 2460893893609142918}
   - component: {fileID: 7464434730507025832}
   - component: {fileID: 4608822715739049993}
   - component: {fileID: 7430463081528046849}
@@ -96,7 +97,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   speed: 4
   movementType: 2
---- !u!114 &2460893893609142918
+--- !u!114 &-3317126216060359405
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -105,10 +106,10 @@ MonoBehaviour:
   m_GameObject: {fileID: 2569002681301233278}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: ee88cd9a8d14d5e4c9f3d089ef2d912f, type: 3}
+  m_Script: {fileID: 11500000, guid: e258e1d91fd740449406fc1dbb5ad8b8, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  healthPoints: 4
+  healthPoints: 5
 --- !u!114 &6763121300277520687
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -122,6 +123,18 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   damagePoints: 1
+--- !u!114 &2460893893609142918
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2569002681301233278}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee88cd9a8d14d5e4c9f3d089ef2d912f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
 --- !u!114 &7464434730507025832
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -293,7 +306,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 718d6e6f708db934c9e86341c1704b14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  time: 0.5
+  time: 0.25
 --- !u!33 &6443637674718806453
 MeshFilter:
   m_ObjectHideFlags: 0

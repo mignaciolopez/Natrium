@@ -4,7 +4,7 @@ using Unity.Entities;
 
 namespace Natrium.Gameplay.Shared.Components
 {
-    public enum CitizenShipEnum
+    public enum TeamEnum
     {
         Neutral = 0,
         Citizen,
@@ -14,7 +14,6 @@ namespace Natrium.Gameplay.Shared.Components
     [DisallowMultipleComponent]
     public class AttackableAuthoring : MonoBehaviour
     {
-        public int healthPoints;
         public class Baker : Baker<AttackableAuthoring>
         {
             public override void Bake(AttackableAuthoring authoring)
@@ -25,13 +24,9 @@ namespace Natrium.Gameplay.Shared.Components
                     AddComponent<Attack>(e);
                     SetComponentEnabled<Attack>(e, false);
                     AddComponent<AttackableTag>(e);
-                    AddComponent(e, new HealthPoints
-                    {
-                        MaxValue = authoring.healthPoints
-                    });
                     AddBuffer<DamagePointsBuffer>(e);
                     AddBuffer<DamagePointsAtTick>(e);
-                    AddComponent<CitizenShip>(e);
+                    AddComponent<Team>(e);
                 }
             }
         }
@@ -39,21 +34,12 @@ namespace Natrium.Gameplay.Shared.Components
     
     [GhostComponent(PrefabType = GhostPrefabType.All)]
     public struct AttackableTag : IComponentData { }
-
-    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
-    public struct HealthPoints : IComponentData
-    {
-        public int MaxValue;
-        [GhostField] public int Value;
-    }
-
-    [GhostComponent(PrefabType = GhostPrefabType.All)]
+    
     public struct DamagePointsBuffer : IBufferElementData
     {
         public float Value;
     }
-
-    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
+    
     public struct DamagePointsAtTick : ICommandData
     {
         public NetworkTick Tick { get; set; }
@@ -61,9 +47,9 @@ namespace Natrium.Gameplay.Shared.Components
     }
 
     [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
-    public struct CitizenShip : IComponentData
+    public struct Team : IComponentData
     {
-        [GhostField] public CitizenShipEnum Value;
+        [GhostField] public TeamEnum Value;
     }
     
     [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
