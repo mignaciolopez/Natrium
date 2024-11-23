@@ -8,9 +8,8 @@ namespace Natrium.Gameplay.Shared
     public class SystemsSettingsAuthoring : MonoBehaviour
     {
         #region ConnectionSettings
-        [Header("Connection Settings")]
-        public string FQDN = "localhost";
-        public ushort Port = 7979;
+        public string fqdn = "localhost";
+        public ushort port = 7979;
         #endregion ConnectionSettings
     }
 
@@ -23,8 +22,8 @@ namespace Natrium.Gameplay.Shared
                 AddComponent(e, new SystemsSettings
                 {
                     #region ConnectionSettings
-                    FQDN = authoring.FQDN,
-                    Port = authoring.Port,
+                    Fqdn = authoring.fqdn,
+                    Port = authoring.port,
                     #endregion ConnectionSettings
                 });
             }
@@ -34,7 +33,7 @@ namespace Natrium.Gameplay.Shared
     public struct SystemsSettings : IComponentData
     {
         #region ConnectionSettings
-        public FixedString32Bytes FQDN;
+        public FixedString32Bytes Fqdn;
         public ushort Port;
         #endregion ConnectionSettings
     }

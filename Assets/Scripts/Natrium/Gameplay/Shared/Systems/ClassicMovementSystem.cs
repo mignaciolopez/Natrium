@@ -1,5 +1,6 @@
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Gameplay.Shared.Components.Input;
+using Natrium.Shared;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -13,12 +14,27 @@ namespace Natrium.Gameplay.Shared.Systems
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
     [UpdateBefore(typeof(MovementSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ServerSimulation)]
-    public partial struct ClassicMovementSystem : ISystem
+    public partial struct ClassicMovementSystem : ISystem, ISystemStartStop
     {
-        [BurstCompile]
+        //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
             state.RequireForUpdate<PhysicsWorldSingleton>();
+        }
+        public void OnStartRunning(ref SystemState state)
+        {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStartRunning");
+        }
+
+        public void OnStopRunning(ref SystemState state)
+        {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStopRunning");
+        }
+
+        public void OnDestroy(ref SystemState state)
+        {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
         }
 
         [BurstCompile]
@@ -85,6 +101,5 @@ namespace Natrium.Gameplay.Shared.Systems
                 }
             }
         }
-
     } //MovementSystem
 } // namespace

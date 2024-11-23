@@ -1,5 +1,6 @@
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Gameplay.Shared.Components.Input;
+using Natrium.Shared;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;
@@ -15,22 +16,26 @@ namespace Natrium.Gameplay.Shared.Systems
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ServerSimulation)]
     public partial struct FreeMovementSystem : ISystem, ISystemStartStop
     {
-        [BurstCompile]
+        //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
             state.RequireForUpdate<PhysicsWorldSingleton>();
         }
-
-        [BurstCompile]
+        
         public void OnStartRunning(ref SystemState state)
         {
-            
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStartRunning");
         }
-
-        [BurstCompile]
+        
         public void OnStopRunning(ref SystemState state)
         {
-
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStopRunning");
+        }
+        
+        public void OnDestroy(ref SystemState state)
+        {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
         }
 
         [BurstCompile]
@@ -40,7 +45,9 @@ namespace Natrium.Gameplay.Shared.Systems
 
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
 
-            foreach (var (ptp, lt, pia, speed, pc, e) in SystemAPI.Query<RefRW<PlayerTilePosition>, LocalTransform, InputMove, Speed, PhysicsCollider>().WithAll<Simulate, GhostOwner, MovementFree>().WithEntityAccess())
+            foreach (var (ptp, lt, pia, speed, pc, e) 
+                     in SystemAPI.Query<RefRW<PlayerTilePosition>, LocalTransform, InputMove, Speed, PhysicsCollider>()
+                         .WithAll<Simulate, GhostOwner, MovementFree>().WithEntityAccess())
             {
                 ptp.ValueRW.Previous = ptp.ValueRO.Target;
 

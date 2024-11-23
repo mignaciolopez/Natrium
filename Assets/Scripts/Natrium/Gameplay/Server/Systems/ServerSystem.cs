@@ -36,7 +36,7 @@ namespace Natrium.Gameplay.Server.Systems
 
         protected override void OnStartRunning()
         {
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStartRunning()");
+            Log.Verbose("OnStartRunning");
             base.OnStartRunning();
 
             _playerPrefab = SystemAPI.GetSingleton<PlayerPrefab>().Value;
@@ -116,9 +116,9 @@ namespace Natrium.Gameplay.Server.Systems
         {
             if (SystemAPI.TryGetSingleton<SystemsSettings>(out var ss))
             {
-                Log.Debug($"SystemsSettings: {ss.FQDN}:{ss.Port}");
+                Log.Debug($"SystemsSettings: {ss.Fqdn}:{ss.Port}");
 
-                IPAddress[] ipv4Addresses = Array.FindAll(Dns.GetHostEntry(ss.FQDN.ToString()).AddressList, a => a.AddressFamily == AddressFamily.InterNetwork);
+                IPAddress[] ipv4Addresses = Array.FindAll(Dns.GetHostEntry(ss.Fqdn.ToString()).AddressList, a => a.AddressFamily == AddressFamily.InterNetwork);
                 if (ipv4Addresses.Length > 0)
                 {
                     Log.Debug($"ipv4Addresses[0]: {ipv4Addresses[0]}");
@@ -138,7 +138,7 @@ namespace Natrium.Gameplay.Server.Systems
                 }
                 else
                 {
-                    Log.Fatal($"Dns.GetHostEntry could not resolve name {ss.FQDN} to any valid ipv4");
+                    Log.Fatal($"Dns.GetHostEntry could not resolve name {ss.Fqdn} to any valid ipv4");
                 }
             }
             else

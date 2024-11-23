@@ -3,12 +3,10 @@ using Natrium.Shared.Systems;
 using Unity.Entities;
 using Unity.NetCode;
 using Natrium.Gameplay.Shared.Components;
-using Natrium.Gameplay.Shared.Utilities;
 using Natrium.Gameplay.Shared;
 using System.Net;
 using Unity.Networking.Transport;
 using System;
-using Unity.Rendering;
 using System.Net.Sockets;
 
 namespace Natrium.Gameplay.Client.Systems
@@ -20,14 +18,14 @@ namespace Natrium.Gameplay.Client.Systems
     {
         protected override void OnCreate()
         {
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnCreate()");
+            Log.Verbose("OnCreate");
             base.OnCreate();
             RequireForUpdate<SystemsSettings>();
         }
 
         protected override void OnStartRunning()
         {
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStartRunning()");
+            Log.Verbose("OnStartRunning");
             base.OnStartRunning();
             EventSystem.Subscribe(Events.OnKeyCodeReturn, OnKeyCodeReturn);
             EventSystem.Subscribe(Events.OnKeyCodeEscape, OnKeyCodeEscape);
@@ -35,7 +33,7 @@ namespace Natrium.Gameplay.Client.Systems
 
         protected override void OnStopRunning()
         {
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStopRunning()");
+            Log.Verbose("OnStopRunning");
             base.OnStopRunning();
             EventSystem.UnSubscribe(Events.OnKeyCodeReturn, OnKeyCodeReturn);
             EventSystem.UnSubscribe(Events.OnKeyCodeEscape, OnKeyCodeEscape);
@@ -43,7 +41,7 @@ namespace Natrium.Gameplay.Client.Systems
 
         protected override void OnDestroy()
         {
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnDestroy()");
+            Log.Verbose("OnDestroy");
             base.OnDestroy();
         }
         
@@ -56,18 +54,18 @@ namespace Natrium.Gameplay.Client.Systems
         {
             foreach(var conState in SystemAPI.Query<ConnectionState>().WithAll<GhostOwnerIsLocal>())
             {
-                Log.Warning($"Conection State: {conState.CurrentState}");
+                Log.Warning($"Connection State: {conState.CurrentState}");
                 if (conState.CurrentState == ConnectionState.State.Connecting || conState.CurrentState == ConnectionState.State.Connected || conState.CurrentState == ConnectionState.State.Unknown)
                     return;
             }
             
             if (SystemAPI.TryGetSingleton<SystemsSettings>(out var ss))
             {
-                Log.Debug($"SystemsSettings: {ss.FQDN}:{ss.Port}");
+                Log.Debug($"SystemsSettings: {ss.Fqdn}:{ss.Port}");
 
                 var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
 
-                IPAddress[] ipv4Addresses = Array.FindAll(Dns.GetHostEntry(ss.FQDN.ToString()).AddressList, a => a.AddressFamily == AddressFamily.InterNetwork);
+                IPAddress[] ipv4Addresses = Array.FindAll(Dns.GetHostEntry(ss.Fqdn.ToString()).AddressList, a => a.AddressFamily == AddressFamily.InterNetwork);
                 if (ipv4Addresses.Length > 0)
                 {
                     Log.Debug($"ipv4Addresses[0]: {ipv4Addresses[0]}");
@@ -85,7 +83,7 @@ namespace Natrium.Gameplay.Client.Systems
                 }
                 else
                 {
-                    Log.Fatal($"Dns.GetHostEntry could not resolve name {ss.FQDN} to any valid ipv4");
+                    Log.Fatal($"Dns.GetHostEntry could not resolve name {ss.Fqdn} to any valid ipv4");
                 }
             }
             else

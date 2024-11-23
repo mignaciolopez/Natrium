@@ -15,25 +15,25 @@ namespace Natrium.Gameplay.Client.Systems.Input
 
         protected override void OnCreate()
         {
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnCreate()");
+            Log.Verbose("OnCreate");
             _inputActions = new InputActions();
         }
 
         protected override void OnStartRunning()
         {
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStartRunning()");
+            Log.Verbose("OnStartRunning");
             _inputActions.Enable();
         }
 
         protected override void OnStopRunning()
         {
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStopRunning()");
+            Log.Verbose("OnStopRunning");
             _inputActions.Disable();
         }
 
         protected override void OnDestroy()
         {
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnDestroy()");
+            Log.Verbose("OnDestroy");
             base.OnDestroy();
         }
         

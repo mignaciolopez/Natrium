@@ -13,23 +13,30 @@ namespace Natrium.Gameplay.Shared.Systems
         private EntityCommandBuffer _ecb;
         protected override void OnCreate()
         {
-            base.OnCreate();
-
             Log.Verbose($"[{World.Name}] OnCreate");
+            base.OnCreate();
 
             RequireForUpdate<SystemsSettings>();
         }
 
         protected override void OnStartRunning()
         {
+            Log.Verbose($"[{World.Name}] OnStartRunning");
             base.OnStartRunning();
             EventSystem.Subscribe(Events.OnSendPing, OnSendPing);
         }
 
         protected override void OnStopRunning()
         {
+            Log.Verbose($"[{World.Name}] OnStopRunning");
             base.OnStopRunning();
             EventSystem.UnSubscribe(Events.OnSendPing, OnSendPing);
+        }
+        
+        protected override void OnDestroy()
+        {
+            Log.Verbose($"[{World.Name}] OnDestroy");
+            base.OnDestroy();
         }
 
         protected override void OnUpdate()

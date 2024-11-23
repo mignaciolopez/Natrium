@@ -16,26 +16,26 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnCreate()");
+            Log.Verbose("OnCreate");
             state.RequireForUpdate<BeginInitializationEntityCommandBufferSystem.Singleton>();
         }
 
         //[BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnStartRunning()");
+            Log.Verbose("OnStartRunning");
         }
 
         //[BurstCompile]
         public void OnStopRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnStopRunning()");
+            Log.Verbose("OnStopRunning");
         }
 
         //[BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnDestroy()");
+            Log.Verbose("OnDestroy");
         }
         
         //[BurstCompile]
@@ -52,14 +52,14 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
             foreach (var (rpcAttack, rpcEntity)
                      in SystemAPI.Query<RefRO<RPCAttack>>().WithAll<ReceiveRpcCommandRequest>().WithEntityAccess())
             {
-                Log.Debug($"[{state.WorldUnmanaged.Name}] | Processing RPCAttack");
+                Log.Debug($"Processing rpcAttack {rpcAttack}");
                 var entityTarget = Utils.GetEntityPrefab(rpcAttack.ValueRO.NetworkIdTarget, state.EntityManager);
                 foreach (var child in SystemAPI.GetBuffer<LinkedEntityGroup>(entityTarget))
                 {
                     if (!state.EntityManager.HasComponent<DebugTag>(child.Value))
                         continue;
                     
-                    Log.Debug($"[{state.WorldUnmanaged.Name}] | Enabling {child.Value}");
+                    Log.Debug($"Enabling {child.Value}");
                     ecb.RemoveComponent<Disabled>(child.Value);
                 }
                 

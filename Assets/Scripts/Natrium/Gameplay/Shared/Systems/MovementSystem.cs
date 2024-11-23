@@ -1,4 +1,5 @@
 using Natrium.Gameplay.Shared.Components;
+using Natrium.Shared;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -15,26 +16,28 @@ namespace Natrium.Gameplay.Shared.Systems
         private ComponentLookup<MovementDiagonal> _lookUpDiagonal;
         private ComponentLookup<MovementClassic> _lookUpClassic;
 
-        private BeginInitializationEntityCommandBufferSystem.Singleton _ecbs;
-
-        [BurstCompile]
+        //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
             _lookUpFree = state.GetComponentLookup<MovementFree>();
             _lookUpDiagonal = state.GetComponentLookup<MovementDiagonal>();
             _lookUpClassic = state.GetComponentLookup<MovementClassic>();
         }
 
-        [BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
-            _ecbs = SystemAPI.GetSingleton<BeginInitializationEntityCommandBufferSystem.Singleton>();
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStartRunning");
         }
-
-        [BurstCompile]
+        
         public void OnStopRunning(ref SystemState state)
         {
-            
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStopRunning");
+        }
+        
+        public void OnDestroy(ref SystemState state)
+        {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
         }
 
         [BurstCompile]
@@ -48,14 +51,14 @@ namespace Natrium.Gameplay.Shared.Systems
 
             state.Dependency = new UpdateMovementTypeJob
             {
-                lookUpFree = _lookUpFree,
-                lookUpDiagonal = _lookUpDiagonal,
-                lookUpClassic = _lookUpClassic
+                LookUpFree = _lookUpFree,
+                LookUpDiagonal = _lookUpDiagonal,
+                LookUpClassic = _lookUpClassic
             }.Schedule(state.Dependency);
 
             state.Dependency = new MoveTowardsJob
             {
-                dt = dt
+                DeltaTime = dt
             }.Schedule(state.Dependency);
         }
     } //MovementSystem
@@ -63,28 +66,28 @@ namespace Natrium.Gameplay.Shared.Systems
     [BurstCompile]
     public partial struct UpdateMovementTypeJob : IJobEntity
     {
-        public ComponentLookup<MovementFree> lookUpFree;
-        public ComponentLookup<MovementDiagonal> lookUpDiagonal;
-        public ComponentLookup<MovementClassic> lookUpClassic;
+        public ComponentLookup<MovementFree> LookUpFree;
+        public ComponentLookup<MovementDiagonal> LookUpDiagonal;
+        public ComponentLookup<MovementClassic> LookUpClassic;
 
         private void Execute(in MovementType mt, Entity e)
         {
             switch (mt.Value)
             {
                 case MovementTypeEnum.Free:
-                    lookUpFree.SetComponentEnabled(e, true);
-                    lookUpDiagonal.SetComponentEnabled(e, false);
-                    lookUpClassic.SetComponentEnabled(e, false);
+                    LookUpFree.SetComponentEnabled(e, true);
+                    LookUpDiagonal.SetComponentEnabled(e, false);
+                    LookUpClassic.SetComponentEnabled(e, false);
                     break;
                 case MovementTypeEnum.Diagonal:
-                    lookUpFree.SetComponentEnabled(e, false);
-                    lookUpDiagonal.SetComponentEnabled(e, true);
-                    lookUpClassic.SetComponentEnabled(e, false);
+                    LookUpFree.SetComponentEnabled(e, false);
+                    LookUpDiagonal.SetComponentEnabled(e, true);
+                    LookUpClassic.SetComponentEnabled(e, false);
                     break;
                 case MovementTypeEnum.Classic:
-                    lookUpFree.SetComponentEnabled(e, false);
-                    lookUpDiagonal.SetComponentEnabled(e, false);
-                    lookUpClassic.SetComponentEnabled(e, true);
+                    LookUpFree.SetComponentEnabled(e, false);
+                    LookUpDiagonal.SetComponentEnabled(e, false);
+                    LookUpClassic.SetComponentEnabled(e, true);
                     break;
             }
         }
@@ -94,26 +97,26 @@ namespace Natrium.Gameplay.Shared.Systems
     [WithAll(typeof(Simulate))]
     public partial struct MoveTowardsJob : IJobEntity
     {
-        public float dt;
+        public float DeltaTime;
 
-        public readonly float3 MoveTowards(float3 current, float3 target, float maxDistanceDelta)
+        private static float3 MoveTowards(float3 current, float3 target, float maxDistanceDelta)
         {
-            float num = target.x - current.x;
-            float num2 = target.y - current.y;
-            float num3 = target.z - current.z;
-            float num4 = num * num + num2 * num2 + num3 * num3;
+            var num = target.x - current.x;
+            var num2 = target.y - current.y;
+            var num3 = target.z - current.z;
+            var num4 = num * num + num2 * num2 + num3 * num3;
             if (num4 == 0f || (maxDistanceDelta >= 0f && num4 <= maxDistanceDelta * maxDistanceDelta))
             {
                 return target;
             }
 
-            float num5 = math.sqrt(num4);
+            var num5 = math.sqrt(num4);
             return new float3(current.x + num / num5 * maxDistanceDelta, current.y + num2 / num5 * maxDistanceDelta, current.z + num3 / num5 * maxDistanceDelta);
         }
 
         private void Execute(ref LocalTransform lt, in PlayerTilePosition ptp, in Speed speed)
         {
-            lt.Position = MoveTowards(lt.Position, ptp.Target, speed.Value * dt);
+            lt.Position = MoveTowards(lt.Position, ptp.Target, speed.Value * DeltaTime);
         }
     }
 } // namespace

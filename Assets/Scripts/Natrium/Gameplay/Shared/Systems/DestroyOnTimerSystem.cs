@@ -1,16 +1,33 @@
 using Natrium.Gameplay.Shared.Components;
+using Natrium.Shared;
 using Unity.Entities;
 using Unity.NetCode;
 
 namespace Natrium.Gameplay.Shared.Systems
 {
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
-    public partial struct DestroyOnTimerSystem : ISystem
+    public partial struct DestroyOnTimerSystem : ISystem, ISystemStartStop
     {
         public void OnCreate(ref SystemState state)
         {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
             state.RequireForUpdate<NetworkTime>();
             state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
+        }
+        
+        public void OnStartRunning(ref SystemState state)
+        {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStartRunning");
+        }
+
+        public void OnStopRunning(ref SystemState state)
+        {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStopRunning");
+        }
+
+        public void OnDestroy(ref SystemState state)
+        {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
         }
 
         //[BurstCompile]

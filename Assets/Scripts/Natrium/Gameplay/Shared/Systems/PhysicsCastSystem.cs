@@ -1,19 +1,36 @@
 using Unity.Entities;
 using Unity.Physics;
 using Natrium.Gameplay.Shared.Components;
+using Natrium.Shared;
 using Unity.Burst;
 using Unity.Physics.Systems;
 
 namespace Natrium.Gameplay.Shared.Systems
 {
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ServerSimulation)]
-    public partial struct PhysicsCastSystem : ISystem
+    public partial struct PhysicsCastSystem : ISystem, ISystemStartStop
     {
         public void OnCreate(ref SystemState state)
         {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
             state.RequireForUpdate<PhysicsWorldSingleton>();
         }
 
+        public void OnStartRunning(ref SystemState state)
+        {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStartRunning");
+        }
+        
+        public void OnStopRunning(ref SystemState state)
+        {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStopRunning");
+        }
+        
+        public void OnDestroy(ref SystemState state)
+        {
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
+        }
+        
         public void OnUpdate(ref SystemState state)
         {
             var ecbs = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();

@@ -19,7 +19,7 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnCreate()");
+            Log.Verbose("OnCreate");
             state.RequireForUpdate<DebugAimInputPrefab>();
             state.RequireForUpdate<NetworkTime>();
             state.RequireForUpdate<InputAim>();
@@ -28,7 +28,7 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         //[BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnStartRunning()");
+            Log.Verbose("OnStartRunning");
             _previousNetworkTick = SystemAPI.GetSingleton<NetworkTime>().InterpolationTick;
             Log.Debug($"Starting network tick: {_previousNetworkTick}");
         }
@@ -36,13 +36,13 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         //[BurstCompile]
         public void OnStopRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnStopRunning()");
+            Log.Verbose("OnStopRunning");
         }
 
         //[BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnDestroy()");
+            Log.Verbose("OnDestroy");
         }
         
         //[BurstCompile]

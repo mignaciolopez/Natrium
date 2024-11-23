@@ -13,27 +13,27 @@ namespace Natrium.Gameplay.Shared.Systems.Initializers
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnCreate()");
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
             state.RequireForUpdate<NetworkTime>();
         }
 
         //[BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnStartRunning()");
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStartRunning");
             _simulationTickRate = NetCodeConfig.Global.ClientServerTickRate.SimulationTickRate;
         }
 
         //[BurstCompile]
         public void OnStopRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnStopRunning()");
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStopRunning");
         }
 
         //[BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] | {this.ToString()}.OnDestroy()");
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
         }
 
         //[BurstCompile]

@@ -20,7 +20,7 @@ namespace Natrium.Gameplay.Client.Systems.Input
         protected override void OnCreate()
         {
             base.OnCreate();
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnCreate()");
+            Log.Verbose("OnCreate");
             _inputActions = new InputActions();
             RequireForUpdate<GhostOwnerIsLocal>();
             RequireForUpdate<PlayerTag>();
@@ -32,7 +32,7 @@ namespace Natrium.Gameplay.Client.Systems.Input
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStartRunning()");
+            Log.Verbose("OnStartRunning");
             _inputActions.Enable();
             var mainCameraEntity = SystemAPI.GetSingletonEntity<MainCameraTag>();
             _mainCamera = EntityManager.GetComponentObject<MainCamera>(mainCameraEntity);
@@ -46,14 +46,14 @@ namespace Natrium.Gameplay.Client.Systems.Input
         protected override void OnStopRunning()
         {
             base.OnStopRunning();
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStopRunning()");
+            Log.Verbose("OnStopRunning");
             _inputActions.Disable();
         }
 
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnDestroy()");
+            Log.Verbose("OnDestroy");
             _inputActions.Dispose();
         }
 
@@ -75,7 +75,7 @@ namespace Natrium.Gameplay.Client.Systems.Input
                 
             if (_inputActions.Map_Gameplay.Axn_MouseRealease.WasPerformedThisFrame())
             {
-                Log.Verbose($"[{World.Name}] | OnPrimaryMouseRelease()");
+                Log.Verbose("OnPrimaryMouseRelease");
                 
                 Log.Debug($"mouseWorldPosition: {mouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}\n" +
                           $"mouseInputPosition: {mouseInputPosition}\n" + 

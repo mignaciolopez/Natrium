@@ -487,16 +487,16 @@ MonoBehaviour:
   m_MoveRepeatRate: 0.1
   m_XRTrackingOrigin: {fileID: 0}
   m_ActionsAsset: {fileID: -944628639613478452, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
-  m_PointAction: {fileID: -1654692200621890270, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
-  m_MoveAction: {fileID: -8784545083839296357, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
-  m_SubmitAction: {fileID: 392368643174621059, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
-  m_CancelAction: {fileID: 7727032971491509709, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
-  m_LeftClickAction: {fileID: 3001919216989983466, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
-  m_MiddleClickAction: {fileID: -2185481485913320682, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
-  m_RightClickAction: {fileID: -4090225696740746782, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
-  m_ScrollWheelAction: {fileID: 6240969308177333660, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
-  m_TrackedDevicePositionAction: {fileID: 6564999863303420839, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
-  m_TrackedDeviceOrientationAction: {fileID: 7970375526676320489, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
+  m_PointAction: {fileID: 2944812821882965291, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
+  m_MoveAction: {fileID: 2926304467675721846, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
+  m_SubmitAction: {fileID: 3401816021105717718, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
+  m_CancelAction: {fileID: -2691384906021308194, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
+  m_LeftClickAction: {fileID: -3670904554163191804, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
+  m_MiddleClickAction: {fileID: 1414966161219036211, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
+  m_RightClickAction: {fileID: -3609376379936109378, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
+  m_ScrollWheelAction: {fileID: 8290681926921755515, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
+  m_TrackedDevicePositionAction: {fileID: 8243110001863084388, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
+  m_TrackedDeviceOrientationAction: {fileID: 5223493116388749829, guid: 536a58639ca0c24448376fe59248bae8, type: 3}
   m_DeselectOnBackgroundClick: 1
   m_PointerBehavior: 0
   m_CursorLockBehavior: 0
@@ -5749,8 +5749,89 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   _logLevel: 0
-  _logFilterWorlds: []
-  _logFilterClass: []
+  _logFilterWorlds:
+  - name: Shared
+    isLogging: 1
+    color: {r: 1, g: 0.6446169, b: 0, a: 1}
+  - name: Server
+    isLogging: 1
+    color: {r: 0, g: 1, b: 0.022435427, a: 1}
+  - name: Client
+    isLogging: 1
+    color: {r: 0, g: 0.05048132, b: 1, a: 1}
+  _logFilterClass:
+  - name: Log
+    isLogging: 1
+    color: {r: 0.4634534, g: 0.5933124, b: 0.70584774, a: 1}
+  - name: ServerSystem
+    isLogging: 1
+    color: {r: 0.9178421, g: 0.8298796, b: 0.6628735, a: 1}
+  - name: AimSystem
+    isLogging: 1
+    color: {r: 0.78143966, g: 0.82739574, b: 0.4649342, a: 1}
+  - name: AttackSystem
+    isLogging: 1
+    color: {r: 1, g: 0.9554453, b: 0, a: 1}
+  - name: ResurrectionSystem
+    isLogging: 1
+    color: {r: 0.70258236, g: 0, b: 1, a: 1}
+  - name: CalculateFrameDamageSystem
+    isLogging: 1
+    color: {r: 0.57753634, g: 0.7040048, b: 0.5571374, a: 1}
+  - name: HealthSystem
+    isLogging: 1
+    color: {r: 1, g: 0.06780664, b: 0.066037595, a: 1}
+  - name: DeathSystem
+    isLogging: 1
+    color: {r: 0, g: 0, b: 0, a: 1}
+  - name: DestroyEntitySystem
+    isLogging: 1
+    color: {r: 0.48407346, g: 0.60216904, b: 0.6358514, a: 1}
+  - name: EventSystem
+    isLogging: 1
+    color: {r: 0.64594185, g: 0.56486034, b: 0.49756023, a: 1}
+  - name: InitializeDestroyOnTimerSystem
+    isLogging: 1
+    color: {r: 0.42219546, g: 0.5451202, b: 0.63532734, a: 1}
+  - name: InitializeMainCameraSystem
+    isLogging: 1
+    color: {r: 0.9521613, g: 0.58085644, b: 0.79086375, a: 1}
+  - name: InitializeAutoDisableOnTimerSystem
+    isLogging: 1
+    color: {r: 0.75999343, g: 0.87476474, b: 0.7053119, a: 1}
+  - name: LogSystem
+    isLogging: 1
+    color: {r: 0.56589544, g: 0.5923069, b: 0.85097826, a: 1}
+  - name: MeeleSystem
+    isLogging: 1
+    color: {r: 0.80558586, g: 0.41504833, b: 0.6910779, a: 1}
+  - name: InputMoveSystem
+    isLogging: 1
+    color: {r: 0.93928814, g: 0.7109424, b: 0.701856, a: 1}
+  - name: ClientSystem
+    isLogging: 1
+    color: {r: 0.83965975, g: 0.72049254, b: 0.98426336, a: 1}
+  - name: PlayerNameSystem
+    isLogging: 1
+    color: {r: 0.9919652, g: 0.5255837, b: 0.40431514, a: 1}
+  - name: CameraFollowSystem
+    isLogging: 1
+    color: {r: 0.91608053, g: 0.47688964, b: 0.77828217, a: 1}
+  - name: InputMeleeSystem
+    isLogging: 1
+    color: {r: 0.43719038, g: 0.8718973, b: 0.89502805, a: 1}
+  - name: InputAimSystem
+    isLogging: 1
+    color: {r: 0.47828075, g: 0.9512134, b: 0.5151449, a: 1}
+  - name: DebugAttackSystem
+    isLogging: 1
+    color: {r: 0.45930243, g: 0.58482075, b: 0.9996848, a: 1}
+  - name: DebugAimSystem
+    isLogging: 1
+    color: {r: 0.7559973, g: 0.8166015, b: 0.72122955, a: 1}
+  - name: DisableEntitySystem
+    isLogging: 1
+    color: {r: 0.7667594, g: 0.51294386, b: 0.40023747, a: 1}
   _stackFrameIndex: 3
 --- !u!4 &2036906789
 Transform:

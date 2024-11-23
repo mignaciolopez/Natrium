@@ -10,25 +10,25 @@ namespace Natrium.Gameplay.Client.Systems.Initializers
         protected override void OnCreate()
         {
             base.OnCreate();
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnCreate()");
+            Log.Verbose("OnCreate");
         }
 
         protected override void OnStartRunning()
         {
             base.OnStartRunning();
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStartRunning()");
+            Log.Verbose("OnStartRunning");
         }
 
         protected override void OnStopRunning()
         {
             base.OnStopRunning();
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStopRunning()");
+            Log.Verbose("OnStopRunning");
         }
 
         protected override void OnDestroy()
         {
             base.OnDestroy();
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnDestroy()");
+            Log.Verbose("OnDestroy");
         }
         
         protected override void OnUpdate()

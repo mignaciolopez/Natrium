@@ -15,14 +15,14 @@ namespace Natrium.Gameplay.Client.Systems.UI
     public partial class PlayerNameSystem : SystemBase
     {
         private GameObject _playerTextPrefab;
-        private GameObject _UICanvas;
+        private GameObject _uiCanvas;
         private Dictionary<Entity, GameObject> _textEntities;
         private List<Entity> _namesToRemove;
 
         private EntityCommandBuffer _ecb;
         protected override void OnCreate()
         {
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnCreate()");
+            Log.Verbose("OnCreate");
             base.OnCreate();
 
             _textEntities = new Dictionary<Entity, GameObject>();
@@ -31,16 +31,16 @@ namespace Natrium.Gameplay.Client.Systems.UI
 
         protected override void OnStartRunning()
         {
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStartRunning()");
+            Log.Verbose("OnStartRunning");
             base.OnStartRunning();
 
             _playerTextPrefab = GameObject.FindAnyObjectByType<PlayerTextPrefabAuthoring>().Prefab;
-            _UICanvas = GameObject.FindGameObjectWithTag("CanvasWorldSpace");
+            _uiCanvas = GameObject.FindGameObjectWithTag("CanvasWorldSpace");
         }
 
         protected override void OnStopRunning()
         {
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStopRunning()");
+            Log.Verbose("OnStopRunning");
             base.OnStopRunning();
 
             var ecbs = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
@@ -61,7 +61,7 @@ namespace Natrium.Gameplay.Client.Systems.UI
         
         protected override void OnDestroy()
         {
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnDestroy()");
+            Log.Verbose("OnDestroy");
             base.OnDestroy();
         }
         
@@ -81,7 +81,7 @@ namespace Natrium.Gameplay.Client.Systems.UI
                     in SystemAPI.Query<RefRO<LocalTransform>, RefRO<PlayerName>>()
                         .WithNone<PlayerTextDrawnTag>().WithEntityAccess())
             {
-                var text = GameObject.Instantiate(_playerTextPrefab, _UICanvas.transform);
+                var text = GameObject.Instantiate(_playerTextPrefab, _uiCanvas.transform);
                 text.transform.position = (Vector3)lt.ValueRO.Position + new Vector3(0, 0.5f, -1);
 
                 var tmPro = text.GetComponent<TMP_Text>();
@@ -144,7 +144,7 @@ namespace Natrium.Gameplay.Client.Systems.UI
                     }
                 }
                 else
-                    Log.Error($"TMP_Text do not exist for entity: {e}");
+                    Log.Error($"{e} Does not contain component: {typeof(TMP_Text)}");
             }
         }
     }
