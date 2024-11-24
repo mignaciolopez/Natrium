@@ -40,7 +40,7 @@ namespace Natrium.Gameplay.Server.Systems
             Log.Verbose("OnDestroy");
         }
 
-        [BurstCompile]
+        //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
