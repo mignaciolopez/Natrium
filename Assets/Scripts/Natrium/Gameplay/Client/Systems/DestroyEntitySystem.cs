@@ -7,25 +7,20 @@ using Unity.Transforms;
 
 namespace Natrium.Gameplay.Client.Systems
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup), OrderLast = true)]
+    [UpdateInGroup(typeof(LateSimulationSystemGroup), OrderFirst = true)]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct DestroyEntitySystem : ISystem, ISystemStartStop
     {
-        private BeginSimulationEntityCommandBufferSystem.Singleton _bsEcbS;
-        
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             Log.Verbose("OnCreate");
-            state.RequireForUpdate<NetworkTime>();
-            state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
         }
 
         //[BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
             Log.Verbose("OnStartRunning");
-            _bsEcbS = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         }
 
         //[BurstCompile]
@@ -43,21 +38,19 @@ namespace Natrium.Gameplay.Client.Systems
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var networkTime = SystemAPI.GetSingleton<NetworkTime>();
-            if (!networkTime.IsFirstTimeFullyPredictingTick)
-                return;
-            
-            var ecb = _bsEcbS.CreateCommandBuffer(state.WorldUnmanaged);
+            var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
             //new DestroyEntityJob { ECB = ecb }.Schedule();
 
-            foreach (var (localTransform, e) in SystemAPI.Query<RefRO<LocalTransform>>() 
-                         .WithAll<DestroyEntityTag>()
+            foreach (var (destroyEntityTag, entity) in SystemAPI.Query<RefRO<DestroyEntityTag>>() 
                          .WithNone<GhostOwner>() //Excluding GhostOwners, Client should Never Destroy authoritative data from the server
                          .WithEntityAccess())
             {
-                Log.Debug($"Destroying {e}");
-                ecb.DestroyEntity(e);
+                Log.Debug($"Destroying {entity}");
+                ecb.DestroyEntity(entity);
             }
+            
+            ecb.Playback(state.EntityManager);
+            ecb.Dispose();
         }
     }
 

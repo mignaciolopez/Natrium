@@ -45,7 +45,7 @@ namespace Natrium.Gameplay.Client.Systems
             foreach (var (disableAtTick, e) in SystemAPI.Query<RefRO<DisableAtTick>>()
                          .WithNone<GhostOwner, Disabled>().WithEntityAccess())//Excluding GhostOwners, Client should never disable authoritative data from the server.
             {
-                if (!currentTick.IsNewerThan(disableAtTick.ValueRO.Value))
+                if (currentTick.TickIndexForValidTick < disableAtTick.ValueRO.Value.TickIndexForValidTick)
                     continue;
 
                 Log.Debug($"currentTick: {currentTick}");

@@ -3,6 +3,7 @@ using Natrium.Shared;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.NetCode;
+using Unity.Transforms;
 
 namespace Natrium.Gameplay.Server.Systems
 {
@@ -47,11 +48,18 @@ namespace Natrium.Gameplay.Server.Systems
                 return;
             
             var ecb = _bsEcbS.CreateCommandBuffer(state.WorldUnmanaged);
-            new DestroyEntitySystemJob { ECB = ecb }.Schedule();
+            //new DestroyEntitySystemJob { ECB = ecb }.Schedule();
+            
+            foreach (var (destroyEntityTag, entity) in SystemAPI.Query<RefRO<DestroyEntityTag>>() 
+                         .WithEntityAccess()) //Server Is authoritative and can destroy a GhostOwner
+            {
+                Log.Debug($"Destroying {entity}");
+                ecb.DestroyEntity(entity);
+            }
         }
     }
 
-    [BurstCompile]
+    /*[BurstCompile]
     [WithAll(typeof(DestroyEntityTag))] //Server Is authoritative and can destroy a GhostOwner
     public partial struct DestroyEntitySystemJob : IJobEntity
     {
@@ -60,5 +68,5 @@ namespace Natrium.Gameplay.Server.Systems
         {
             ECB.DestroyEntity(e);
         }
-    }
+    }*/
 }

@@ -105,20 +105,21 @@ namespace Natrium.Shared
 
         private string ResolveClassName(string className, UnityEngine.Object context = null)
         {
-            string stackClassName = className;
-
-            if (stackClassName.Length <= 0)
+            if (className.Length > 0) 
+                return className;
+         
+            var stackClassName = "";
+            
+            if (context != null)
             {
-                if (context != null)
-                {
-                    stackClassName = context.name;
-                }
-                else
-                {
-                    var stackFrames = new StackTrace();
-                    var methodInfo = stackFrames.GetFrame(_stackFrameIndex).GetMethod();
+                stackClassName = context.name;
+            }
+            else
+            {
+                var stackFrames = new StackTrace();
+                var methodInfo = stackFrames.GetFrame(_stackFrameIndex).GetMethod();
+                if (methodInfo.ReflectedType != null) 
                     stackClassName = methodInfo.ReflectedType.Name;
-                }
             }
 
             return stackClassName;
@@ -126,32 +127,55 @@ namespace Natrium.Shared
 
         private string ResolveWorldName()
         {
-            string worldName = "Unknown";
+            var worldName = "Unknown";
 
             var stackFrames = new StackTrace();
             var methodInfo = stackFrames.GetFrame(_stackFrameIndex).GetMethod();
+            if (methodInfo.ReflectedType == null)
+                return worldName;
+            
             var nameSpace = methodInfo.ReflectedType.Namespace;
 
+            if (nameSpace == null)
+                return worldName;
+            
             var names = nameSpace.Split(".");
             foreach (var name in names)
             {
                 if (name == "Client")
-                    return "Client";
-                else if (name == "Server")
-                    return "Server";
+                {
+                    worldName = name;
+                    break;
+                }
+                
+                if (name == "Server")
+                {
+                    worldName = name;
+                    break;
+                }
 
                 if (name == "Shared")
                 {
-                    worldName = "Shared";
+                    worldName = name;
 
-                    nameSpace = stackFrames.GetFrame(_stackFrameIndex + 1).GetMethod().ReflectedType.Namespace;
-                    var names2 = nameSpace.Split(".");
+                    nameSpace = stackFrames.GetFrame(_stackFrameIndex + 1).GetMethod().ReflectedType?.Namespace;
+                    var names2 = nameSpace?.Split(".");
+                    if (names2 == null)
+                        continue;
+                    
                     foreach (var name2 in names2)
                     {
                         if (name2 == "Client")
-                            return "Client";
-                        else if (name2 == "Server")
-                            return "Server";
+                        {
+                            worldName = name2;
+                            break;
+                        }
+
+                        if (name2 == "Server")
+                        {
+                            worldName = name2;
+                            break;
+                        }
                     }
                 }
             }
