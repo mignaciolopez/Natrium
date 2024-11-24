@@ -360,7 +360,7 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1022101764}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: bb54ea4f67dc17342bcd49954c53502d, type: 3}
   m_Name: 
@@ -389,7 +389,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 4d30974bf68d61043b1572197db94cdc, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  m_SimulationType: 1
+  m_SimulationType: 0
   m_Gravity:
     x: -0
     y: -9.81
@@ -445,8 +445,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 213395a629e5331469f16c43048611dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  FQDN: localhost
-  Port: 7979
+  fqdn: localhost
+  port: 7979
 --- !u!1001 &1899234705
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -458,10 +458,6 @@ PrefabInstance:
     - target: {fileID: 2137172252424438101, guid: 6ec0b04a39b583049863e1353198f412, type: 3}
       propertyPath: m_Name
       value: Cube
-      objectReference: {fileID: 0}
-    - target: {fileID: 2137172252424438101, guid: 6ec0b04a39b583049863e1353198f412, type: 3}
-      propertyPath: m_IsActive
-      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 4545777946287020249, guid: 6ec0b04a39b583049863e1353198f412, type: 3}
       propertyPath: m_LocalPosition.x
