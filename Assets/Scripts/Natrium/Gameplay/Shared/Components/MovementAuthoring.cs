@@ -5,18 +5,18 @@ using Unity.Mathematics;
 
 namespace Natrium.Gameplay.Shared.Components
 {
-    public enum MovementTypeEnum
+    public enum MovementTypes
     {
-        Free = 0,
+        Classic = 0,
         Diagonal,
-        Classic
+        Free,
     }
 
     [DisallowMultipleComponent]
     public class MovementAuthoring : MonoBehaviour
     {
-        public float speed = 2.0f;
-        public MovementTypeEnum movementType = MovementTypeEnum.Classic;
+        public float speed = 5.0f;
+        public MovementTypes moveType = MovementTypes.Classic;
     }
 
     public class MovementBaker : Baker<MovementAuthoring>
@@ -29,64 +29,45 @@ namespace Natrium.Gameplay.Shared.Components
             {
                 Value = authoring.speed
             });
-
-            AddComponent(e, new MovementType
+            
+            AddComponent(e, new Position
             {
-                Value = authoring.movementType
+                Previous = authoring.transform.position,
+                Target = authoring.transform.position,
             });
-
-            AddComponent<PlayerTilePosition>(e);
-
-            AddComponent<MovementFree>(e);
-            AddComponent<MovementDiagonal>(e);
-            AddComponent<MovementClassic>(e);
-
-            switch (authoring.movementType)
+            
+            switch (authoring.moveType)
             {
-                case MovementTypeEnum.Free:
-                    SetComponentEnabled<MovementFree>(e, true);
-                    SetComponentEnabled<MovementDiagonal>(e, false);
-                    SetComponentEnabled<MovementClassic>(e, false);
+                default:
+                case MovementTypes.Classic:
+                    AddComponent<MoveClassicTag>(e);
                     break;
-                case MovementTypeEnum.Diagonal:
-                    SetComponentEnabled<MovementFree>(e, false);
-                    SetComponentEnabled<MovementDiagonal>(e, true);
-                    SetComponentEnabled<MovementClassic>(e, false);
+                case MovementTypes.Diagonal:
+                    AddComponent<MoveDiagonalTag>(e);
                     break;
-                case MovementTypeEnum.Classic:
-                    SetComponentEnabled<MovementFree>(e, false);
-                    SetComponentEnabled<MovementDiagonal>(e, false);
-                    SetComponentEnabled<MovementClassic>(e, true);
+                case MovementTypes.Free:
+                    AddComponent<MoveFreeTag>(e);
                     break;
             }
         }
     }
 
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToOwner)]
+    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
     public struct Speed : IComponentData
     {
         [GhostField(Quantization = 100)]
         public float Value;
     }
-
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToOwner)]
-    public struct PlayerTilePosition : IComponentData
+    
+    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
+    public struct Position : IComponentData
     {
-        [GhostField(Quantization = 0)]
-        public float3 Previous;
-
-        [GhostField(Quantization = 0)]
-        public float3 Target;
+        [GhostField] public float3 Previous;
+        [GhostField] public float3 Target;
     }
 
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToOwner)]
-    public struct MovementType : IComponentData
-    {
-        [GhostField]
-        public MovementTypeEnum Value;
-    }
-
-    public struct MovementFree : IComponentData, IEnableableComponent { }
-    public struct MovementDiagonal : IComponentData, IEnableableComponent { }
-    public struct MovementClassic : IComponentData, IEnableableComponent { }
+    public struct MoveFreeTag : IComponentData { }
+    public struct MoveDiagonalTag : IComponentData { }
+    public struct MoveClassicTag : IComponentData { }
+    public struct MoveTowardsTag : IComponentData { }
 }

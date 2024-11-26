@@ -48,9 +48,9 @@ namespace Natrium.Gameplay.Server.Systems
             var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
 
-            foreach (var (movementType, speed,
+            foreach (var (speed,
                          physicsCollider, hp,dt, rt, e)
-                     in SystemAPI.Query<RefRW<MovementType>, RefRW<Speed>, RefRW<PhysicsCollider>,
+                     in SystemAPI.Query<RefRW<Speed>, RefRW<PhysicsCollider>,
                         RefRW<HealthPoints>, EnabledRefRW<DeathTag>, EnabledRefRW<ResurrectTag>>()
                          .WithEntityAccess())
             {
@@ -69,7 +69,6 @@ namespace Natrium.Gameplay.Server.Systems
                 
                 hp.ValueRW.Value = hp.ValueRO.MaxValue;
                 
-                movementType.ValueRW.Value = MovementTypeEnum.Classic;
                 speed.ValueRW.Value = 4.0f;
                 
                 ecb.SetComponentEnabled<Attack>(e, true);

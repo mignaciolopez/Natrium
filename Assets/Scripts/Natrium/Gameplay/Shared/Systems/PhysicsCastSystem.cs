@@ -3,10 +3,14 @@ using Unity.Physics;
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Shared;
 using Unity.Burst;
-using Unity.Physics.Systems;
+using Unity.Collections;
+using Unity.NetCode;
+using Unity.Transforms;
 
 namespace Natrium.Gameplay.Shared.Systems
 {
+    [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
+    [UpdateBefore(typeof(MoveTowardsTargetSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ServerSimulation)]
     public partial struct PhysicsCastSystem : ISystem, ISystemStartStop
     {
@@ -14,16 +18,17 @@ namespace Natrium.Gameplay.Shared.Systems
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
             state.RequireForUpdate<PhysicsWorldSingleton>();
+            state.RequireForUpdate<OverlapBoxTag>();
         }
 
         public void OnStartRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStartRunning");
+            //Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStartRunning");
         }
         
         public void OnStopRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStopRunning");
+            //Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStopRunning");
         }
         
         public void OnDestroy(ref SystemState state)
@@ -31,21 +36,52 @@ namespace Natrium.Gameplay.Shared.Systems
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
         }
         
+        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var ecbs = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
+            var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
+            var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
 
-            new RayCastJob
+            foreach (var (position, localTransform, physicsCollider, entity) in
+                     SystemAPI.Query<RefRW<Position>, RefRO<LocalTransform>, RefRO<PhysicsCollider>>()
+                         .WithNone<MoveTowardsTag>() //Ignore Already Moving Entities
+                         .WithAll<OverlapBoxTag,Simulate>()
+                         .WithEntityAccess())
             {
-                ecb = ecbs.CreateCommandBuffer(state.WorldUnmanaged),
-                collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld
-            }.Schedule();
+                var filter = physicsCollider.ValueRO.Value.Value.GetCollisionFilter();
 
-            new BoxCastJob
-            {
-                ecb = ecbs.CreateCommandBuffer(state.WorldUnmanaged),
-                collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld
-            }.Schedule();
+                var outHits = new NativeList<DistanceHit>(state.WorldUpdateAllocator);
+
+                if (collisionWorld.OverlapBox(
+                        position.ValueRO.Target,
+                        localTransform.ValueRO.Rotation,
+                        0.49f,
+                        ref outHits,
+                        filter))
+                {
+                    foreach (var hit in outHits)
+                    {
+                        if (hit.Entity == entity)
+                        {
+                            Log.Warning($"{entity} is colliding with itself hit{hit.Entity}");
+                        }
+                        else
+                        {
+                            position.ValueRW.Target = position.ValueRO.Previous;
+                        }
+                    }
+                }
+                else
+                {
+                    ecb.AddComponent<MoveTowardsTag>(entity);
+                }
+
+                ecb.RemoveComponent<OverlapBoxTag>(entity);
+                outHits.Dispose();
+            }
+            
+            ecb.Playback(state.EntityManager);
+            ecb.Dispose();
         }
     }
 

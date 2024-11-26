@@ -12,7 +12,6 @@ using Unity.Transforms;
 namespace Natrium.Gameplay.Shared.Systems
 {
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
-    [UpdateBefore(typeof(MovementSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ServerSimulation)]
     public partial struct FreeMovementSystem : ISystem, ISystemStartStop
     {
@@ -41,12 +40,12 @@ namespace Natrium.Gameplay.Shared.Systems
         [BurstCompile]
         public unsafe void OnUpdate(ref SystemState state)
         {
-            var dt = SystemAPI.Time.DeltaTime;
+            /*var dt = SystemAPI.Time.DeltaTime;
 
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
 
             foreach (var (ptp, lt, pia, speed, pc, e) 
-                     in SystemAPI.Query<RefRW<PlayerTilePosition>, LocalTransform, InputMove, Speed, PhysicsCollider>()
+                     in SystemAPI.Query<RefRW<Position>, LocalTransform, InputMove, Speed, PhysicsCollider>()
                          .WithAll<Simulate, GhostOwner, MovementFree>().WithEntityAccess())
             {
                 ptp.ValueRW.Previous = ptp.ValueRO.Target;
@@ -90,6 +89,7 @@ namespace Natrium.Gameplay.Shared.Systems
                     allHits.Dispose();
                 }
             }
+            */
         }
     } //MovementSystem
 } // namespace

@@ -3,7 +3,6 @@ using Natrium.Shared;
 using Natrium.Shared.Extensions;
 using Unity.Entities;
 using Unity.NetCode;
-using Unity.Collections;
 using Unity.Physics;
 using Unity.Transforms;
 
@@ -14,21 +13,16 @@ namespace Natrium.Gameplay.Server.Systems
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct DeathSystem : ISystem, ISystemStartStop
     {
-        private EndSimulationEntityCommandBufferSystem.Singleton _esEcbS;
-        
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             Log.Verbose("OnCreate");
-            state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
-            state.RequireForUpdate<NetworkTime>();
         }
 
         //[BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
             Log.Verbose("OnStartRunning");
-            _esEcbS = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
         }
 
         //[BurstCompile]
@@ -46,12 +40,10 @@ namespace Natrium.Gameplay.Server.Systems
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
 
-            foreach (var (movementType, speed,
-                         physicsCollider, dt, e)
-                     in SystemAPI.Query<RefRW<MovementType>, RefRW<Speed>,
+            foreach (var (speed, physicsCollider, dt, e)
+                     in SystemAPI.Query<RefRW<Speed>,
                              RefRW<PhysicsCollider>, RefRO<DeathTag>>()
                          .WithDisabled<ResurrectTag>().WithNone<DeathInitialized>().WithEntityAccess())
             {
@@ -67,7 +59,6 @@ namespace Natrium.Gameplay.Server.Systems
                     a.Value = b.Value.ToFloat4();
                     state.EntityManager.SetComponentData(child.Value, a);
                 }
-                movementType.ValueRW.Value = MovementTypeEnum.Free;
                 speed.ValueRW.Value = 8.0f;
                 
                 ecb.SetComponent(e, new Attack());

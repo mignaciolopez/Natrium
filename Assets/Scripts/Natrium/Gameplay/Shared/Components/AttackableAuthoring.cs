@@ -52,7 +52,6 @@ namespace Natrium.Gameplay.Shared.Components
         [GhostField] public TeamEnum Value;
     }
     
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
     public struct Attack : IComponentData, IEnableableComponent
     {
         public Entity SourceServerEntity; //Internal Server Use Only

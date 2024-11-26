@@ -3,6 +3,8 @@ using Unity.Mathematics;
 
 namespace Natrium.Gameplay.Shared.Components
 {
+    public struct OverlapBoxTag : IComponentData  { }
+    
     public struct RayCast : IComponentData
     {
         public float3 Start;

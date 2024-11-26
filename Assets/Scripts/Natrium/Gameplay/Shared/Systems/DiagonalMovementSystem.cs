@@ -12,7 +12,6 @@ using Unity.Transforms;
 namespace Natrium.Gameplay.Shared.Systems
 {
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
-    [UpdateBefore(typeof(MovementSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ServerSimulation)]
     public partial struct DiagonalMovementSystem : ISystem, ISystemStartStop
     {
@@ -40,12 +39,12 @@ namespace Natrium.Gameplay.Shared.Systems
         
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
-        {
+        {/*
             var dt = SystemAPI.Time.DeltaTime;
 
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
 
-            foreach (var (ptp, lt, pia, speed, pc, e) in SystemAPI.Query<RefRW<PlayerTilePosition>, LocalTransform, InputMove, Speed, PhysicsCollider>().WithAll<Simulate, GhostOwner, MovementDiagonal>().WithEntityAccess())
+            foreach (var (ptp, lt, pia, speed, pc, e) in SystemAPI.Query<RefRW<Position>, LocalTransform, InputMove, Speed, PhysicsCollider>().WithAll<Simulate, GhostOwner, MovementDiagonal>().WithEntityAccess())
             {
                 if (math.distance(lt.Position, ptp.ValueRO.Target) < speed.Value * dt)
                 {
@@ -112,6 +111,7 @@ namespace Natrium.Gameplay.Shared.Systems
                     }
                 }
             }
+            */
         }
     }
 } // namespace

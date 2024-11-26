@@ -14,18 +14,16 @@ namespace Natrium.Gameplay.Shared.Components.Input
             public override void Bake(InputAuthoring authoring)
             {
                 var e = GetEntity(TransformUsageFlags.Dynamic);
-                AddComponent<InputMove>(e);
+                AddComponent<InputAxis>(e);
                 AddComponent<InputAim>(e);
                 AddComponent<InputMelee>(e);
             }
         }
     }
     
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
-    public struct InputMove : IInputComponentData
+    public struct InputAxis : IInputComponentData
     {
-        [GhostField(Quantization = 0)]
-        public float2 InputAxis;
+        public float2 Value;
     }
 
     [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]

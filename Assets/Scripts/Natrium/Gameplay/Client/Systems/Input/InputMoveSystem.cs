@@ -17,6 +17,8 @@ namespace Natrium.Gameplay.Client.Systems.Input
         {
             Log.Verbose("OnCreate");
             _inputActions = new InputActions();
+            var required = SystemAPI.QueryBuilder().WithAll<InputAxis, GhostOwnerIsLocal, Simulate>().Build();
+            //RequireForUpdate(required);
         }
 
         protected override void OnStartRunning()
@@ -39,13 +41,13 @@ namespace Natrium.Gameplay.Client.Systems.Input
         
         protected override void OnUpdate()
         {
-           var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
-
-            foreach (var pi in SystemAPI.Query<RefRW<InputMove>>().WithAll<GhostOwnerIsLocal, Simulate>())
+            foreach (var inputAxis in SystemAPI.Query<RefRW<InputAxis>>().WithAll<GhostOwnerIsLocal, Simulate>())
             {
-                pi.ValueRW.InputAxis = _inputActions.Map_Gameplay.Axn_PlayerMove.ReadValue<Vector2>();
+                inputAxis.ValueRW.Value = _inputActions.Map_Gameplay.Axn_PlayerMove.ReadValue<Vector2>();
             }
 
+            
+            //Todo: Move all the following stuff to another system.
             if (UnityEngine.Input.GetKeyUp(KeyCode.Return))
                 EventSystem.EnqueueEvent(Natrium.Shared.Events.OnKeyCodeReturn);
             if (UnityEngine.Input.GetKeyUp(KeyCode.Escape))
@@ -63,8 +65,7 @@ namespace Natrium.Gameplay.Client.Systems.Input
             {
                 EventSystem.EnqueueEvent(Natrium.Shared.Events.OnSendPing);
             }
-
-            ecb.Playback(EntityManager);
+            //End //Todo: Move all the following stuff to another system.
         }
     }
 }

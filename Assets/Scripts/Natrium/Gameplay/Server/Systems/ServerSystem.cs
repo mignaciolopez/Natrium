@@ -15,7 +15,7 @@ using Natrium.Shared.Extensions;
 
 namespace Natrium.Gameplay.Server.Systems
 {
-    [UpdateInGroup(typeof(GhostSimulationSystemGroup), OrderLast = true)]
+    [UpdateInGroup(typeof(GhostSimulationSystemGroup), OrderLast = true)] //Todo:Move This to the spawn system group
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial class ServerSystem : SystemBase
     {
@@ -62,32 +62,8 @@ namespace Natrium.Gameplay.Server.Systems
 
             GetListeningStatus();
             RPC_Connect();
-            //TODO: delete changemovement(), Resurrect()
-            //changemovement();
+            //TODO: delete Resurrect()
             Resurrect();
-        }
-
-        //TODO: delete changemovement()
-        private float elapsedtime = 0;
-        private int currentMT = -1;
-        private float interval = 7.5f;
-        private void changemovement()
-        {
-            elapsedtime += SystemAPI.Time.DeltaTime;
-
-            if (elapsedtime >= interval)
-            {
-                elapsedtime -= interval;
-
-                foreach(var mt in SystemAPI.Query<RefRW<MovementType>>())
-                {
-                    currentMT++;
-                    if (currentMT > 2)
-                        currentMT = 0;
-
-                    mt.ValueRW.Value = (MovementTypeEnum)currentMT;
-                }
-            }
         }
 
         private void Resurrect()
@@ -195,12 +171,12 @@ namespace Natrium.Gameplay.Server.Systems
                     Value = (FixedString64Bytes)$"Player {networkId}",
                 });
 
-                var localTransform = EntityManager.GetComponentData<LocalTransform>(_playerPrefab);
-                EntityManager.SetComponentData(player, new PlayerTilePosition
+                /*var localTransform = EntityManager.GetComponentData<LocalTransform>(_playerPrefab);
+                EntityManager.SetComponentData(player, new Position
                 {
                     Previous = localTransform.Position,
                     Target = localTransform.Position
-                });
+                });*/
 
                 var healthPoints = EntityManager.GetComponentData<HealthPoints>(_playerPrefab);
                 EntityManager.SetComponentData(player, new HealthPoints
