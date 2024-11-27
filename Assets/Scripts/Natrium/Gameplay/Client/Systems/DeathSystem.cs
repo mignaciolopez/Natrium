@@ -41,7 +41,9 @@ namespace Natrium.Gameplay.Client.Systems
             foreach (var (speed, entity)
                      in SystemAPI.Query<RefRO<Speed>>()
                          .WithAll<DeathTag>()
-                         .WithDisabled<ResurrectTag>().WithNone<DeathInitialized>().WithEntityAccess())
+                         .WithDisabled<ResurrectTag>()
+                         .WithNone<DeathInitialized>()
+                         .WithEntityAccess())
             {
                 Log.Debug($"Killing {entity}");
 

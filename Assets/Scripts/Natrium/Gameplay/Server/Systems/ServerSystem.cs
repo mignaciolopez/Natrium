@@ -15,7 +15,7 @@ using Natrium.Shared.Extensions;
 
 namespace Natrium.Gameplay.Server.Systems
 {
-    [UpdateInGroup(typeof(GhostSimulationSystemGroup), OrderLast = true)] //Todo:Move This to the spawn system group
+    [UpdateInGroup(typeof(GhostSimulationSystemGroup), OrderLast = true)]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial class ServerSystem : SystemBase
     {
