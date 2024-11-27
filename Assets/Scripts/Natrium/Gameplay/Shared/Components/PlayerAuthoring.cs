@@ -1,9 +1,7 @@
-using Natrium.Shared.Extensions;
 using Unity.Collections;
 using UnityEngine;
 using Unity.Entities;
 using Unity.NetCode;
-using Unity.Mathematics;
 
 namespace Natrium.Gameplay.Shared.Components
 {
@@ -16,19 +14,20 @@ namespace Natrium.Gameplay.Shared.Components
             {
                 var e = GetEntity(TransformUsageFlags.Dynamic);
                 AddComponent<PlayerTag>(e);
+                SetComponentEnabled<PlayerTag>(e, true);
                 AddComponent<PlayerName>(e);
             }
         }
     }
 
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToOwner)]
-    public struct PlayerTag : IComponentData { }
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
+    [GhostEnabledBit]
+    public struct PlayerTag : IComponentData, IEnableableComponent { }
     public struct InitializedPlayerTag : IComponentData { }
 
-    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
     public struct PlayerName : IComponentData
     {
-        [GhostField]
-        public FixedString64Bytes Value;
+        [GhostField] public FixedString64Bytes Value;
     }
 }

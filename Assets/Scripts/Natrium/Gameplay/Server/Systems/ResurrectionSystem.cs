@@ -49,14 +49,14 @@ namespace Natrium.Gameplay.Server.Systems
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
 
             foreach (var (speed,
-                         physicsCollider, hp,dt, rt, e)
+                         physicsCollider, hp,dt, rt, entity)
                      in SystemAPI.Query<RefRW<Speed>, RefRW<PhysicsCollider>,
                         RefRW<HealthPoints>, EnabledRefRW<DeathTag>, EnabledRefRW<ResurrectTag>>()
                          .WithEntityAccess())
             {
-                Log.Debug($"Resurrecting {e}");
+                Log.Debug($"Resurrecting {entity}");
 
-                foreach (var child in state.EntityManager.GetBuffer<Child>(e))
+                foreach (var child in state.EntityManager.GetBuffer<Child>(entity))
                 {
                     if (!state.EntityManager.HasComponent<MaterialPropertyBaseColor>(child.Value))
                         continue;
@@ -69,19 +69,24 @@ namespace Natrium.Gameplay.Server.Systems
                 
                 hp.ValueRW.Value = hp.ValueRO.MaxValue;
                 
-                speed.ValueRW.Value = 4.0f;
+                speed.ValueRW.Value /= 2.0f;
                 
-                ecb.SetComponentEnabled<Attack>(e, true);
+                ecb.SetComponentEnabled<MoveTowardsTag>(entity, false);
+                ecb.SetComponentEnabled<OverlapBox>(entity, false);
+                ecb.SetComponentEnabled<MoveFreeTag>(entity, false);
+                ecb.SetComponentEnabled<MoveClassicTag>(entity, true);
+                
+                ecb.SetComponentEnabled<Attack>(entity, true);
                 var collisionFilter = physicsCollider.ValueRO.Value.Value.GetCollisionFilter();
                 collisionFilter.CollidesWith = ~0u;
                 physicsCollider.ValueRW.Value.Value.SetCollisionFilter(collisionFilter);
                 
-                Log.Debug($"Setting DeathTag to false on {e}");
-                ecb.SetComponentEnabled<DeathTag>(e, false);
-                Log.Debug($"Setting ResurrectTag to false on {e}");
-                ecb.SetComponentEnabled<ResurrectTag>(e, false);
+                Log.Debug($"Setting DeathTag to false on {entity}");
+                ecb.SetComponentEnabled<DeathTag>(entity, false);
+                Log.Debug($"Setting ResurrectTag to false on {entity}");
+                ecb.SetComponentEnabled<ResurrectTag>(entity, false);
                 
-                ecb.RemoveComponent<DeathInitialized>(e);
+                ecb.RemoveComponent<DeathInitialized>(entity);
             }
             
             ecb.Playback(state.EntityManager);

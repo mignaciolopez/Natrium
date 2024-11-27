@@ -41,10 +41,15 @@ namespace Natrium.Gameplay.Shared.Systems
             
             foreach (var (position,localTransform, inputAxis, entity) 
                      in SystemAPI.Query<RefRW<Position>, RefRO<LocalTransform>, RefRO<InputAxis>>()
-                         .WithAll<MoveClassicTag>()
-                         .WithNone<MoveTowardsTag>()
+                         .WithAll<MoveClassicTag, PredictedGhost>()
+                         .WithDisabled<MoveTowardsTag, MoveFreeTag, MoveDiagonalTag>()
                          .WithEntityAccess()) //If its moving Ignore it
             {
+                if (!state.EntityManager.IsComponentEnabled<MoveClassicTag>(entity))
+                {
+                    Log.Error($"[{state.World.Name}] .WithAll<MoveClassicTag> is accounting for disabled MoveClassicTag");
+                }
+                
                 position.ValueRW.Target = math.round(localTransform.ValueRO.Position);
                 position.ValueRW.Previous = position.ValueRO.Target;
                 
@@ -61,7 +66,12 @@ namespace Natrium.Gameplay.Shared.Systems
                 if (position.ValueRO.Previous.x != position.ValueRO.Target.x ||
                     position.ValueRO.Previous.z != position.ValueRO.Target.z)
                 {
-                    ecb.AddComponent<OverlapBoxTag>(entity);    
+                    ecb.SetComponent(entity, new OverlapBox
+                    {
+                        HalfExtends = 0.49f,
+                        Offset = float3.zero,
+                    });
+                    ecb.SetComponentEnabled<OverlapBox>(entity, true);
                 }
             }
             

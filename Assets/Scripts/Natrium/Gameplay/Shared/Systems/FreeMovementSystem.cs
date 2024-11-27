@@ -2,26 +2,23 @@ using Natrium.Gameplay.Shared.Components;
 using Natrium.Gameplay.Shared.Components.Input;
 using Natrium.Shared;
 using Unity.Burst;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
-using Unity.Physics;
 using Unity.Transforms;
 
 namespace Natrium.Gameplay.Shared.Systems
 {
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
+    [UpdateBefore(typeof(PhysicsCastSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ServerSimulation)]
     public partial struct FreeMovementSystem : ISystem, ISystemStartStop
     {
-        //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
-            state.RequireForUpdate<PhysicsWorldSingleton>();
         }
-        
+
         public void OnStartRunning(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStartRunning");
@@ -38,58 +35,31 @@ namespace Natrium.Gameplay.Shared.Systems
         }
 
         [BurstCompile]
-        public unsafe void OnUpdate(ref SystemState state)
+        public void OnUpdate(ref SystemState state)
         {
-            /*var dt = SystemAPI.Time.DeltaTime;
-
-            var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
-
-            foreach (var (ptp, lt, pia, speed, pc, e) 
-                     in SystemAPI.Query<RefRW<Position>, LocalTransform, InputMove, Speed, PhysicsCollider>()
-                         .WithAll<Simulate, GhostOwner, MovementFree>().WithEntityAccess())
+            var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
+            var deltaTime = SystemAPI.Time.DeltaTime;
+            
+            foreach (var (position,localTransform, inputAxis, speed, entity) 
+                     in SystemAPI.Query<RefRW<Position>, RefRW<LocalTransform>, RefRO<InputAxis>, RefRO<Speed>>()
+                         .WithAll<MoveFreeTag, Simulate>()
+                         .WithDisabled<MoveTowardsTag, MoveClassicTag, MoveDiagonalTag>()
+                         .WithEntityAccess()) //If its moving Ignore it
             {
-                ptp.ValueRW.Previous = ptp.ValueRO.Target;
-
-                var input = new float3(pia.InputAxis.x, 0.0f, pia.InputAxis.y);
-
-                ptp.ValueRW.Target = lt.Position + speed.Value * dt * input;
-
-                if (ptp.ValueRW.Previous.x != ptp.ValueRO.Target.x ||
-                    ptp.ValueRW.Previous.z != ptp.ValueRO.Target.z)
+                if (!state.EntityManager.IsComponentEnabled<MoveFreeTag>(entity))
                 {
-
-                    var colliderCastInput = new ColliderCastInput
-                    {
-                        Start = ptp.ValueRO.Previous,
-                        End = ptp.ValueRO.Target,
-                        Collider = pc.ColliderPtr,
-                        Orientation = lt.Rotation,
-                        QueryColliderScale = 0.9f
-                    };
-
-                    var allHits = new NativeList<ColliderCastHit>(Allocator.Temp);
-
-                    if (collisionWorld.CastCollider(colliderCastInput, ref allHits))
-                    {
-                        foreach (var hit in allHits)
-                        {
-                            if (hit.Entity == e || hit.Entity == Entity.Null)
-                            {
-                                //Log.Verbose($"Ignoring CastCollider {e} hit with {hit.Entity}");
-                                continue;
-                            }
-                            else
-                            {
-                                //Log.Info($"CastCollider {e} hit with {hit.Entity}");
-                                ptp.ValueRW.Target = ptp.ValueRO.Previous;
-                                break;
-                            }
-                        }
-                    }
-                    allHits.Dispose();
+                    Log.Error($"[{state.World.Name}] .WithAll<MoveFreeTag> is accounting for disabled MoveFreeTag");
                 }
+                
+                position.ValueRW.Target = math.round(localTransform.ValueRO.Position);
+                position.ValueRW.Previous = position.ValueRO.Target;
+                
+                var input = new float3(inputAxis.ValueRO.Value.x, 0.0f, inputAxis.ValueRO.Value.y);
+                localTransform.ValueRW.Position += speed.ValueRO.Value * deltaTime * input;
             }
-            */
+            
+            ecb.Playback(state.EntityManager);
+            ecb.Dispose();
         }
-    } //MovementSystem
-} // namespace
+    }
+}

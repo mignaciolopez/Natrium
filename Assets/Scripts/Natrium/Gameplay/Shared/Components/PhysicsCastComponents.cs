@@ -3,7 +3,11 @@ using Unity.Mathematics;
 
 namespace Natrium.Gameplay.Shared.Components
 {
-    public struct OverlapBoxTag : IComponentData  { }
+    public struct OverlapBox : IComponentData, IEnableableComponent
+    {
+        public float HalfExtends;
+        public float3 Offset;
+    }
     
     public struct RayCast : IComponentData
     {

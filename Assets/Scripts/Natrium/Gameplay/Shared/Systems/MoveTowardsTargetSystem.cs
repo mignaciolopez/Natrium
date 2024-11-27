@@ -33,7 +33,7 @@ namespace Natrium.Gameplay.Shared.Systems
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
         }
 
-        [BurstCompile]
+        //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
@@ -43,12 +43,17 @@ namespace Natrium.Gameplay.Shared.Systems
                          .WithAll<MoveTowardsTag>()
                          .WithEntityAccess())
             {
+                if (!state.EntityManager.IsComponentEnabled<MoveTowardsTag>(entity))
+                {
+                    Log.Error($"[{state.World.Name}] .WithAll<MoveTowardsTag>() is accounting for disabled MoveTowardsTag");
+                }
+                
                 var maxDistanceDelta = speed.ValueRO.Value * SystemAPI.Time.DeltaTime;
                 localTransform.ValueRW.Position.MoveTowards(position.ValueRO.Target, maxDistanceDelta);
                 
                 if (math.distance(localTransform.ValueRO.Position, position.ValueRO.Target) <= 0.0f)
                 {
-                    ecb.RemoveComponent<MoveTowardsTag>(entity);
+                    ecb.SetComponentEnabled<MoveTowardsTag>(entity, false);
                 }
             }
             

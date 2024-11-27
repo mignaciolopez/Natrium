@@ -17,57 +17,84 @@ namespace Natrium.Gameplay.Shared.Components
     {
         public float speed = 5.0f;
         public MovementTypes moveType = MovementTypes.Classic;
-    }
-
-    public class MovementBaker : Baker<MovementAuthoring>
-    {
-        public override void Bake(MovementAuthoring authoring)
+        
+        public class Baker : Baker<MovementAuthoring>
         {
-            var e = GetEntity(TransformUsageFlags.Dynamic);
+            public override void Bake(MovementAuthoring authoring)
+            {
+                var e = GetEntity(TransformUsageFlags.Dynamic);
 
-            AddComponent(e, new Speed
-            {
-                Value = authoring.speed
-            });
+                AddComponent(e, new Speed
+                {
+                    Value = authoring.speed
+                });
             
-            AddComponent(e, new Position
-            {
-                Previous = authoring.transform.position,
-                Target = authoring.transform.position,
-            });
+                AddComponent(e, new Position
+                {
+                    Previous = authoring.transform.position,
+                    Target = authoring.transform.position,
+                });
             
-            switch (authoring.moveType)
-            {
-                default:
-                case MovementTypes.Classic:
-                    AddComponent<MoveClassicTag>(e);
-                    break;
-                case MovementTypes.Diagonal:
-                    AddComponent<MoveDiagonalTag>(e);
-                    break;
-                case MovementTypes.Free:
-                    AddComponent<MoveFreeTag>(e);
-                    break;
+                AddComponent<MoveClassicTag>(e);
+                AddComponent<MoveDiagonalTag>(e);
+                AddComponent<MoveFreeTag>(e);
+                
+                switch (authoring.moveType)
+                {
+                    default:
+                    case MovementTypes.Classic:
+                        SetComponentEnabled<MoveClassicTag>(e, true);
+                        SetComponentEnabled<MoveDiagonalTag>(e, false);
+                        SetComponentEnabled<MoveFreeTag>(e, false);
+                        break;
+                    case MovementTypes.Diagonal:
+                        SetComponentEnabled<MoveClassicTag>(e, false);
+                        SetComponentEnabled<MoveDiagonalTag>(e, true);
+                        SetComponentEnabled<MoveFreeTag>(e, false);
+                        break;
+                    case MovementTypes.Free:
+                        SetComponentEnabled<MoveClassicTag>(e, false);
+                        SetComponentEnabled<MoveDiagonalTag>(e, false);
+                        SetComponentEnabled<MoveFreeTag>(e, true);
+                        break;
+                }
+            
+                AddComponent<OverlapBox>(e);
+                SetComponentEnabled<OverlapBox>(e, false);
+                
+                AddComponent<MoveTowardsTag>(e);
+                SetComponentEnabled<MoveTowardsTag>(e, false);
             }
         }
     }
 
-    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
     public struct Speed : IComponentData
     {
-        [GhostField(Quantization = 100)]
+        [GhostField]
         public float Value;
     }
     
-    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
     public struct Position : IComponentData
     {
         [GhostField] public float3 Previous;
         [GhostField] public float3 Target;
     }
-
-    public struct MoveFreeTag : IComponentData { }
-    public struct MoveDiagonalTag : IComponentData { }
-    public struct MoveClassicTag : IComponentData { }
-    public struct MoveTowardsTag : IComponentData { }
+    
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
+    [GhostEnabledBit]
+    public struct MoveFreeTag : IComponentData, IEnableableComponent { }
+    
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
+    [GhostEnabledBit]
+    public struct MoveDiagonalTag : IComponentData, IEnableableComponent { }
+    
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
+    [GhostEnabledBit]
+    public struct MoveClassicTag : IComponentData, IEnableableComponent { }
+    
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
+    [GhostEnabledBit]
+    public struct MoveTowardsTag : IComponentData, IEnableableComponent { }
 }

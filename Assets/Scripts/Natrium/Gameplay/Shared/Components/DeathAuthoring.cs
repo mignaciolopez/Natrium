@@ -18,6 +18,8 @@ namespace Natrium.Gameplay.Shared.Components
     }
 
     [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
+    [GhostEnabledBit]
     public struct DeathTag : IComponentData, IEnableableComponent { }
+    
     public struct DeathInitialized : IComponentData { }
 }

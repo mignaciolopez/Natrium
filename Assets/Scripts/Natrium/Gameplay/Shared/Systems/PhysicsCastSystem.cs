@@ -18,7 +18,6 @@ namespace Natrium.Gameplay.Shared.Systems
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
             state.RequireForUpdate<PhysicsWorldSingleton>();
-            state.RequireForUpdate<OverlapBoxTag>();
         }
 
         public void OnStartRunning(ref SystemState state)
@@ -36,26 +35,31 @@ namespace Natrium.Gameplay.Shared.Systems
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
         }
         
-        [BurstCompile]
+        //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
 
-            foreach (var (position, localTransform, physicsCollider, entity) in
-                     SystemAPI.Query<RefRW<Position>, RefRO<LocalTransform>, RefRO<PhysicsCollider>>()
-                         .WithNone<MoveTowardsTag>() //Ignore Already Moving Entities
-                         .WithAll<OverlapBoxTag,Simulate>()
+            foreach (var (position, localTransform, physicsCollider, overlapBox, entity) in
+                     SystemAPI.Query<RefRW<Position>, RefRO<LocalTransform>, RefRO<PhysicsCollider>, RefRO<OverlapBox>>()
+                         .WithDisabled<MoveTowardsTag>() //Ignore Already Moving Entities
+                         .WithAll<Simulate, OverlapBox>()
                          .WithEntityAccess())
             {
+                if (!state.EntityManager.IsComponentEnabled<OverlapBox>(entity))
+                {
+                    Log.Error($"[{state.World.Name}] RefRO<OverlapBox> is accounting for disabled OverlapBox");
+                }
+                
                 var filter = physicsCollider.ValueRO.Value.Value.GetCollisionFilter();
 
                 var outHits = new NativeList<DistanceHit>(state.WorldUpdateAllocator);
 
                 if (collisionWorld.OverlapBox(
-                        position.ValueRO.Target,
+                        position.ValueRO.Target + overlapBox.ValueRO.Offset,
                         localTransform.ValueRO.Rotation,
-                        0.49f,
+                        overlapBox.ValueRO.HalfExtends,
                         ref outHits,
                         filter))
                 {
@@ -63,7 +67,7 @@ namespace Natrium.Gameplay.Shared.Systems
                     {
                         if (hit.Entity == entity)
                         {
-                            Log.Warning($"{entity} is colliding with itself hit{hit.Entity}");
+                            Log.Warning($"[{state.World.Name}] {entity} is colliding with itself hit {hit.Entity}");
                         }
                         else
                         {
@@ -73,10 +77,10 @@ namespace Natrium.Gameplay.Shared.Systems
                 }
                 else
                 {
-                    ecb.AddComponent<MoveTowardsTag>(entity);
+                    ecb.SetComponentEnabled<MoveTowardsTag>(entity, true);
                 }
 
-                ecb.RemoveComponent<OverlapBoxTag>(entity);
+                ecb.SetComponentEnabled<OverlapBox>(entity, false);
                 outHits.Dispose();
             }
             
