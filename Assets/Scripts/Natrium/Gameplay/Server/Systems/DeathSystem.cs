@@ -66,9 +66,6 @@ namespace Natrium.Gameplay.Server.Systems
                 ecb.SetComponentEnabled<MoveFreeTag>(entity, true);
                 ecb.SetComponentEnabled<MoveClassicTag>(entity, false);
                 
-                ecb.SetComponent(entity, new Attack());
-                ecb.SetComponentEnabled<Attack>(entity, false);
-                
                 ecb.AddComponent<DeathInitialized>(entity);
             }
             

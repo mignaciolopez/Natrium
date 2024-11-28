@@ -59,8 +59,8 @@ namespace Natrium.Gameplay.Server.Systems
             }
             
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
-            foreach (var (inputAims, pc, e) 
-                     in SystemAPI.Query<DynamicBuffer<InputAim>, RefRO<PhysicsCollider>>()
+            foreach (var (inputAims, pc, ghostOwner, entity) 
+                     in SystemAPI.Query<DynamicBuffer<InputAim>, RefRO<PhysicsCollider>, RefRO<GhostOwner>>()
                          .WithAll<Simulate, DamageDealerTag>().WithEntityAccess())
             {
                 inputAims.GetDataAtTick(currentTick, out var inputAimAtTick);
@@ -70,7 +70,7 @@ namespace Natrium.Gameplay.Server.Systems
                     continue;
                 }
 
-                Log.Debug($"AimInput from {e}: {inputAimAtTick.MouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}");
+                Log.Debug($"AimInput from {entity}: {inputAimAtTick.MouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}");
 
                 var offset = new float3(0, 10, 0); //ToDo: The plus 10 on y axis, comes from the offset of the camara
                 var raycastInput = new RaycastInput
@@ -82,22 +82,33 @@ namespace Natrium.Gameplay.Server.Systems
 
                 if (collisionWorld.CastRay(raycastInput, out var closestHit))
                 {
-                    Log.Debug($"AimInput from: {e} -> Collides with: {closestHit.Entity}");
+                    Log.Debug($"AimInput from: {entity} -> Collides with: {closestHit.Entity}");
                     
                     if (closestHit.Entity == Entity.Null)
                     {
                         Log.Warning($"Collision with {closestHit.Entity} is Null");
                         continue;
                     }
-
-                    if (state.EntityManager.HasComponent<Attack>(closestHit.Entity) && 
+                    
+                    if (state.EntityManager.HasComponent<GhostOwner>(closestHit.Entity) &&
                         !state.EntityManager.IsComponentEnabled<DeathTag>(closestHit.Entity))
                     {
-                        ecb.SetComponentEnabled<Attack>(closestHit.Entity, true);
-                        ecb.SetComponent(closestHit.Entity, new Attack
+                        var networkIdTarget = state.EntityManager.GetComponentData<GhostOwner>(closestHit.Entity);
+                    
+                        Log.Debug($"Attack Event In Progress on Tick {currentTick}");
+                        
+                        foreach (var attackEvents in SystemAPI.Query<DynamicBuffer<AttackEvents>>().WithAll<Simulate>())
                         {
-                            SourceServerEntity = e
-                        });
+                            var attackEvent = new AttackEvents
+                            {
+                                NetworkTick = currentTick,
+                                EntitySource = entity,
+                                EntityTarget = closestHit.Entity,
+                                NetworkIdSource = ghostOwner.ValueRO.NetworkId,
+                                NetworkIdTarget = networkIdTarget.NetworkId,
+                            };
+                            attackEvents.Add(attackEvent);
+                        }
                     }
                 }
             }

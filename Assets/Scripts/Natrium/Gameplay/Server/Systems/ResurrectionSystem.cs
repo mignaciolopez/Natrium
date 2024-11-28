@@ -76,7 +76,6 @@ namespace Natrium.Gameplay.Server.Systems
                 ecb.SetComponentEnabled<MoveFreeTag>(entity, false);
                 ecb.SetComponentEnabled<MoveClassicTag>(entity, true);
                 
-                ecb.SetComponentEnabled<Attack>(entity, true);
                 var collisionFilter = physicsCollider.ValueRO.Value.Value.GetCollisionFilter();
                 collisionFilter.CollidesWith = ~0u;
                 physicsCollider.ValueRW.Value.Value.SetCollisionFilter(collisionFilter);

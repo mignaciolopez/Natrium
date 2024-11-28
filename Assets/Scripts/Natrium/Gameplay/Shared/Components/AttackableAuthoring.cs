@@ -21,8 +21,7 @@ namespace Natrium.Gameplay.Shared.Components
                 var e = GetEntity(TransformUsageFlags.Dynamic);
                 if (e != Entity.Null)
                 {
-                    AddComponent<Attack>(e);
-                    SetComponentEnabled<Attack>(e, false);
+                    AddComponent<AttackEvents>(e);
                     AddComponent<AttackableTag>(e);
                     AddBuffer<DamagePointsBuffer>(e);
                     AddBuffer<DamagePointsAtTick>(e);
@@ -52,9 +51,15 @@ namespace Natrium.Gameplay.Shared.Components
         [GhostField] public TeamEnum Value;
     }
     
-    public struct Attack : IComponentData, IEnableableComponent
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
+    public struct AttackEvents : IBufferElementData
     {
-        public Entity SourceServerEntity; //Internal Server Use Only
+        [GhostField] public NetworkTick NetworkTick;
+        [GhostField] public Entity EntitySource;
+        [GhostField] public Entity EntityTarget;
+        [GhostField] public int NetworkIdSource;
+        [GhostField] public int NetworkIdTarget;
+        [GhostField] public int LifeTime;
     }
 
     public struct RPCAttack : IRpcCommand

@@ -2,6 +2,7 @@ using Natrium.Gameplay.Shared.Components;
 using Natrium.Shared;
 using Unity.Entities;
 using Unity.NetCode;
+using Unity.NetCode.LowLevel.Unsafe;
 
 namespace Natrium.Gameplay.Server.Systems
 {
@@ -36,42 +37,44 @@ namespace Natrium.Gameplay.Server.Systems
         
         protected override void OnUpdate()
         {
-            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
+            var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
             
-            foreach (var (attack, ghostOwner, e) 
-                     in SystemAPI.Query<RefRO<Attack>, RefRO<GhostOwner>>()
+            foreach (var attackEvents in SystemAPI.Query<DynamicBuffer<AttackEvents>>()
                          .WithAll<AttackableTag>()
-                         .WithDisabled<DeathTag>()
-                         .WithEntityAccess())
+                         .WithDisabled<DeathTag>())
             {
-                ecb.SetComponentEnabled<Attack>(e, false);
-                
-                if (attack.ValueRO.SourceServerEntity == Entity.Null)
-                    continue;
-                
-                if (attack.ValueRO.SourceServerEntity == e)
+                foreach (var attackEvent in attackEvents)
                 {
-                    Log.Warning($"{e} is attacking itself.");
-                    //continue;
-                }
-                Log.Debug($"{attack.ValueRO.SourceServerEntity} is Dealing Damage on {e}");
+                    if (!EntityManager.Exists(attackEvent.EntitySource) ||
+                        attackEvent.EntitySource == Entity.Null)
+                    {
+                        Log.Warning("attackEvent.EntitySource is null");
+                        continue;
+                    }
 
-                var damagePoints = SystemAPI.GetComponentRO<DamagePoints>(attack.ValueRO.SourceServerEntity);
-                var goSource = SystemAPI.GetComponentRO<GhostOwner>(attack.ValueRO.SourceServerEntity);
-                var damageBuffer = EntityManager.GetBuffer<DamagePointsBuffer>(e);
-                damageBuffer.Add(new DamagePointsBuffer { Value = damagePoints.ValueRO.Value });
-                
-                var req = ecb.CreateEntity();
-                ecb.AddComponent(req, new RPCAttack
-                {
-                    NetworkIdSource = goSource.ValueRO.NetworkId,
-                    NetworkIdTarget = ghostOwner.ValueRO.NetworkId,
-                });
-                ecb.AddComponent<SendRpcCommandRequest>(req); //Broadcast
+                    if (currentTick.TickIndexForValidTick > attackEvent.NetworkTick.TickIndexForValidTick)
+                    {
+                        //attackEvent.LifeTime++;
+                        if (attackEvent.LifeTime > 64)
+                        {
+                            //attackEvents.RemoveAt(attackEvent);
+                        }
+                        continue;
+                    }
+                    
+                    if (attackEvent.EntitySource == attackEvent.EntityTarget)
+                    {
+                        Log.Warning($"{attackEvent.EntitySource} is attacking itself.");
+                        //continue;
+                    }
+                    
+                    Log.Debug($"{attackEvent.EntitySource} is Dealing Damage on {attackEvent.EntityTarget} on Tick {currentTick}");
+                    
+                    var damagePoints = SystemAPI.GetComponentRO<DamagePoints>(attackEvent.EntitySource);
+                    var damageBuffer = EntityManager.GetBuffer<DamagePointsBuffer>(attackEvent.EntityTarget);
+                    damageBuffer.Add(new DamagePointsBuffer { Value = damagePoints.ValueRO.Value });
+                }
             }
-            
-            ecb.Playback(EntityManager);
-            ecb.Dispose();
         }
     }
 }
