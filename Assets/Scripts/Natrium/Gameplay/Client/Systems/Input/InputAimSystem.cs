@@ -33,7 +33,9 @@ namespace Natrium.Gameplay.Client.Systems.Input
         {
             base.OnStartRunning();
             Log.Verbose("OnStartRunning");
+            
             _inputActions.Enable();
+            
             var mainCameraEntity = SystemAPI.GetSingletonEntity<MainCameraTag>();
             _mainCamera = EntityManager.GetComponentObject<MainCamera>(mainCameraEntity);
             foreach (var (playerTag, entity) in SystemAPI.Query<RefRO<PlayerTag>>()
@@ -75,7 +77,7 @@ namespace Natrium.Gameplay.Client.Systems.Input
                 
             if (_inputActions.Map_Gameplay.Axn_MouseRealease.WasPerformedThisFrame())
             {
-                Log.Verbose("OnPrimaryMouseRelease");
+                Log.Debug($"OnPrimaryMouseRelease Tick: {currentTick}");
                 
                 Log.Debug($"mouseWorldPosition: {mouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}\n" +
                           $"mouseInputPosition: {mouseInputPosition}\n" + 

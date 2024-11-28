@@ -66,25 +66,17 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
             {
                 foreach (var attackEventServerVersion in attackEvents)
                 {
+                    if (currentTick.TickIndexForValidTick != attackEventServerVersion.Tick.TickIndexForValidTick)
+                        continue;
+                    
                     var attackEvent = attackEventServerVersion;
                     
                     //Updating Entities on client based on the networkIds sent from server.
                     attackEvent.EntitySource = networkIDLookup.GetEntityPrefab(attackEvent.NetworkIdSource);
                     attackEvent.EntityTarget = networkIDLookup.GetEntityPrefab(attackEvent.NetworkIdTarget);
                     
-                    if (!state.EntityManager.Exists(attackEvent.EntitySource) ||
-                        attackEvent.EntitySource == Entity.Null)
-                    {
-                        Log.Warning("attackEvent.EntitySource is null");
-                        continue;
-                    }
-
-                    if (currentTick.TickIndexForValidTick > attackEvent.NetworkTick.TickIndexForValidTick)
-                    {
-                        continue;
-                    }
-                    
-                    Log.Debug($"{attackEvent.EntitySource} is Attacking {attackEvent.EntityTarget} on Tick {currentTick}");
+                    Log.Debug($"{attackEvent.EntitySource} is Attacking {attackEvent.EntityTarget} on Client Tick {currentTick}");
+                    Log.Debug($"attackEvent.NetworkTick: {attackEvent.Tick}");
                     
                     foreach (var child in SystemAPI.GetBuffer<LinkedEntityGroup>(attackEvent.EntityTarget))
                     {

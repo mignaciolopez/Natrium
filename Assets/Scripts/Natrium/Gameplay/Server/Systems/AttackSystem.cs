@@ -45,22 +45,8 @@ namespace Natrium.Gameplay.Server.Systems
             {
                 foreach (var attackEvent in attackEvents)
                 {
-                    if (!EntityManager.Exists(attackEvent.EntitySource) ||
-                        attackEvent.EntitySource == Entity.Null)
-                    {
-                        Log.Warning("attackEvent.EntitySource is null");
+                    if (currentTick.IsNewerThan(attackEvent.Tick))
                         continue;
-                    }
-
-                    if (currentTick.TickIndexForValidTick > attackEvent.NetworkTick.TickIndexForValidTick)
-                    {
-                        //attackEvent.LifeTime++;
-                        if (attackEvent.LifeTime > 64)
-                        {
-                            //attackEvents.RemoveAt(attackEvent);
-                        }
-                        continue;
-                    }
                     
                     if (attackEvent.EntitySource == attackEvent.EntityTarget)
                     {
@@ -68,7 +54,9 @@ namespace Natrium.Gameplay.Server.Systems
                         //continue;
                     }
                     
-                    Log.Debug($"{attackEvent.EntitySource} is Dealing Damage on {attackEvent.EntityTarget} on Tick {currentTick}");
+                    //ToDo: Should not do damage at this moment
+                    Log.Debug($"{attackEvent.EntitySource} is Dealing Damage on {attackEvent.EntityTarget} on Server Tick {currentTick}");
+                    Log.Debug($"attackEvent.NetworkTick: {attackEvent.Tick}");
                     
                     var damagePoints = SystemAPI.GetComponentRO<DamagePoints>(attackEvent.EntitySource);
                     var damageBuffer = EntityManager.GetBuffer<DamagePointsBuffer>(attackEvent.EntityTarget);

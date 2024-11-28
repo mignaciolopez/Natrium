@@ -54,17 +54,11 @@ namespace Natrium.Gameplay.Shared.Components
     [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
     public struct AttackEvents : IBufferElementData
     {
-        [GhostField] public NetworkTick NetworkTick;
+        [GhostField] public NetworkTick Tick;
         [GhostField] public Entity EntitySource;
         [GhostField] public Entity EntityTarget;
         [GhostField] public int NetworkIdSource;
         [GhostField] public int NetworkIdTarget;
         [GhostField] public int LifeTime;
-    }
-
-    public struct RPCAttack : IRpcCommand
-    {
-        public int NetworkIdSource;
-        public int NetworkIdTarget;
     }
 }

@@ -49,26 +49,32 @@ namespace Natrium.Gameplay.Server.Systems
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
-            
             var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
-            if (!currentTick.IsValid)
-            {
-                Log.Warning($"currentTick is Invalid!");
-                return;
-            }
+            var physicsWorld = SystemAPI.GetSingletonRW<PhysicsWorldSingleton>();
             
-            var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
             foreach (var (inputAims, pc, ghostOwner, entity) 
                      in SystemAPI.Query<DynamicBuffer<InputAim>, RefRO<PhysicsCollider>, RefRO<GhostOwner>>()
                          .WithAll<Simulate, DamageDealerTag>().WithEntityAccess())
             {
                 inputAims.GetDataAtTick(currentTick, out var inputAimAtTick);
+                
                 if (!inputAimAtTick.Set)
                 {
                     //Log.Debug($"inputAimAtTick {currentTick} is not Set.");
                     continue;
                 }
+
+                if (currentTick.IsNewerThan(inputAimAtTick.Tick))
+                    continue;
+                    
+                var interpolationDelay = currentTick;
+                interpolationDelay.Subtract(inputAimAtTick.Tick.TickIndexForValidTick);
+                
+                SystemAPI.GetSingleton<PhysicsWorldHistorySingleton>().GetCollisionWorldFromTick(
+                        inputAimAtTick.Tick, 
+                        interpolationDelay.TickIndexForValidTick, 
+                        ref physicsWorld.ValueRW.PhysicsWorld, 
+                        out var collisionWorld );
 
                 Log.Debug($"AimInput from {entity}: {inputAimAtTick.MouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}");
 
@@ -94,14 +100,15 @@ namespace Natrium.Gameplay.Server.Systems
                         !state.EntityManager.IsComponentEnabled<DeathTag>(closestHit.Entity))
                     {
                         var networkIdTarget = state.EntityManager.GetComponentData<GhostOwner>(closestHit.Entity);
-                    
-                        Log.Debug($"Attack Event In Progress on Tick {currentTick}");
+                        
+                        Log.Debug($"Attack Event In Progress on Server Tick: {currentTick}");
+                        Log.Debug($"inputAimAtTick: {inputAimAtTick.Tick}");
                         
                         foreach (var attackEvents in SystemAPI.Query<DynamicBuffer<AttackEvents>>().WithAll<Simulate>())
                         {
                             var attackEvent = new AttackEvents
                             {
-                                NetworkTick = currentTick,
+                                Tick = inputAimAtTick.Tick, //This should be the Tick when client Input
                                 EntitySource = entity,
                                 EntityTarget = closestHit.Entity,
                                 NetworkIdSource = ghostOwner.ValueRO.NetworkId,
@@ -112,9 +119,6 @@ namespace Natrium.Gameplay.Server.Systems
                     }
                 }
             }
-            
-            ecb.Playback(state.EntityManager);
-            ecb.Dispose();
         }
     } //AimSystem
 }

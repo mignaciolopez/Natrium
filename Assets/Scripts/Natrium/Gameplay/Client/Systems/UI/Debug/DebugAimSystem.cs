@@ -75,6 +75,7 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
                 }
                 
                 Log.Debug($"Processing InputAim on Tick: {currentTick}");
+                Log.Debug($"inputAimAtTick: {inputAimAtTick.Tick}");
                 var prefab = SystemAPI.GetSingleton<DebugAimInputPrefab>().Prefab;
                 var prefabEntity = state.EntityManager.Instantiate(prefab);
                 state.EntityManager.SetComponentData(prefabEntity, new LocalTransform
