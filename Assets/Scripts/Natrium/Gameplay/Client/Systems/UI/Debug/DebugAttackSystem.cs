@@ -1,11 +1,10 @@
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Gameplay.Shared.Components.Debug;
-using Natrium.Gameplay.Shared.Utilities;
+using Natrium.Gameplay.Shared.Systems;
 using Natrium.Shared;
 //using Unity.Burst;
 using Unity.Entities;
 using Unity.NetCode;
-using Unity.Transforms;
 
 namespace Natrium.Gameplay.Client.Systems.UI.Debug
 {
@@ -48,12 +47,20 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         private void QueryAndShowInputAims(ref SystemState state)
         {
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
+
+            var networkIDLookup = SystemAPI.GetSingleton<NetworkIdLookup>();
             
             foreach (var (rpcAttack, rpcEntity)
                      in SystemAPI.Query<RefRO<RPCAttack>>().WithAll<ReceiveRpcCommandRequest>().WithEntityAccess())
             {
                 Log.Debug($"Processing rpcAttack {rpcAttack}");
-                var entityTarget = Utils.GetEntityPrefab(rpcAttack.ValueRO.NetworkIdTarget, state.EntityManager);
+                var entityTarget = networkIDLookup.GetEntityPrefab(rpcAttack.ValueRO.NetworkIdTarget);
+                if (entityTarget == Entity.Null)
+                {
+                    Log.Warning($"networkIDLookup returned null for NetworkId {rpcAttack.ValueRO.NetworkIdTarget}");
+                    return;
+                }
+                
                 foreach (var child in SystemAPI.GetBuffer<LinkedEntityGroup>(entityTarget))
                 {
                     if (!state.EntityManager.HasComponent<DebugTag>(child.Value))

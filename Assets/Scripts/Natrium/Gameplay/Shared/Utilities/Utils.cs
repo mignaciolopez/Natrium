@@ -1,13 +1,14 @@
+using System;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
-using Natrium.Gameplay.Shared.Components;
 using Natrium.Shared;
 
 namespace Natrium.Gameplay.Shared.Utilities
 {
     public static class Utils
     {
+        [Obsolete("Use Instead: SystemAPI.GetSingleton<NetworkIdLookup>().GetEntityPrefab(int NetworkId)")]
         public static Entity GetEntityPrefab(int nidValue, EntityManager entityManager)
         {
             //Log.Verbose($"[{entityManager.World}] GetEntityPrefab");
@@ -37,6 +38,7 @@ namespace Natrium.Gameplay.Shared.Utilities
             return e;
         }
 
+        [Obsolete("Use Instead: SystemAPI.GetSingleton<NetworkIdLookup>().GetEntityConnection(int NetworkId)")]
         public static Entity GetEntityConnection(int nidValue, EntityManager entityManager)
         {
             //Log.Verbose($"[{entityManager.World}] GetEntityConnection");

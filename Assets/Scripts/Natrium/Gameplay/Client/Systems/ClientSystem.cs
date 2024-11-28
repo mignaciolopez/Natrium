@@ -11,8 +11,7 @@ using System.Net.Sockets;
 
 namespace Natrium.Gameplay.Client.Systems
 {
-    [UpdateInGroup(typeof(GameplaySystemGroup))]
-    [CreateAfter(typeof(SharedSystemGroup))]
+    [UpdateInGroup(typeof(GhostSimulationSystemGroup), OrderLast = true)]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation)]
     public partial class ClientSystem : SystemBase
     {
