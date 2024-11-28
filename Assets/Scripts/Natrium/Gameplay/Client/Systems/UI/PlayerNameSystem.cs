@@ -72,7 +72,7 @@ namespace Natrium.Gameplay.Client.Systems.UI
                          .WithEntityAccess())
             {
                 //ToDo: Send this from the server
-                //Move the component playerNameTMPTextOffset to shared
+                //Move the component PlayerNameTMPTextProperties to shared
                 //Make it a ghost Component
 
                 var offset = float3.zero;
