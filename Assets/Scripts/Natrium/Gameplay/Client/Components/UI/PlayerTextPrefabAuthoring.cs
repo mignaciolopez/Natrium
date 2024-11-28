@@ -5,25 +5,26 @@ namespace Natrium.Gameplay.Client.Components.UI
 {
     public class PlayerTextPrefabAuthoring : MonoBehaviour
     {
-        public GameObject Prefab;
-    }
-
-    public class PlayerTextPrefabBaker : Baker<PlayerTextPrefabAuthoring>
-    {
-        public override void Bake(PlayerTextPrefabAuthoring authoring)
+        public GameObject prefab;
+        
+        public class Baker : Baker<PlayerTextPrefabAuthoring>
         {
-            var e = GetEntity(TransformUsageFlags.Dynamic);
-            AddComponent(e, new PlayerTextPrefab
+            public override void Bake(PlayerTextPrefabAuthoring authoring)
             {
-                Value = GetEntity(authoring.Prefab, TransformUsageFlags.Dynamic)
-            });
+                var entity = GetEntity(TransformUsageFlags.Dynamic);
+                if(entity != Entity.Null)
+                {
+                    AddComponent(entity, new TMPTextPrefab
+                    {
+                        EntityPrefab = GetEntity(authoring.prefab, TransformUsageFlags.Dynamic)
+                    });
+                }
+            }
         }
     }
-
-    public struct PlayerTextPrefab : IComponentData
+    
+    public struct TMPTextPrefab : IComponentData
     {
-        public Entity Value;
+        public Entity EntityPrefab;
     }
-
-    public struct PlayerTextDrawnTag : IComponentData { }
 }

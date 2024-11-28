@@ -5,8 +5,8 @@ using Unity.Entities;
 using Natrium.Shared;
 using Unity.Transforms;
 using UnityEngine;
-using System.Collections.Generic;
-using Natrium.Shared.Extensions;
+using Unity.Collections;
+using Unity.Mathematics;
 
 namespace Natrium.Gameplay.Client.Systems.UI
 {
@@ -14,137 +14,140 @@ namespace Natrium.Gameplay.Client.Systems.UI
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial class PlayerNameSystem : SystemBase
     {
-        private GameObject _playerTextPrefab;
         private GameObject _uiCanvas;
-        private Dictionary<Entity, GameObject> _textEntities;
-        private List<Entity> _namesToRemove;
+        private GameObject _playerTextPrefab;
 
-        private EntityCommandBuffer _ecb;
+        private ComponentLookup<PlayerNameTMPTextProperties> _tmpTextPropertiesComponentLookup;
+        
         protected override void OnCreate()
         {
-            Log.Verbose("OnCreate");
             base.OnCreate();
-
-            _textEntities = new Dictionary<Entity, GameObject>();
-            _namesToRemove = new List<Entity>();
+            Log.Verbose("OnCreate");
+            
+            _tmpTextPropertiesComponentLookup = GetComponentLookup<PlayerNameTMPTextProperties>();
         }
 
         protected override void OnStartRunning()
         {
-            Log.Verbose("OnStartRunning");
             base.OnStartRunning();
-
-            _playerTextPrefab = GameObject.FindAnyObjectByType<PlayerTextPrefabAuthoring>().Prefab;
+            Log.Verbose("OnStartRunning");
+            
             _uiCanvas = GameObject.FindGameObjectWithTag("CanvasWorldSpace");
+            _playerTextPrefab = GameObject.FindFirstObjectByType<PlayerTextPrefabAuthoring>().prefab;
+            
+            InstantiatePlayerNames();
         }
 
         protected override void OnStopRunning()
         {
-            Log.Verbose("OnStopRunning");
             base.OnStopRunning();
+            Log.Verbose("OnStopRunning");
 
-            var ecbs = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
-            _ecb = ecbs.CreateCommandBuffer(World.Unmanaged);
+            RemovePlayerNames();
 
-            foreach (var text in _textEntities.Values)
-            {
-                GameObject.Destroy(text);
-            }
-
-            _textEntities.Clear();
-
-            foreach (var (ptt, e) in SystemAPI.Query<PlayerTextDrawnTag>().WithEntityAccess())
-            {
-                _ecb.RemoveComponent<PlayerTextDrawnTag>(e);
-            }
+            _uiCanvas = null;
+            _playerTextPrefab = null;
         }
         
         protected override void OnDestroy()
         {
-            Log.Verbose("OnDestroy");
             base.OnDestroy();
+            Log.Verbose("OnDestroy");
         }
         
         protected override void OnUpdate()
         {
-            var ecbs = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
-            _ecb = ecbs.CreateCommandBuffer(World.Unmanaged);
-
             InstantiatePlayerNames();
-            RemovePlayerNames();
             UpdatePlayerNamesPositions();
         }
 
         private void InstantiatePlayerNames()
         {
-            foreach(var (lt, pn, e) 
-                    in SystemAPI.Query<RefRO<LocalTransform>, RefRO<PlayerName>>()
-                        .WithNone<PlayerTextDrawnTag>().WithEntityAccess())
+            _tmpTextPropertiesComponentLookup.Update(this);
+            var ecb = new EntityCommandBuffer(Allocator.Temp);
+            
+            foreach (var (playerName, localTransform, entity)
+                     in SystemAPI.Query<RefRO<PlayerName>, RefRO<LocalTransform>>()
+                         .WithNone<PlayerNameTMPTextInitialized>()
+                         .WithEntityAccess())
             {
-                var text = GameObject.Instantiate(_playerTextPrefab, _uiCanvas.transform);
-                text.transform.position = (Vector3)lt.ValueRO.Position + new Vector3(0, 0.5f, -1);
+                //ToDo: Send this from the server
+                //Move the component playerNameTMPTextOffset to shared
+                //Make it a ghost Component
 
-                var tmPro = text.GetComponent<TMP_Text>();
-                tmPro.text = pn.ValueRO.Value.ToString();
-
-                foreach (var child in EntityManager.GetBuffer<Child>(e))
+                var offset = float3.zero;
+                if (_tmpTextPropertiesComponentLookup.HasComponent(entity))
                 {
-                    if (EntityManager.HasComponent<MaterialPropertyBaseColor>(child.Value))
-                    {
-                        var color = EntityManager.GetComponentData<MaterialPropertyBaseColor>(child.Value).Value;
-                        tmPro.color = color.ToColor();
-                        break;
-                    }
+                    var playerNameTMPTextOffset = _tmpTextPropertiesComponentLookup[entity];
+                    playerNameTMPTextOffset.Offset = new float3(0, 0, -1.0f);
+                    _tmpTextPropertiesComponentLookup[entity] = playerNameTMPTextOffset;
+                    offset = playerNameTMPTextOffset.Offset;
                 }
+                
+                var gameObject = GameObject.Instantiate(_playerTextPrefab, _uiCanvas.transform);
+                gameObject.transform.position = localTransform.ValueRO.Position + offset;
+                
+                var tmpText = gameObject.GetComponent<TMP_Text>();
+                tmpText.text = playerName.ValueRO.Value.ToString();
+                
+                ecb.AddComponent(entity, new PlayerNameTMPText
+                {
+                    GameObject = gameObject,
+                    Value = tmpText,
+                });
 
-                _textEntities.Add(e, text);
-
-                _ecb.AddComponent<PlayerTextDrawnTag>(e);
+                ecb.AddComponent<PlayerNameTMPTextInitialized>(entity);
             }
+            
+            ecb.Playback(EntityManager);
+            ecb.Dispose();
         }
 
         private void RemovePlayerNames()
         {
-            foreach (var entityText in _textEntities)
+            var ecb = new EntityCommandBuffer(Allocator.Temp);
+            
+            foreach (var (playerNameTMPText, entity) 
+                     in SystemAPI.Query<PlayerNameTMPText>()
+                         .WithAll<PlayerNameTMPTextInitialized>()
+                         .WithEntityAccess())
             {
-                if (!EntityManager.Exists(entityText.Key))
+                if (EntityManager.Exists(entity))
                 {
-                    GameObject.Destroy(entityText.Value);
-                    _namesToRemove.Add(entityText.Key);
+                    
                 }
+                GameObject.Destroy(playerNameTMPText.GameObject);
+                playerNameTMPText.GameObject = null;
+                playerNameTMPText.Value = null;
+                
+                ecb.RemoveComponent<PlayerNameTMPText>(entity);
+                ecb.RemoveComponent<PlayerNameTMPTextInitialized>(entity);
             }
-
-            foreach (var e in _namesToRemove)
-            {
-                _textEntities.Remove(e);
-            }
-
-            _namesToRemove.Clear();
+            
+            ecb.Playback(EntityManager);
+            ecb.Dispose();
         }
 
         private void UpdatePlayerNamesPositions()
         {
-            foreach (var (lt, e) 
-                     in SystemAPI.Query<RefRO<LocalTransform>>().WithAll<PlayerTextDrawnTag>().WithEntityAccess())
+            _tmpTextPropertiesComponentLookup.Update(this);
+            
+            foreach (var (playerNameTMPText, localTransform, playerNameTMPTextOffset, entity) 
+                     in SystemAPI.Query<PlayerNameTMPText, RefRO<LocalTransform>, RefRO<PlayerNameTMPTextProperties>>()
+                         .WithAll<PlayerNameTMPTextInitialized>()
+                         .WithEntityAccess())
             {
-                if (_textEntities.ContainsKey(e))
+                if (playerNameTMPText.GameObject == null)
                 {
-                    var gameObject = _textEntities[e];
-                    gameObject.transform.position = (Vector3)lt.ValueRO.Position + new Vector3(0, 0.5f, -1);
-                    
-                    var tmPro = gameObject.GetComponent<TMP_Text>(); //Todo: Update on Death rather than on everyFrame
-                    foreach (var child in EntityManager.GetBuffer<Child>(e))
-                    {
-                        if (EntityManager.HasComponent<MaterialPropertyBaseColor>(child.Value))
-                        {
-                            var color = EntityManager.GetComponentData<MaterialPropertyBaseColor>(child.Value).Value;
-                            tmPro.color = color.ToColor();
-                            break;
-                        }
-                    }
+                    Log.Warning($"{entity} has PlayerNameTMPText with a null GameObject");
+                    continue;
                 }
-                else
-                    Log.Error($"{e} Does not contain component: {typeof(TMP_Text)}");
+                
+                var offset = float3.zero;
+                if (_tmpTextPropertiesComponentLookup.HasComponent(entity))
+                    offset = _tmpTextPropertiesComponentLookup[entity].Offset;
+                
+                playerNameTMPText.GameObject.transform.position = localTransform.ValueRO.Position + offset;
             }
         }
     }
