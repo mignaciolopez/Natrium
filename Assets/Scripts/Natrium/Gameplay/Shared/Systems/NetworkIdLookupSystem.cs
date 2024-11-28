@@ -56,7 +56,8 @@ namespace Natrium.Gameplay.Shared.Systems
                 
                 _networkIdLookup = new NetworkIdLookup
                 {
-                    PrefabsList = new NativeList<Entity>(Allocator.Persistent)
+                    PrefabsList = new NativeList<Entity>(Allocator.Persistent),
+                    ConnectionList = new NativeList<Entity>(Allocator.Persistent),
                 };
                 
                 state.EntityManager.AddComponentData(entity, _networkIdLookup);
