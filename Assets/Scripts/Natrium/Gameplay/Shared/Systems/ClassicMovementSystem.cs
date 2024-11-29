@@ -65,8 +65,8 @@ namespace Natrium.Gameplay.Shared.Systems
                 {
                     ecb.SetComponent(entity, new OverlapBox
                     {
-                        HalfExtends = 0.2f,
-                        Offset = new float3(0.2f * inputAxis.ValueRO.Value.x, 0, 0.2f * inputAxis.ValueRO.Value.y),
+                        HalfExtends = 0.4f,
+                        Offset = new float3(0.1f * inputAxis.ValueRO.Value.x, 0, 0.1f * inputAxis.ValueRO.Value.y),
                     });
                     ecb.SetComponentEnabled<OverlapBox>(entity, true);
                     //ecb.SetComponentEnabled<MoveTowardsTargetTag>(entity, true);

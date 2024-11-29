@@ -31,7 +31,6 @@ namespace Natrium.Gameplay.Shared.Components
         }
     }
     
-    [GhostComponent(PrefabType = GhostPrefabType.All)]
     public struct AttackableTag : IComponentData { }
     
     public struct DamagePointsBuffer : IBufferElementData
@@ -45,7 +44,7 @@ namespace Natrium.Gameplay.Shared.Components
         public float Value;
     }
 
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToOwner)]
+    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
     public struct Team : IComponentData
     {
         [GhostField] public TeamEnum Value;

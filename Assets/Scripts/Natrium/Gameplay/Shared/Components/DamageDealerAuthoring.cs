@@ -8,27 +8,27 @@ namespace Natrium.Gameplay.Shared.Components
     public class DamageDealerAuthoring : MonoBehaviour
     {
         public float damagePoints = 1.0f;
-    }
-
-    public class DamageDealerBaker : Baker<DamageDealerAuthoring>
-    {
-        public override void Bake(DamageDealerAuthoring authoring)
+        
+        public class Baker : Baker<DamageDealerAuthoring>
         {
-            var e = GetEntity(TransformUsageFlags.Dynamic);
-            if (e != Entity.Null)
+            public override void Bake(DamageDealerAuthoring authoring)
             {
-                AddComponent<DamageDealerTag>(e);
-                AddComponent(e, new DamagePoints
+                var e = GetEntity(TransformUsageFlags.Dynamic);
+                if (e != Entity.Null)
                 {
-                    Value = authoring.damagePoints
-                });
+                    AddComponent<DamageDealerTag>(e);
+                    AddComponent(e, new DamagePoints
+                    {
+                        Value = authoring.damagePoints
+                    });
+                }
             }
         }
     }
 
     public struct DamageDealerTag : IComponentData { }
 
-    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToOwner)]
     public struct DamagePoints : IComponentData
     {
         [GhostField] public float Value;
