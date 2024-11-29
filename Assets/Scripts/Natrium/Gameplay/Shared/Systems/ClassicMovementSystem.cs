@@ -40,7 +40,7 @@ namespace Natrium.Gameplay.Shared.Systems
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
             
             foreach (var (position, inputAxis, localTransform, entity) 
-                     in SystemAPI.Query<RefRW<Position>, RefRO<InputAxis>, RefRO<LocalTransform>>()
+                     in SystemAPI.Query<RefRW<Position>, RefRO<InputMove>, RefRO<LocalTransform>>()
                          .WithAll<MoveClassicTag, Simulate>()
                          .WithDisabled<MoveTowardsTargetTag, OverlapBox>()
                          .WithEntityAccess()) //If its moving Ignore it

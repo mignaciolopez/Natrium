@@ -14,14 +14,14 @@ namespace Natrium.Gameplay.Shared.Components.Input
             public override void Bake(InputAuthoring authoring)
             {
                 var e = GetEntity(TransformUsageFlags.Dynamic);
-                AddComponent<InputAxis>(e);
+                AddComponent<InputMove>(e);
                 AddComponent<InputAim>(e);
                 AddComponent<InputMelee>(e);
             }
         }
     }
     
-    public struct InputAxis : IInputComponentData
+    public struct InputMove : IInputComponentData
     {
         public float2 Value;
     }

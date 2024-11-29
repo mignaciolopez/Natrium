@@ -41,7 +41,7 @@ namespace Natrium.Gameplay.Shared.Systems
             var deltaTime = SystemAPI.Time.DeltaTime;
             
             foreach (var (position, inputAxis, speed, entity) 
-                     in SystemAPI.Query<RefRW<Position>, RefRO<InputAxis>, RefRO<Speed>>()
+                     in SystemAPI.Query<RefRW<Position>, RefRO<InputMove>, RefRO<Speed>>()
                          .WithAll<MoveFreeTag, Simulate>()
                          .WithDisabled<MoveTowardsTargetTag, OverlapBox>()
                          .WithEntityAccess()) //If its moving Ignore it

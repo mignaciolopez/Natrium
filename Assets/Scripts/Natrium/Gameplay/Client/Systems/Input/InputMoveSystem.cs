@@ -19,7 +19,7 @@ namespace Natrium.Gameplay.Client.Systems.Input
         {
             Log.Verbose("OnCreate");
             _inputActions = new InputActions();
-            var required = SystemAPI.QueryBuilder().WithAll<InputAxis, GhostOwnerIsLocal, Simulate>().Build();
+            var required = SystemAPI.QueryBuilder().WithAll<InputMove, GhostOwnerIsLocal, Simulate>().Build();
             //RequireForUpdate(required);
         }
 
@@ -43,7 +43,7 @@ namespace Natrium.Gameplay.Client.Systems.Input
         
         protected override void OnUpdate()
         {
-            foreach (var (inputAxis, entity) in SystemAPI.Query<RefRW<InputAxis>>()
+            foreach (var (inputAxis, entity) in SystemAPI.Query<RefRW<InputMove>>()
                          .WithAll<GhostOwnerIsLocal, Simulate>()
                          .WithEntityAccess())
             {
