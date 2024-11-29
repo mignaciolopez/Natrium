@@ -45,13 +45,13 @@ namespace Natrium.Gameplay.Shared.Components
         public float Value;
     }
 
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToOwner)]
     public struct Team : IComponentData
     {
         [GhostField] public TeamEnum Value;
     }
     
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
+    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
     public struct AttackEvents : IBufferElementData
     {
         [GhostField] public NetworkTick Tick;

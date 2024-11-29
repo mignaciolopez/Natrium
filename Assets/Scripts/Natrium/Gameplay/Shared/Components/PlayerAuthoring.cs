@@ -25,7 +25,7 @@ namespace Natrium.Gameplay.Shared.Components
     public struct PlayerTag : IComponentData, IEnableableComponent { }
     public struct InitializedPlayerTag : IComponentData { }
 
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
+    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
     public struct PlayerName : IComponentData
     {
         [GhostField] public FixedString64Bytes Value;

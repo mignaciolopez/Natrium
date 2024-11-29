@@ -68,7 +68,7 @@ namespace Natrium.Gameplay.Shared.Components
         }
     }
 
-    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
     public struct Speed : IComponentData
     {
         [GhostField] public float Value;
@@ -81,19 +81,19 @@ namespace Natrium.Gameplay.Shared.Components
         [GhostField] public float3 Target;
     }
     
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToOwner)]
     [GhostEnabledBit]
     public struct MoveFreeTag : IComponentData, IEnableableComponent { }
     
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToOwner)]
     [GhostEnabledBit]
     public struct MoveDiagonalTag : IComponentData, IEnableableComponent { }
     
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToOwner)]
     [GhostEnabledBit]
     public struct MoveClassicTag : IComponentData, IEnableableComponent { }
     
-    //[GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToNonOwner)]
-    //[GhostEnabledBit]
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToNonOwner)]
+    [GhostEnabledBit]
     public struct MoveTowardsTargetTag : IComponentData, IEnableableComponent { }
 }
