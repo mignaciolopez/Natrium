@@ -93,7 +93,7 @@ namespace Natrium.Gameplay.Shared.Components
     [GhostEnabledBit]
     public struct MoveClassicTag : IComponentData, IEnableableComponent { }
     
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToNonOwner)]
-    [GhostEnabledBit]
+    //[GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToNonOwner)]
+    //[GhostEnabledBit]
     public struct MoveTowardsTargetTag : IComponentData, IEnableableComponent { }
 }

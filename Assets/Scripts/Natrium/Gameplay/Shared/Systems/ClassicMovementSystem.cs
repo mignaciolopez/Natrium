@@ -63,13 +63,19 @@ namespace Natrium.Gameplay.Shared.Systems
 
                 if (inputAxis.ValueRO.Value.x != 0 || inputAxis.ValueRO.Value.y != 0)
                 {
-                    ecb.SetComponent(entity, new OverlapBox
+                    if (state.EntityManager.HasComponent<GhostOwnerIsLocal>(entity))
                     {
-                        HalfExtends = 0.4f,
-                        Offset = new float3(0.1f * inputAxis.ValueRO.Value.x, 0, 0.1f * inputAxis.ValueRO.Value.y),
-                    });
-                    ecb.SetComponentEnabled<OverlapBox>(entity, true);
-                    //ecb.SetComponentEnabled<MoveTowardsTargetTag>(entity, true);
+                        ecb.SetComponent(entity, new OverlapBox
+                        {
+                            HalfExtends = 0.4f,
+                            Offset = new float3(0.1f * inputAxis.ValueRO.Value.x, 0, 0.1f * inputAxis.ValueRO.Value.y),
+                        });
+                        ecb.SetComponentEnabled<OverlapBox>(entity, true);   
+                    }
+                    else
+                    {
+                        ecb.SetComponentEnabled<MoveTowardsTargetTag>(entity, true);
+                    }
                 }
             }
             
