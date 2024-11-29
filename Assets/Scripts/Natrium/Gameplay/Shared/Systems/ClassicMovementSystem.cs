@@ -11,7 +11,7 @@ namespace Natrium.Gameplay.Shared.Systems
 {
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
     [UpdateBefore(typeof(PhysicsCastSystem))]
-    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ServerSimulation)]
+    [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation | WorldSystemFilterFlags.ClientSimulation)]
     public partial struct ClassicMovementSystem : ISystem, ISystemStartStop
     {
         public void OnCreate(ref SystemState state)
@@ -34,26 +34,24 @@ namespace Natrium.Gameplay.Shared.Systems
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
         }
 
-        [BurstCompile]
+        //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
             
-            foreach (var (position,localTransform, inputAxis, entity) 
-                     in SystemAPI.Query<RefRW<Position>, RefRO<LocalTransform>, RefRO<InputAxis>>()
-                         .WithAll<MoveClassicTag, PredictedGhost>()
-                         .WithDisabled<MoveTowardsTag, MoveFreeTag, MoveDiagonalTag>()
+            foreach (var (position, inputAxis, localTransform, entity) 
+                     in SystemAPI.Query<RefRW<Position>, RefRO<InputAxis>, RefRO<LocalTransform>>()
+                         .WithAll<MoveClassicTag, Simulate>()
+                         .WithDisabled<MoveTowardsTargetTag, OverlapBox>()
                          .WithEntityAccess()) //If its moving Ignore it
             {
                 if (!state.EntityManager.IsComponentEnabled<MoveClassicTag>(entity))
-                {
-                    Log.Error($"[{state.World.Name}] .WithAll<MoveClassicTag> is accounting for disabled MoveClassicTag");
-                }
-                
-                position.ValueRW.Target = math.round(localTransform.ValueRO.Position);
+                    Log.Error($".WithAll<MoveClassicTag");
+
+                position.ValueRW.Target = math.round(localTransform.ValueRO.Position); 
                 position.ValueRW.Previous = position.ValueRO.Target;
                 
-                //This bunch of Ifs Simulates the original Behavior of Processing Movement Inpupt.
+                //This bunch of Ifs Simulates the original Behavior of Movement.
                 if (inputAxis.ValueRO.Value.y > 0)
                     position.ValueRW.Target.z++;
                 else if (inputAxis.ValueRO.Value.x > 0)
@@ -63,15 +61,15 @@ namespace Natrium.Gameplay.Shared.Systems
                 else if (inputAxis.ValueRO.Value.x < 0)
                     position.ValueRW.Target.x--;
 
-                if (position.ValueRO.Previous.x != position.ValueRO.Target.x ||
-                    position.ValueRO.Previous.z != position.ValueRO.Target.z)
+                if (inputAxis.ValueRO.Value.x != 0 || inputAxis.ValueRO.Value.y != 0)
                 {
                     ecb.SetComponent(entity, new OverlapBox
                     {
-                        HalfExtends = 0.49f,
-                        Offset = float3.zero,
+                        HalfExtends = 0.2f,
+                        Offset = new float3(0.2f * inputAxis.ValueRO.Value.x, 0, 0.2f * inputAxis.ValueRO.Value.y),
                     });
                     ecb.SetComponentEnabled<OverlapBox>(entity, true);
+                    //ecb.SetComponentEnabled<MoveTowardsTargetTag>(entity, true);
                 }
             }
             

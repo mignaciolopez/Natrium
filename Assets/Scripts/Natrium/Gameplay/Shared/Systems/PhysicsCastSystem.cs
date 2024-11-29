@@ -43,41 +43,44 @@ namespace Natrium.Gameplay.Shared.Systems
 
             foreach (var (position, localTransform, physicsCollider, overlapBox, entity) in
                      SystemAPI.Query<RefRW<Position>, RefRO<LocalTransform>, RefRO<PhysicsCollider>, RefRO<OverlapBox>>()
-                         .WithDisabled<MoveTowardsTag>() //Ignore Already Moving Entities
-                         .WithAll<Simulate, OverlapBox>()
+                         .WithDisabled<MoveTowardsTargetTag>() //Ignore Already Moving Entities
+                         .WithAll<OverlapBox, Simulate>()
                          .WithEntityAccess())
             {
-                if (!state.EntityManager.IsComponentEnabled<OverlapBox>(entity))
-                {
-                    Log.Error($"[{state.World.Name}] RefRO<OverlapBox> is accounting for disabled OverlapBox");
-                }
-                
                 var filter = physicsCollider.ValueRO.Value.Value.GetCollisionFilter();
 
                 var outHits = new NativeList<DistanceHit>(state.WorldUpdateAllocator);
 
-                if (collisionWorld.OverlapBox(
-                        position.ValueRO.Target + overlapBox.ValueRO.Offset,
-                        localTransform.ValueRO.Rotation,
-                        overlapBox.ValueRO.HalfExtends,
-                        ref outHits,
-                        filter))
+                var realCollision = collisionWorld.OverlapBox(
+                    position.ValueRO.Target + overlapBox.ValueRO.Offset,
+                    localTransform.ValueRO.Rotation,
+                    overlapBox.ValueRO.HalfExtends,
+                    ref outHits,
+                    filter);
+
+                if (realCollision)
                 {
                     foreach (var hit in outHits)
                     {
                         if (hit.Entity == entity)
                         {
                             Log.Warning($"[{state.World.Name}] {entity} is colliding with itself hit {hit.Entity}");
+                            realCollision = false;
                         }
                         else
                         {
-                            position.ValueRW.Target = position.ValueRO.Previous;
+                            realCollision = true;
                         }
                     }
                 }
+
+                if (realCollision)
+                {
+                    position.ValueRW.Target = position.ValueRO.Previous;
+                }
                 else
                 {
-                    ecb.SetComponentEnabled<MoveTowardsTag>(entity, true);
+                    ecb.SetComponentEnabled<MoveTowardsTargetTag>(entity, true);    
                 }
 
                 ecb.SetComponentEnabled<OverlapBox>(entity, false);

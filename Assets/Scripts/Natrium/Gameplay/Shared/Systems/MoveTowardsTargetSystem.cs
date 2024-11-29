@@ -10,7 +10,7 @@ using Unity.Transforms;
 namespace Natrium.Gameplay.Shared.Systems
 {
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
-    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ServerSimulation)]
+    [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation | WorldSystemFilterFlags.ClientSimulation)]
     public partial struct MoveTowardsTargetSystem : ISystem
     {
         public void OnCreate(ref SystemState state)
@@ -36,24 +36,20 @@ namespace Natrium.Gameplay.Shared.Systems
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
+            var deltaTIme = SystemAPI.Time.DeltaTime;
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
 
             foreach (var (localTransform, position, speed, entity) 
                      in SystemAPI.Query<RefRW<LocalTransform>, RefRO<Position>, RefRO<Speed>>()
-                         .WithAll<MoveTowardsTag>()
+                         .WithAll<Simulate>()
                          .WithEntityAccess())
             {
-                if (!state.EntityManager.IsComponentEnabled<MoveTowardsTag>(entity))
-                {
-                    Log.Error($"[{state.World.Name}] .WithAll<MoveTowardsTag>() is accounting for disabled MoveTowardsTag");
-                }
-                
-                var maxDistanceDelta = speed.ValueRO.Value * SystemAPI.Time.DeltaTime;
+                var maxDistanceDelta = speed.ValueRO.Value * deltaTIme;
                 localTransform.ValueRW.Position.MoveTowards(position.ValueRO.Target, maxDistanceDelta);
                 
-                if (math.distance(localTransform.ValueRO.Position, position.ValueRO.Target) <= 0.0f)
+                if (math.distancesq(localTransform.ValueRO.Position, position.ValueRO.Target) < maxDistanceDelta * 0.1f)
                 {
-                    ecb.SetComponentEnabled<MoveTowardsTag>(entity, false);
+                    ecb.SetComponentEnabled<MoveTowardsTargetTag>(entity, false);
                 }
             }
             

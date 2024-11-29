@@ -31,8 +31,8 @@ namespace Natrium.Gameplay.Shared.Components
             
                 AddComponent(e, new Position
                 {
-                    Previous = authoring.transform.position,
-                    Target = authoring.transform.position,
+                    Previous = (int3)(float3)authoring.transform.position,
+                    Target = (int3)(float3)authoring.transform.position,
                 });
             
                 AddComponent<MoveClassicTag>(e);
@@ -62,17 +62,16 @@ namespace Natrium.Gameplay.Shared.Components
                 AddComponent<OverlapBox>(e);
                 SetComponentEnabled<OverlapBox>(e, false);
                 
-                AddComponent<MoveTowardsTag>(e);
-                SetComponentEnabled<MoveTowardsTag>(e, false);
+                AddComponent<MoveTowardsTargetTag>(e);
+                SetComponentEnabled<MoveTowardsTargetTag>(e, false);
             }
         }
     }
 
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
+    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
     public struct Speed : IComponentData
     {
-        [GhostField]
-        public float Value;
+        [GhostField] public float Value;
     }
     
     [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
@@ -94,7 +93,7 @@ namespace Natrium.Gameplay.Shared.Components
     [GhostEnabledBit]
     public struct MoveClassicTag : IComponentData, IEnableableComponent { }
     
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
-    [GhostEnabledBit]
-    public struct MoveTowardsTag : IComponentData, IEnableableComponent { }
+    //[GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToNonOwner)]
+    //[GhostEnabledBit]
+    public struct MoveTowardsTargetTag : IComponentData, IEnableableComponent { }
 }

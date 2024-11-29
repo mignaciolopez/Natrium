@@ -9,21 +9,21 @@ namespace Natrium.Shared.Extensions
         /// </summary>
         public static void MoveTowards(this ref float3 current, float3 target, float maxDistanceDelta)
         {
-            float num1 = target.x - current.x;
-            float num2 = target.y - current.y;
-            float num3 = target.z - current.z;
-            float d = (float)((double)num1 * (double)num1 + (double)num2 * (double)num2 + (double)num3 * (double)num3);
-            if ((double)d == 0.0 || (double)maxDistanceDelta >= 0.0 &&
-                (double)d <= (double)maxDistanceDelta * (double)maxDistanceDelta)
+            var x = target.x - current.x;
+            var y = target.y - current.y;
+            var z = target.z - current.z;
+            
+            var d = x * x + y * y + z * z;
+            if (d == 0.0 || maxDistanceDelta >= 0.0 && d <= maxDistanceDelta * maxDistanceDelta)
             {
                 current = target;
                 return;
             }
 
-            float num4 = (float)math.sqrt((double)d);
+            var num4 = math.sqrt(d);
 
-            current = new float3(current.x + num1 / num4 * maxDistanceDelta, current.y + num2 / num4 * maxDistanceDelta,
-                current.z + num3 / num4 * maxDistanceDelta);
+            current = new float3(current.x + x / num4 * maxDistanceDelta, current.y + y / num4 * maxDistanceDelta,
+                current.z + z / num4 * maxDistanceDelta);
         }
     }
 }

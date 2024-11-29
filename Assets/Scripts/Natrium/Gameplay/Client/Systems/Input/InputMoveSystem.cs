@@ -1,3 +1,4 @@
+using Natrium.Gameplay.Shared.Components;
 using UnityEngine;
 using Unity.Entities;
 using Unity.NetCode;
@@ -5,6 +6,7 @@ using Natrium.Gameplay.Shared.Components.Input;
 using Natrium.Settings.Input;
 using Natrium.Shared;
 using Natrium.Shared.Systems;
+using Unity.Mathematics;
 
 namespace Natrium.Gameplay.Client.Systems.Input
 {
@@ -41,7 +43,9 @@ namespace Natrium.Gameplay.Client.Systems.Input
         
         protected override void OnUpdate()
         {
-            foreach (var inputAxis in SystemAPI.Query<RefRW<InputAxis>>().WithAll<GhostOwnerIsLocal, Simulate>())
+            foreach (var (inputAxis, entity) in SystemAPI.Query<RefRW<InputAxis>>()
+                         .WithAll<GhostOwnerIsLocal, Simulate>()
+                         .WithEntityAccess())
             {
                 inputAxis.ValueRW.Value = _inputActions.Map_Gameplay.Axn_PlayerMove.ReadValue<Vector2>();
             }

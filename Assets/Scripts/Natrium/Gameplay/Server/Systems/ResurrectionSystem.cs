@@ -71,7 +71,7 @@ namespace Natrium.Gameplay.Server.Systems
                 
                 speed.ValueRW.Value /= 2.0f;
                 
-                ecb.SetComponentEnabled<MoveTowardsTag>(entity, false);
+                ecb.SetComponentEnabled<MoveTowardsTargetTag>(entity, false);
                 ecb.SetComponentEnabled<OverlapBox>(entity, false);
                 ecb.SetComponentEnabled<MoveFreeTag>(entity, false);
                 ecb.SetComponentEnabled<MoveClassicTag>(entity, true);

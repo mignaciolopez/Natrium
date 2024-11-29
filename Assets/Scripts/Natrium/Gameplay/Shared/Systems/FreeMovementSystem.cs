@@ -34,28 +34,36 @@ namespace Natrium.Gameplay.Shared.Systems
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
         }
 
-        [BurstCompile]
+        //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
             var deltaTime = SystemAPI.Time.DeltaTime;
             
-            foreach (var (position,localTransform, inputAxis, speed, entity) 
-                     in SystemAPI.Query<RefRW<Position>, RefRW<LocalTransform>, RefRO<InputAxis>, RefRO<Speed>>()
+            foreach (var (position, inputAxis, speed, entity) 
+                     in SystemAPI.Query<RefRW<Position>, RefRO<InputAxis>, RefRO<Speed>>()
                          .WithAll<MoveFreeTag, Simulate>()
-                         .WithDisabled<MoveTowardsTag, MoveClassicTag, MoveDiagonalTag>()
+                         .WithDisabled<MoveTowardsTargetTag, OverlapBox>()
                          .WithEntityAccess()) //If its moving Ignore it
             {
                 if (!state.EntityManager.IsComponentEnabled<MoveFreeTag>(entity))
-                {
-                    Log.Error($"[{state.World.Name}] .WithAll<MoveFreeTag> is accounting for disabled MoveFreeTag");
-                }
+                    Log.Error($".WithAll<MoveFreeTag");
                 
-                position.ValueRW.Target = math.round(localTransform.ValueRO.Position);
                 position.ValueRW.Previous = position.ValueRO.Target;
                 
                 var input = new float3(inputAxis.ValueRO.Value.x, 0.0f, inputAxis.ValueRO.Value.y);
-                localTransform.ValueRW.Position += speed.ValueRO.Value * deltaTime * input;
+                position.ValueRW.Target += speed.ValueRO.Value * deltaTime * input;
+                
+                if (inputAxis.ValueRO.Value.x != 0 || inputAxis.ValueRO.Value.y != 0)
+                {
+                    ecb.SetComponent(entity, new OverlapBox
+                    {
+                        HalfExtends = 0.05f,
+                        Offset = new float3(0.6f * math.round(inputAxis.ValueRO.Value.x), 0, 0.6f * math.round(inputAxis.ValueRO.Value.y)),
+                    });
+                    //ecb.SetComponentEnabled<OverlapBox>(entity, true); //ToDo: Resolve collision properly for FreeMovement
+                    ecb.SetComponentEnabled<MoveTowardsTargetTag>(entity, true);
+                }
             }
             
             ecb.Playback(state.EntityManager);

@@ -39,14 +39,16 @@ namespace Natrium.Gameplay.Shared.Systems
         {
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
             
-            foreach (var (position,localTransform, inputAxis, entity) 
-                     in SystemAPI.Query<RefRW<Position>, RefRO<LocalTransform>, RefRO<InputAxis>>()
+            foreach (var (position, inputAxis, localTransform, entity) 
+                     in SystemAPI.Query<RefRW<Position>, RefRO<InputAxis>, RefRO<LocalTransform>>()
                          .WithAll<MoveDiagonalTag, Simulate>()
-                         .WithNone<MoveClassicTag, MoveFreeTag>()
-                         .WithDisabled<MoveTowardsTag>()
-                         .WithEntityAccess()) //If its moving Ignore it
+                         .WithDisabled<MoveTowardsTargetTag, OverlapBox>()//If its moving Ignore it
+                         .WithEntityAccess()) 
             {
-                position.ValueRW.Target = math.round(localTransform.ValueRO.Position);
+                if (!state.EntityManager.IsComponentEnabled<MoveDiagonalTag>(entity))
+                    Log.Error($".WithAll<MoveDiagonalTag");
+                
+                position.ValueRW.Target = math.round(localTransform.ValueRO.Position); 
                 position.ValueRW.Previous = position.ValueRO.Target;
                 
                 switch (inputAxis.ValueRO.Value.x)
@@ -69,15 +71,15 @@ namespace Natrium.Gameplay.Shared.Systems
                         break;
                 }
 
-                if (position.ValueRO.Previous.x != position.ValueRO.Target.x ||
-                    position.ValueRO.Previous.z != position.ValueRO.Target.z)
+                if (inputAxis.ValueRO.Value.x != 0 || inputAxis.ValueRO.Value.y != 0)
                 {
                     ecb.SetComponent(entity, new OverlapBox
                     {
-                        HalfExtends = 0.49f,
-                        Offset = float3.zero,
+                        HalfExtends = 0.2f,
+                        Offset = new float3(0.2f * math.round(inputAxis.ValueRO.Value.x), 0, 0.2f * math.round(inputAxis.ValueRO.Value.y)),
                     });
                     ecb.SetComponentEnabled<OverlapBox>(entity, true);
+                    //ecb.SetComponentEnabled<MoveTowardsTargetTag>(entity, true);
                 }
             }
             
