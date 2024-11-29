@@ -69,7 +69,13 @@ namespace Natrium.Gameplay.Shared.Systems
                         }
                         else
                         {
-                            realCollision = true;
+                            if (state.EntityManager.HasComponent<DeathTag>(hit.Entity) &&
+                                state.EntityManager.IsComponentEnabled<DeathTag>(hit.Entity))
+                                realCollision = false;
+                            else
+                            {
+                                realCollision = true;
+                            }
                         }
                     }
                 }
