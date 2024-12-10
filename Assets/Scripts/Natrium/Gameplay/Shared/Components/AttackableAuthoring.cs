@@ -18,15 +18,17 @@ namespace Natrium.Gameplay.Shared.Components
         {
             public override void Bake(AttackableAuthoring authoring)
             {
-                var e = GetEntity(TransformUsageFlags.Dynamic);
-                if (e != Entity.Null)
+                var entity = GetEntity(TransformUsageFlags.Dynamic);
+                if (entity == Entity.Null)
                 {
-                    AddComponent<AttackEvents>(e);
-                    AddComponent<AttackableTag>(e);
-                    AddBuffer<DamagePointsBuffer>(e);
-                    AddBuffer<DamagePointsAtTick>(e);
-                    AddComponent<Team>(e);
+                    return;
                 }
+                
+                AddComponent<AttacksBuffer>(entity);
+                AddComponent<AttackableTag>(entity);
+                AddBuffer<DamagePointsBuffer>(entity);
+                AddBuffer<DamagePointsAtTick>(entity);
+                AddComponent<Team>(entity);
             }
         }
     }
@@ -51,13 +53,11 @@ namespace Natrium.Gameplay.Shared.Components
     }
     
     [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
-    public struct AttackEvents : IBufferElementData
+    public struct AttacksBuffer : IBufferElementData
     {
-        [GhostField] public NetworkTick Tick;
+        [GhostField] public NetworkTick ServerTick { get; set; }
+        [GhostField] public NetworkTick InterpolationTick { get; set; }
         [GhostField] public Entity EntitySource;
-        [GhostField] public Entity EntityTarget;
         [GhostField] public int NetworkIdSource;
-        [GhostField] public int NetworkIdTarget;
-        [GhostField] public int LifeTime;
     }
 }

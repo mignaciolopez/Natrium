@@ -13,11 +13,15 @@ namespace Natrium.Gameplay.Shared.Components
         {
             public override void Bake(AutoDisableAuthoring authoring)
             {
-                var e = GetEntity(TransformUsageFlags.Dynamic);
-                if (e != Entity.Null)
+                var entity = GetEntity(TransformUsageFlags.Dynamic);
+                if (entity == Entity.Null)
                 {
-                    AddComponent(e, new DisableOnTimer { Value = authoring.time });
+                    return;
                 }
+                AddComponent(entity, new DisableOnTimer
+                {
+                    Value = authoring.time
+                });
             }
         }
     }

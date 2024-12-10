@@ -11,7 +11,7 @@ using Natrium.Shared.Extensions;
 
 namespace Natrium.Gameplay.Client.Systems.UI.Debug
 {
-    [UpdateInGroup(typeof(SimulationSystemGroup))]
+    [UpdateInGroup(typeof(GhostSimulationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct DebugAimSystem : ISystem, ISystemStartStop
     {

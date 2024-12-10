@@ -8,12 +8,10 @@ using Unity.NetCode;
 
 namespace Natrium.Gameplay.Client.Systems.UI.Debug
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup), OrderLast = true)]
+    [UpdateInGroup(typeof(GhostSimulationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct DebugAttackSystem : ISystem, ISystemStartStop
     {
-        private NetworkTick _previousNetworkTick;
-        
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
@@ -25,7 +23,6 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         public void OnStartRunning(ref SystemState state)
         {
             Log.Verbose("OnStartRunning");
-            _previousNetworkTick = SystemAPI.GetSingleton<NetworkTime>().InterpolationTick;
         }
 
         //[BurstCompile]
@@ -43,42 +40,27 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            ShowRedBoxForAttackedEntities(ref state);
-        }
-
-        //[BurstCompile]
-        private void ShowRedBoxForAttackedEntities(ref SystemState state)
-        {
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
-            
-            var networkIDLookup = SystemAPI.GetSingleton<NetworkIdLookup>();
-            
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
-            var currentTick = networkTime.InterpolationTick;
-            if (currentTick.TickIndexForValidTick == _previousNetworkTick.TickIndexForValidTick)
-            {
-                //Log.Debug($"currentTick {currentTick} is not newer than {_previousNetworkTick}. Skipping.");
-                return;
-            }
-            _previousNetworkTick = currentTick;
+
+            var networkIdLookup = SystemAPI.GetSingleton<NetworkIdLookup>();
             
-            foreach (var attackEvents in SystemAPI.Query<DynamicBuffer<AttackEvents>>())
+            foreach (var (attacksBuffer, entity)
+                     in SystemAPI.Query<DynamicBuffer<AttacksBuffer>>()
+                         .WithEntityAccess())
             {
-                foreach (var attackEventServerVersion in attackEvents)
+                //Log.Debug($"Querying {nameof(AttacksBuffer)}");
+                
+                foreach (var attack in attacksBuffer)
                 {
-                    if (currentTick.TickIndexForValidTick != attackEventServerVersion.Tick.TickIndexForValidTick)
+                    if (attack.InterpolationTick != networkTime.InterpolationTick)
                         continue;
                     
-                    var attackEvent = attackEventServerVersion;
+                    var entitySource = networkIdLookup.GetEntityPrefab(attack.NetworkIdSource);
                     
-                    //Updating Entities on client based on the networkIds sent from server.
-                    attackEvent.EntitySource = networkIDLookup.GetEntityPrefab(attackEvent.NetworkIdSource);
-                    attackEvent.EntityTarget = networkIDLookup.GetEntityPrefab(attackEvent.NetworkIdTarget);
+                    Log.Debug($"Debugging Attack {entitySource} -> {entity}@i{attack.InterpolationTick}|i{networkTime.InterpolationTick}");
                     
-                    Log.Debug($"{attackEvent.EntitySource} is Attacking {attackEvent.EntityTarget} on Client Tick {currentTick}");
-                    Log.Debug($"attackEvent.NetworkTick: {attackEvent.Tick}");
-                    
-                    foreach (var child in SystemAPI.GetBuffer<LinkedEntityGroup>(attackEvent.EntityTarget))
+                    foreach (var child in SystemAPI.GetBuffer<LinkedEntityGroup>(entity))
                     {
                         if (!state.EntityManager.HasComponent<DebugTag>(child.Value))
                             continue;

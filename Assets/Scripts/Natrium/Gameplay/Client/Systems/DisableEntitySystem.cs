@@ -6,7 +6,7 @@ using Unity.NetCode;
 
 namespace Natrium.Gameplay.Client.Systems
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup), OrderLast = true)]
+    [UpdateInGroup(typeof(GhostSimulationSystemGroup), OrderLast = true)]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct DisableEntitySystem : ISystem, ISystemStartStop
     {
@@ -40,18 +40,17 @@ namespace Natrium.Gameplay.Client.Systems
         {
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
-            var currentTick = state.WorldUnmanaged.IsServer() ? networkTime.ServerTick : networkTime.InterpolationTick;
             
             foreach (var (disableAtTick, e) in SystemAPI.Query<RefRO<DisableAtTick>>()
-                         .WithNone<GhostOwner, Disabled>().WithEntityAccess())//Excluding GhostOwners, Client should never disable authoritative data from the server.
+                         .WithNone<Disabled>().WithEntityAccess()) //GhostOwner used to be excluded here
             {
-                if (currentTick.TickIndexForValidTick < disableAtTick.ValueRO.Value.TickIndexForValidTick)
-                    continue;
-
-                Log.Debug($"currentTick: {currentTick}");
-                Log.Debug($"Disabling {e} on tick: {disableAtTick.ValueRO.Value}");
-                ecb.AddComponent<Disabled>(e);
-                ecb.RemoveComponent<DisableAtTick>(e);
+                if (networkTime.ServerTick.Equals(disableAtTick.ValueRO.Value) ||
+                    networkTime.ServerTick.IsNewerThan(disableAtTick.ValueRO.Value))
+                {
+                    Log.Debug($"Disabling {e}@{disableAtTick.ValueRO.Value}|{networkTime.ServerTick}");
+                    ecb.AddComponent<Disabled>(e);
+                    ecb.RemoveComponent<DisableAtTick>(e);
+                }
             }
             
             ecb.Playback(state.EntityManager);

@@ -3,15 +3,14 @@ using Unity.Entities;
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Gameplay.Shared.Components.Input;
 using Natrium.Shared;
-using Natrium.Shared.Extensions;
 using Unity.Mathematics;
 using Unity.Physics;
-//using Unity.Burst;
+using Unity.Burst;
 using Unity.NetCode;
 
 namespace Natrium.Gameplay.Server.Systems
 {
-    [UpdateInGroup(typeof(SimulationSystemGroup))]
+    [UpdateInGroup(typeof(GhostSimulationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct AimSystem : ISystem, ISystemStartStop
     {
@@ -19,7 +18,6 @@ namespace Natrium.Gameplay.Server.Systems
         public void OnCreate(ref SystemState state)
         {
             Log.Verbose("OnCreate");
-            state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
             state.RequireForUpdate<PhysicsWorldSingleton>();
             state.RequireForUpdate<PhysicsWorldHistorySingleton>();
             state.RequireForUpdate<NetworkTime>();
@@ -63,16 +61,13 @@ namespace Natrium.Gameplay.Server.Systems
                     continue;
                 
                 var interpolationDelay = networkTime.ServerTick;
-                if (state.World.IsServer())
-                {
-                    interpolationDelay.Subtract(inputAimAtTick.Tick.TickIndexForValidTick);
-                }
+                interpolationDelay.Subtract(inputAimAtTick.Tick.TickIndexForValidTick);
                 
                 SystemAPI.GetSingleton<PhysicsWorldHistorySingleton>().GetCollisionWorldFromTick(
                         inputAimAtTick.Tick, 
                         interpolationDelay.TickIndexForValidTick,
                         ref physicsWorld.ValueRW.PhysicsWorld, 
-                        out var collisionWorld );
+                        out var collisionHistoryWorld );
 
                 Log.Debug($"{nameof(InputAim)} from {entity}@{inputAimAtTick.Tick}: {inputAimAtTick.MouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}");
 
@@ -84,36 +79,30 @@ namespace Natrium.Gameplay.Server.Systems
                     Filter = pc.ValueRO.Value.Value.GetCollisionFilter()
                 };
 
-                if (collisionWorld.CastRay(raycastInput, out var closestHit))
+                if (collisionHistoryWorld.CastRay(raycastInput, out var closestHit))
                 {
-                    Log.Debug($"AimInput from: {entity} -> Collides with: {closestHit.Entity}");
+                    Log.Debug($"{nameof(InputAim)} from: {entity} -> Collides with: {closestHit.Entity}");
                     
                     if (closestHit.Entity == Entity.Null)
                     {
-                        Log.Warning($"Collision with {closestHit.Entity} is Null");
+                        Log.Error($"Collision with {closestHit.Entity} is Null");
                         continue;
                     }
                     
-                    if (state.EntityManager.HasComponent<GhostOwner>(closestHit.Entity) &&
+                    if (state.EntityManager.HasComponent<AttacksBuffer>(closestHit.Entity) &&
                         !state.EntityManager.IsComponentEnabled<DeathTag>(closestHit.Entity))
                     {
-                        var networkIdTarget = state.EntityManager.GetComponentData<GhostOwner>(closestHit.Entity);
+                        var attacksBuffer = state.EntityManager.GetBuffer<AttacksBuffer>(closestHit.Entity);
                         
-                        Log.Debug($"Attack Event In Progress on Server Tick: {networkTime.ServerTick}");
-                        Log.Debug($"inputAimAtTick: {inputAimAtTick.Tick}");
-                        
-                        foreach (var attackEvents in SystemAPI.Query<DynamicBuffer<AttackEvents>>().WithAll<Simulate>())
+                        Log.Debug($"Attack In Progress@{inputAimAtTick.Tick}|{networkTime.ServerTick}");
+
+                        attacksBuffer.Add(new AttacksBuffer
                         {
-                            var attackEvent = new AttackEvents
-                            {
-                                Tick = inputAimAtTick.Tick, //This should be the Tick when client Input
-                                EntitySource = entity,
-                                EntityTarget = closestHit.Entity,
-                                NetworkIdSource = ghostOwner.ValueRO.NetworkId,
-                                NetworkIdTarget = networkIdTarget.NetworkId,
-                            };
-                            attackEvents.Add(attackEvent);
-                        }
+                            ServerTick = networkTime.ServerTick,
+                            InterpolationTick = networkTime.InterpolationTick,
+                            EntitySource = entity,
+                            NetworkIdSource = ghostOwner.ValueRO.NetworkId,
+                        });
                     }
                 }
             }

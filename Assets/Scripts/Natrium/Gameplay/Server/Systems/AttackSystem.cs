@@ -6,63 +6,61 @@ using Unity.NetCode.LowLevel.Unsafe;
 
 namespace Natrium.Gameplay.Server.Systems
 {
-    [UpdateInGroup(typeof(SimulationSystemGroup))]
+    [UpdateInGroup(typeof(GhostSimulationSystemGroup))]
     [UpdateAfter(typeof(AimSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
-    public partial class AttackSystem : SystemBase
+    public partial struct AttackSystem : ISystem, ISystemStartStop
     {
-        protected override void OnCreate()
+        public void OnCreate(ref SystemState state)
         {
             Log.Verbose("OnCreate");
-            base.OnCreate();
+            state.RequireForUpdate<NetworkTime>();
         }
 
-        protected override void OnStartRunning()
+        public void OnStartRunning(ref SystemState state)
         {
             Log.Verbose("OnStartRunning");
-            base.OnStartRunning();
         }
 
-        protected override void OnStopRunning()
+        public void OnStopRunning(ref SystemState state)
         {
             Log.Verbose("OnStopRunning");
-            base.OnStopRunning();
         }
 
-        protected override void OnDestroy()
+        public void OnDestroy(ref SystemState state)
         {
             Log.Verbose("OnDestroy");
-            base.OnDestroy();
         }
         
-        protected override void OnUpdate()
+        public void OnUpdate(ref SystemState state)
         {
-            var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
+            var networkTime = SystemAPI.GetSingleton<NetworkTime>();
             
-            foreach (var attackEvents in SystemAPI.Query<DynamicBuffer<AttackEvents>>()
-                         .WithAll<AttackableTag>()
-                         .WithDisabled<DeathTag>())
+            foreach (var (attacksBuffer, entity) in SystemAPI.Query<DynamicBuffer<AttacksBuffer>>()
+                         .WithDisabled<DeathTag>()
+                         .WithEntityAccess())
             {
-                foreach (var attackEvent in attackEvents)
+                foreach (var attack in attacksBuffer)
                 {
-                    if (currentTick.IsNewerThan(attackEvent.Tick))
+                    if (networkTime.ServerTick.IsNewerThan(attack.ServerTick))
                         continue;
                     
-                    if (attackEvent.EntitySource == attackEvent.EntityTarget)
+                    if (attack.EntitySource == entity)
                     {
-                        Log.Warning($"{attackEvent.EntitySource} is attacking itself.");
+                        Log.Warning($"{entity} is attacking itself.");
                         //continue;
                     }
                     
                     //ToDo: Should not do damage at this moment
-                    Log.Debug($"{attackEvent.EntitySource} is Dealing Damage on {attackEvent.EntityTarget} on Server Tick {currentTick}");
-                    Log.Debug($"attackEvent.NetworkTick: {attackEvent.Tick}");
+                    Log.Debug($"{attack.EntitySource} is Dealing Damage on {entity}@{attack.ServerTick}|{networkTime.ServerTick}");
                     
-                    var damagePoints = SystemAPI.GetComponentRO<DamagePoints>(attackEvent.EntitySource);
-                    var damageBuffer = EntityManager.GetBuffer<DamagePointsBuffer>(attackEvent.EntityTarget);
+                    var damagePoints = SystemAPI.GetComponentRO<DamagePoints>(attack.EntitySource);
+                    var damageBuffer = state.EntityManager.GetBuffer<DamagePointsBuffer>(entity);
                     damageBuffer.Add(new DamagePointsBuffer { Value = damagePoints.ValueRO.Value });
                 }
             }
         }
+
+        
     }
 }
