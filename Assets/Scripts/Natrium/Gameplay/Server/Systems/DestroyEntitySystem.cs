@@ -2,12 +2,10 @@ using Natrium.Gameplay.Shared.Components;
 using Natrium.Shared;
 using Unity.Burst;
 using Unity.Entities;
-using Unity.NetCode;
-using Unity.Transforms;
 
 namespace Natrium.Gameplay.Server.Systems
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup), OrderLast = true)]
+    [UpdateInGroup(typeof(SimulationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct DestroyEntitySystem : ISystem, ISystemStartStop
     {
@@ -17,7 +15,6 @@ namespace Natrium.Gameplay.Server.Systems
         public void OnCreate(ref SystemState state)
         {
             Log.Verbose("OnCreate");
-            state.RequireForUpdate<NetworkTime>();
             state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
         }
 
@@ -43,10 +40,6 @@ namespace Natrium.Gameplay.Server.Systems
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var networkTime = SystemAPI.GetSingleton<NetworkTime>();
-            if (!networkTime.IsFirstTimeFullyPredictingTick)
-                return;
-            
             var ecb = _bsEcbS.CreateCommandBuffer(state.WorldUnmanaged);
             //new DestroyEntitySystemJob { ECB = ecb }.Schedule();
             

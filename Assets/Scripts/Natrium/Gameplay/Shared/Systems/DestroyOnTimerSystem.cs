@@ -5,7 +5,7 @@ using Unity.NetCode;
 
 namespace Natrium.Gameplay.Shared.Systems
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
+    [UpdateInGroup(typeof(SimulationSystemGroup))]
     public partial struct DestroyOnTimerSystem : ISystem, ISystemStartStop
     {
         public void OnCreate(ref SystemState state)
@@ -33,19 +33,23 @@ namespace Natrium.Gameplay.Shared.Systems
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var ecbSingleton = SystemAPI.GetSingleton<EndSimulationEntityCommandBufferSystem.Singleton>();
-            var ecb = ecbSingleton.CreateCommandBuffer(state.WorldUnmanaged);
+            var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
 
-            var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
+            var networkTime = SystemAPI.GetSingleton<NetworkTime>();
 
-            foreach (var (destroyAtTick, entity) in SystemAPI.Query<DestroyAtTick>().WithAll<Simulate>()
-                         .WithNone<DestroyEntityTag>().WithEntityAccess())
+            foreach (var (destroyAtTick, entity) in SystemAPI.Query<RefRO<DestroyAtTick>>()
+                         .WithNone<DestroyEntityTag>()
+                         .WithEntityAccess())
             {
-                if (currentTick.Equals(destroyAtTick.Value) || currentTick.IsNewerThan(destroyAtTick.Value))
+                if (networkTime.ServerTick.Equals(destroyAtTick.ValueRO.Value) || 
+                    networkTime.ServerTick.IsNewerThan(destroyAtTick.ValueRO.Value))
                 {
                     ecb.AddComponent<DestroyEntityTag>(entity);
                 }
             }
+            
+            ecb.Playback(state.EntityManager);
+            ecb.Dispose();
         }
     }
 }

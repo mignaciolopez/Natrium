@@ -8,7 +8,6 @@ using Unity.Mathematics;
 using Unity.Physics;
 //using Unity.Burst;
 using Unity.NetCode;
-using UnityEngine;
 
 namespace Natrium.Gameplay.Server.Systems
 {
@@ -16,8 +15,6 @@ namespace Natrium.Gameplay.Server.Systems
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct AimSystem : ISystem, ISystemStartStop
     {
-        //private BeginSimulationEntityCommandBufferSystem.Singleton _bsEcbS;
-
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
@@ -32,7 +29,6 @@ namespace Natrium.Gameplay.Server.Systems
         public void OnStartRunning(ref SystemState state)
         {
             Log.Verbose("OnStartRunning");
-            //_bsEcbS = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         }
 
         //[BurstCompile]
@@ -57,16 +53,16 @@ namespace Natrium.Gameplay.Server.Systems
                      in SystemAPI.Query<DynamicBuffer<InputAim>, RefRO<PhysicsCollider>, RefRO<GhostOwner>>()
                          .WithAll<Simulate, DamageDealerTag>().WithEntityAccess())
             {
-                if (!inputAims.GetDataAtTick(networkTime.ServerTick, out var inputAimAtTick, true))
+                if (!inputAims.GetDataAtTick(networkTime.ServerTick, out var inputAimAtTick))
                 {
-                    //Log.Warning($"Not processing {nameof(InputAim)} on Tick: {networkTime.ServerTick}");
+                    Log.Warning($"No {nameof(InputAim)}@{networkTime.ServerTick}");
                     continue;
                 }
                 
                 if (!inputAimAtTick.Set)
                     continue;
                 
-                NetworkTick interpolationDelay = networkTime.ServerTick;
+                var interpolationDelay = networkTime.ServerTick;
                 if (state.World.IsServer())
                 {
                     interpolationDelay.Subtract(inputAimAtTick.Tick.TickIndexForValidTick);
@@ -78,7 +74,7 @@ namespace Natrium.Gameplay.Server.Systems
                         ref physicsWorld.ValueRW.PhysicsWorld, 
                         out var collisionWorld );
 
-                Log.Debug($"AimInput from {entity}: {inputAimAtTick.MouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}");
+                Log.Debug($"{nameof(InputAim)} from {entity}@{inputAimAtTick.Tick}: {inputAimAtTick.MouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}");
 
                 var offset = new float3(0, 10, 0); //ToDo: The plus 10 on y axis, comes from the offset of the camara
                 var raycastInput = new RaycastInput

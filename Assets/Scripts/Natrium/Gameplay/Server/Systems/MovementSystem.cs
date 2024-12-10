@@ -51,7 +51,7 @@ namespace Natrium.Gameplay.Server.Systems
                 return;
             
             foreach (var (movement, position, reckoning, localTransform)
-                     in SystemAPI.Query<RefRW<MovementData>, DynamicBuffer<TargetCommand>, RefRW<Reckoning>, RefRO<LocalTransform>>()
+                     in SystemAPI.Query<RefRW<MovementData>, DynamicBuffer<MoveCommand>, RefRW<Reckoning>, RefRO<LocalTransform>>()
                          .WithAll<PredictedGhost, Simulate>())
             {
                 if (!position.GetDataAtTick(networkTime.ServerTick, out var positionAtTick))
@@ -67,7 +67,7 @@ namespace Natrium.Gameplay.Server.Systems
                 var distance = math.distancesq(localTransform.ValueRO.Position, positionAtTick.Target);
                 movement.ValueRW.ShouldCheckCollision = distance > 0.1f;
                 
-                if (distance > 1.0f)
+                if (distance > 2.0f)
                 {
                     movement.ValueRW.Target = movement.ValueRO.Previous;
                     

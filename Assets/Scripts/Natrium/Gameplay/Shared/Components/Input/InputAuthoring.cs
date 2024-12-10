@@ -16,6 +16,7 @@ namespace Natrium.Gameplay.Shared.Components.Input
                 var entity = GetEntity(TransformUsageFlags.Dynamic);
                 
                 AddComponent<InputMove>(entity);
+                AddComponent<MoveCommand>(entity);
                 AddComponent<InputAim>(entity);
                 AddComponent<InputMelee>(entity);
             }
@@ -26,12 +27,20 @@ namespace Natrium.Gameplay.Shared.Components.Input
     { 
         public float2 Value;
     }
-
-    public struct InputAim : ICommandData
+    
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
+    public struct MoveCommand : ICommandData
     {
         public NetworkTick Tick { get; set; }
-        public bool Set;
-        public float3 MouseWorldPosition;
+        public int3 Target;
+    }
+
+    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.SendToNonOwner)]
+    public struct InputAim : ICommandData
+    {
+        [GhostField] public NetworkTick Tick { get; set; }
+        [GhostField] public bool Set;
+        [GhostField] public float3 MouseWorldPosition;
     }
 
     public struct InputMelee : ICommandData

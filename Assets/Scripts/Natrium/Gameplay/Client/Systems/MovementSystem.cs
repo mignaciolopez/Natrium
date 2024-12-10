@@ -51,7 +51,7 @@ namespace Natrium.Gameplay.Client.Systems
                 return;
             
             foreach (var (movement, position, inputMove, localTransform)
-                     in SystemAPI.Query<RefRW<MovementData>, DynamicBuffer<TargetCommand>, RefRO<InputMove>, RefRO<LocalTransform>>()
+                     in SystemAPI.Query<RefRW<MovementData>, DynamicBuffer<MoveCommand>, RefRO<InputMove>, RefRO<LocalTransform>>()
                          .WithAll<PredictedGhost, Simulate>())
             {
                 if (movement.ValueRO.IsMoving)
@@ -68,7 +68,7 @@ namespace Natrium.Gameplay.Client.Systems
                 else if (inputMove.ValueRO.Value.x < 0)
                     target.x--;
 
-                position.AddCommandData(new TargetCommand
+                position.AddCommandData(new MoveCommand
                 {
                     Tick = networkTime.ServerTick,
                     Target = target,

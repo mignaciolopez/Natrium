@@ -30,8 +30,7 @@ namespace Natrium.Gameplay.Shared.Components
                 {
                     Value = authoring.speed
                 });
-
-                AddComponent<TargetCommand>(e);
+                
                 AddComponent<MovementData>(e);
                 AddComponent<Reckoning>(e);
                 
@@ -48,13 +47,6 @@ namespace Natrium.Gameplay.Shared.Components
     public struct Speed : IComponentData
     {
         [GhostField] public float Value;
-    }
-
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
-    public struct TargetCommand : ICommandData
-    {
-        public NetworkTick Tick { get; set; }
-        public int3 Target;
     }
 
     public struct MovementData : IComponentData

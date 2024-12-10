@@ -52,7 +52,7 @@ namespace Natrium.Gameplay.Shared.Systems
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
             
             foreach (var (movementData, targetCommand, reckoning, physicsCollider, overlapBox, entity) 
-                     in SystemAPI.Query<RefRW<MovementData>, DynamicBuffer<TargetCommand>, RefRW<Reckoning>, RefRO<PhysicsCollider>, RefRO<OverlapBox>>()
+                     in SystemAPI.Query<RefRW<MovementData>, DynamicBuffer<MoveCommand>, RefRW<Reckoning>, RefRO<PhysicsCollider>, RefRO<OverlapBox>>()
                          .WithAll<PredictedGhost, Simulate>()
                          .WithEntityAccess())
             {

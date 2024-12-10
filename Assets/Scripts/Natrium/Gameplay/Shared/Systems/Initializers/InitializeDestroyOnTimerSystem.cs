@@ -1,11 +1,11 @@
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Shared;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 
 namespace Natrium.Gameplay.Shared.Systems.Initializers
 {
+    [UpdateInGroup(typeof(SimulationSystemGroup), OrderLast = true)]
     public partial struct InitializeDestroyOnTimerSystem : ISystem, ISystemStartStop
     {
         //[BurstCompile]
@@ -36,18 +36,20 @@ namespace Natrium.Gameplay.Shared.Systems.Initializers
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
-            var simulationTickRate = NetCodeConfig.Global.ClientServerTickRate.SimulationTickRate;
+            var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
+            var simulationTickRate = 15;//NetCodeConfig.Global.ClientServerTickRate.SimulationTickRate;
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
-            var currentTick = networkTime.ServerTick;
 
-            foreach (var (dot, e) in SystemAPI.Query<DestroyOnTimer>().WithNone<DestroyAtTick>().WithEntityAccess())
+            foreach (var (destroyOnTimer, entity)
+                     in SystemAPI.Query<RefRO<DestroyOnTimer>>()
+                         .WithNone<DestroyAtTick>()
+                         .WithEntityAccess())
             {
-                Log.Debug($"[{state.WorldUnmanaged.Name}] | Initializing DestroyOnTimer on: {e}");
-                var lifeTimeInTicks = (uint)(dot.Value * simulationTickRate);
-                var targetTick = currentTick;
+                Log.Debug($"[{state.WorldUnmanaged.Name}] | Initializing {nameof(DestroyOnTimer)} on: {entity}");
+                var lifeTimeInTicks = (uint)(destroyOnTimer.ValueRO.Value * simulationTickRate);
+                var targetTick = networkTime.ServerTick;
                 targetTick.Add(lifeTimeInTicks);
-                ecb.AddComponent(e, new DestroyAtTick { Value = targetTick });
+                ecb.AddComponent(entity, new DestroyAtTick { Value = targetTick });
             }
 
             ecb.Playback(state.EntityManager);

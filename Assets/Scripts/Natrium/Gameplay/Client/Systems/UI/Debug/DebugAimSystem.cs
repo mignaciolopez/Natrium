@@ -8,11 +8,10 @@ using Unity.NetCode;
 using Unity.Mathematics;
 using Unity.Transforms;
 using Natrium.Shared.Extensions;
-using UnityEngine.SocialPlatforms;
 
 namespace Natrium.Gameplay.Client.Systems.UI.Debug
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup), OrderFirst = true)]
+    [UpdateInGroup(typeof(SimulationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct DebugAimSystem : ISystem, ISystemStartStop
     {
@@ -57,12 +56,9 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         {
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
             
-            if (!networkTime.IsFirstTimeFullyPredictingTick)
-                return;
-            
             foreach (var (inputAim, entity)
                      in SystemAPI.Query<DynamicBuffer<InputAim>>()
-                         .WithAll<PlayerTag, GhostOwnerIsLocal>().WithEntityAccess())
+                         .WithEntityAccess())
             {
                 if (!inputAim.GetDataAtTick(networkTime.ServerTick, out var inputAimAtTick))
                 {

@@ -3,11 +3,10 @@ using Natrium.Shared;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.NetCode;
-using Unity.Transforms;
 
 namespace Natrium.Gameplay.Client.Systems
 {
-    [UpdateInGroup(typeof(LateSimulationSystemGroup), OrderFirst = true)]
+    [UpdateInGroup(typeof(SimulationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct DestroyEntitySystem : ISystem, ISystemStartStop
     {
