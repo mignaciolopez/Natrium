@@ -8,10 +8,11 @@ using Unity.NetCode;
 using Unity.Mathematics;
 using Unity.Transforms;
 using Natrium.Shared.Extensions;
+using UnityEngine.SocialPlatforms;
 
 namespace Natrium.Gameplay.Client.Systems.UI.Debug
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup), OrderLast = true)]
+    [UpdateInGroup(typeof(PredictedSimulationSystemGroup), OrderFirst = true)]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct DebugAimSystem : ISystem, ISystemStartStop
     {
@@ -56,29 +57,34 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         {
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
             
-            foreach (var (inputAims, entity)
+            if (!networkTime.IsFirstTimeFullyPredictingTick)
+                return;
+            
+            foreach (var (inputAim, entity)
                      in SystemAPI.Query<DynamicBuffer<InputAim>>()
                          .WithAll<PlayerTag, GhostOwnerIsLocal>().WithEntityAccess())
             {
-                if (!inputAims.GetDataAtTick(networkTime.ServerTick, out var inputAimAtTick, true))
+                if (!inputAim.GetDataAtTick(networkTime.ServerTick, out var inputAimAtTick))
                 {
-                    //Log.Warning($"Not processing {nameof(InputAim)} on Tick: {networkTime.ServerTick}");
+                    Log.Warning($"No {nameof(InputAim)}@{networkTime.ServerTick}");
                     continue;
                 }
                 
                 if (!inputAimAtTick.Set)
                     continue;
                 
-                Log.Debug($"Processing InputAim on Tick: {networkTime.ServerTick}");
-                Log.Debug($"inputAimAtTick: {inputAimAtTick.Tick}");
+                Log.Debug($"Processing {nameof(InputAim)}@{inputAimAtTick.Tick} | {networkTime.ServerTick}");
                 
-                var prefab = SystemAPI.GetSingleton<DebugAimInputPrefab>().Prefab;
-                var prefabEntity = state.EntityManager.Instantiate(prefab);
-                state.EntityManager.SetComponentData(prefabEntity, new LocalTransform
+                var prefabEntity = SystemAPI.GetSingleton<DebugAimInputPrefab>().Prefab;
+                var prefabLocalTransform = state.EntityManager.GetComponentData<LocalTransform>(prefabEntity);
+                
+                var debugEntity = state.EntityManager.Instantiate(prefabEntity);
+                
+                state.EntityManager.SetComponentData(debugEntity, new LocalTransform
                 {
-                    Position = new float3(inputAimAtTick.MouseWorldPosition.x, 5.0f, inputAimAtTick.MouseWorldPosition.z),
-                    Rotation = quaternion.identity,
-                    Scale = 1.0f
+                    Position = math.round(new float3(inputAimAtTick.MouseWorldPosition.x, 5.0f, inputAimAtTick.MouseWorldPosition.z)),
+                    Rotation = prefabLocalTransform.Rotation,
+                    Scale = prefabLocalTransform.Scale,
                 });
 
                 var color = UnityEngine.Color.white;
@@ -88,19 +94,14 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
                     if (state.EntityManager.HasComponent<MaterialPropertyBaseColor>(child.Value))
                     {
                         color = state.EntityManager.GetComponentData<MaterialPropertyBaseColor>(child.Value).Value.ToColor();
-                        color.a = 0.5f;
                         break;
                     }
                 }
                 
-                foreach (var child in SystemAPI.GetBuffer<LinkedEntityGroup>(prefabEntity))
-                {
-                    if (!state.EntityManager.HasComponent<UnityEngine.SpriteRenderer>(child.Value))
-                        continue;
-
-                    var spriteRenderer = state.EntityManager.GetComponentObject<UnityEngine.SpriteRenderer>(child.Value);
-                    spriteRenderer.color = color;
-                }
+                color.a = 0.5f;
+                
+                var spriteRenderer = state.EntityManager.GetComponentObject<UnityEngine.SpriteRenderer>(debugEntity);
+                spriteRenderer.color = color;
             }
         }
     }
