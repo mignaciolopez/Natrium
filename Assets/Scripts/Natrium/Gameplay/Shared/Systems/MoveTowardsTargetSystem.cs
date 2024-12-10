@@ -43,21 +43,24 @@ namespace Natrium.Gameplay.Shared.Systems
             if (!networkTime.IsFirstTimeFullyPredictingTick)
                 return;
             
-            foreach (var (localTransform, movement, speed) 
+            foreach (var (localTransform, movementData, speed) 
                      in SystemAPI.Query<RefRW<LocalTransform>, RefRW<MovementData>, RefRO<Speed>>()
                          .WithAll<PredictedGhost, Simulate>())
             {
-                var maxDistanceDelta = speed.ValueRO.Value * deltaTIme;
-                localTransform.ValueRW.Position.MoveTowards(movement.ValueRO.Target, maxDistanceDelta);
+                if(movementData.ValueRO.ShouldCheckCollision)
+                    continue;
                 
-                if (math.distancesq(localTransform.ValueRO.Position, movement.ValueRO.Target) < maxDistanceDelta * 0.1f)
+                var maxDistanceDelta = speed.ValueRO.Value * deltaTIme;
+                localTransform.ValueRW.Position.MoveTowards(movementData.ValueRO.Target, maxDistanceDelta);
+                
+                if (math.distancesq(localTransform.ValueRO.Position, movementData.ValueRO.Target) < maxDistanceDelta * 0.1f)
                 {
-                    movement.ValueRW.IsMoving = false;
-                    movement.ValueRW.Previous = movement.ValueRO.Target;
+                    movementData.ValueRW.IsMoving = false;
+                    movementData.ValueRW.Previous = movementData.ValueRO.Target;
                 }
                 else
                 {
-                    movement.ValueRW.IsMoving = true;
+                    movementData.ValueRW.IsMoving = true;
                 }
             }
         }

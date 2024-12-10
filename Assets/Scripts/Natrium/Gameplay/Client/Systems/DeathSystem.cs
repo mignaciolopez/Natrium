@@ -46,8 +46,7 @@ namespace Natrium.Gameplay.Client.Systems
                          .WithEntityAccess())
             {
                 Log.Debug($"Killing {entity}");
-
-                ecb.SetComponentEnabled<OverlapBox>(entity, false);
+                
                 ecb.AddComponent<DeathInitialized>(entity);
             }
             

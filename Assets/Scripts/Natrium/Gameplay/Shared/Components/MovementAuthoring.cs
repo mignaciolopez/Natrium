@@ -35,8 +35,11 @@ namespace Natrium.Gameplay.Shared.Components
                 AddComponent<MovementData>(e);
                 AddComponent<Reckoning>(e);
                 
-                AddComponent<OverlapBox>(e);
-                SetComponentEnabled<OverlapBox>(e, false);
+                AddComponent(e, new OverlapBox
+                {
+                    HalfExtends = 0.4f,
+                    Offset = float3.zero,
+                });
             }
         }
     }
@@ -59,7 +62,7 @@ namespace Natrium.Gameplay.Shared.Components
         public int3 Target;
         public int3 Previous;
         public bool IsMoving;
-        public bool CanNotMove;
+        public bool ShouldCheckCollision;
     }
     
     [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]

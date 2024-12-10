@@ -61,7 +61,6 @@ namespace Natrium.Gameplay.Server.Systems
                     state.EntityManager.SetComponentData(child.Value, a);
                 }
                 speed.ValueRW.Value *= 2.0f;
-                ecb.SetComponentEnabled<OverlapBox>(entity, false);
                 
                 ecb.AddComponent<DeathInitialized>(entity);
             }

@@ -63,7 +63,10 @@ namespace Natrium.Gameplay.Server.Systems
                 if (movement.ValueRO.IsMoving)
                     continue;
                 
+                
                 var distance = math.distancesq(localTransform.ValueRO.Position, positionAtTick.Target);
+                movement.ValueRW.ShouldCheckCollision = distance > 0.1f;
+                
                 if (distance > 1.0f)
                 {
                     movement.ValueRW.Target = movement.ValueRO.Previous;

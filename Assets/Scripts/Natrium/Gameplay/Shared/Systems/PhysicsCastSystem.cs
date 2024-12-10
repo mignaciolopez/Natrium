@@ -44,39 +44,45 @@ namespace Natrium.Gameplay.Shared.Systems
         {
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
-            var physicsWorld = SystemAPI.GetSingletonRW<PhysicsWorldSingleton>();
+
+            if (state.WorldUnmanaged.IsClient() && !networkTime.IsFirstTimeFullyPredictingTick)
+                return;
             
-            /*foreach (var (position, inputMoves, physicsCollider, overlapBox, entity) 
-                     in SystemAPI.Query<RefRW<Position>, DynamicBuffer<InputMoveCommand>, RefRO<PhysicsCollider>, RefRO<OverlapBox>>()
+            var physicsWorld = SystemAPI.GetSingletonRW<PhysicsWorldSingleton>();
+            var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
+            
+            foreach (var (movementData, targetCommand, reckoning, physicsCollider, overlapBox, entity) 
+                     in SystemAPI.Query<RefRW<MovementData>, DynamicBuffer<TargetCommand>, RefRW<Reckoning>, RefRO<PhysicsCollider>, RefRO<OverlapBox>>()
+                         .WithAll<PredictedGhost, Simulate>()
                          .WithEntityAccess())
             {
-                if (!inputMoves.GetDataAtTick(networkTime.ServerTick, out var inputMoveAtTick, true))
+                if (!targetCommand.GetDataAtTick(networkTime.ServerTick, out var targetCommandAtTick, false))
                 {
-                    Log.Warning($"Not processing inputMove on Tick: {networkTime.ServerTick}");
+                    //Log.Warning($"No {nameof(TargetCommand)}@{networkTime.ServerTick}");
                     continue;
                 }
                 
-                if (position.ValueRO.IsMoving)
+                if (movementData.ValueRO.IsMoving || !movementData.ValueRO.ShouldCheckCollision)
                     continue;
                 
                 var filter = physicsCollider.ValueRO.Value.Value.GetCollisionFilter();
                 
                 var outHits = new NativeList<DistanceHit>(state.WorldUpdateAllocator);
 
-                NetworkTick interpolationDelay = networkTime.ServerTick;
-                if (state.World.IsServer())
+                if (state.WorldUnmanaged.IsServer())
                 {
-                    interpolationDelay.Subtract(inputMoveAtTick.Tick.TickIndexForValidTick);
+                    var interpolationDelay = networkTime.ServerTick;
+                    interpolationDelay.Subtract(targetCommandAtTick.Tick.TickIndexForValidTick);
+                    
+                    SystemAPI.GetSingleton<PhysicsWorldHistorySingleton>().GetCollisionWorldFromTick(
+                        targetCommandAtTick.Tick,
+                        interpolationDelay.TickIndexForValidTick,
+                        ref physicsWorld.ValueRW.PhysicsWorld, 
+                        out collisionWorld );
                 }
                 
-                SystemAPI.GetSingleton<PhysicsWorldHistorySingleton>().GetCollisionWorldFromTick(
-                    inputMoveAtTick.Tick,
-                    interpolationDelay.TickIndexForValidTick,
-                    ref physicsWorld.ValueRW.PhysicsWorld, 
-                    out var collisionWorldHistory );
-                
-                var realCollision = collisionWorldHistory.OverlapBox(
-                    position.ValueRO.Target + overlapBox.ValueRO.Offset,
+                var realCollision = collisionWorld.OverlapBox(
+                    movementData.ValueRO.Target + overlapBox.ValueRO.Offset,
                     quaternion.identity,
                     overlapBox.ValueRO.HalfExtends,
                     ref outHits,
@@ -103,12 +109,19 @@ namespace Natrium.Gameplay.Shared.Systems
                         }
                     }
                 }
-                
-                position.ValueRW.CanNotMove = realCollision;
-                ecb.SetComponentEnabled<OverlapBox>(entity, false);
+
+                if (realCollision)
+                {
+                    movementData.ValueRW.Target = movementData.ValueRO.Previous;
+                    //reckoning.ValueRW.Tick = networkTime.ServerTick;
+                    //reckoning.ValueRW.ShouldReckon = true;
+                    //reckoning.ValueRW.Target = movementData.ValueRO.Previous;
+                }
+
+                movementData.ValueRW.ShouldCheckCollision = false;
                 
                 outHits.Dispose();
-            }*/
+            }
             
             ecb.Playback(state.EntityManager);
             ecb.Dispose();

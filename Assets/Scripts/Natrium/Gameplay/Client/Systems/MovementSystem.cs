@@ -50,8 +50,8 @@ namespace Natrium.Gameplay.Client.Systems
             if (!networkTime.IsFirstTimeFullyPredictingTick)
                 return;
             
-            foreach (var (movement, position, inputMove, localTransform, reckoning)
-                     in SystemAPI.Query<RefRW<MovementData>, DynamicBuffer<TargetCommand>, RefRO<InputMove>, RefRO<LocalTransform>, RefRO<Reckoning>>()
+            foreach (var (movement, position, inputMove, localTransform)
+                     in SystemAPI.Query<RefRW<MovementData>, DynamicBuffer<TargetCommand>, RefRO<InputMove>, RefRO<LocalTransform>>()
                          .WithAll<PredictedGhost, Simulate>())
             {
                 if (movement.ValueRO.IsMoving)
@@ -74,16 +74,12 @@ namespace Natrium.Gameplay.Client.Systems
                     Target = target,
                 });
                 
+                movement.ValueRW.ShouldCheckCollision = false;
+                
                 if (inputMove.ValueRO.Value.x != 0 || inputMove.ValueRO.Value.y != 0)
                 {
                     movement.ValueRW.Target = target;
-
-                    /*ecb.SetComponent(entity, new OverlapBox
-                    {
-                        HalfExtends = 0.4f,
-                        Offset = float3.zero,
-                    });
-                    ecb.SetComponentEnabled<OverlapBox>(entity, true);*/
+                    movement.ValueRW.ShouldCheckCollision = true;
                 }
             }
             

@@ -186,7 +186,7 @@ namespace Natrium.Gameplay.Server.Systems
                     Target = (int3)localTransform.Position,
                     Previous = (int3)localTransform.Position,
                     IsMoving = false,
-                    CanNotMove = false,
+                    ShouldCheckCollision = false,
                 });
                 
                 EntityManager.SetComponentData(player, new Reckoning

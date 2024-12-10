@@ -4,11 +4,11 @@ using Unity.NetCode;
 
 namespace Natrium.Gameplay.Shared.Components
 {
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.None)]
-    public struct OverlapBox : IComponentData, IEnableableComponent
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
+    public struct OverlapBox : IComponentData
     {
-        public float HalfExtends;
-        public float3 Offset;
+        [GhostField] public float HalfExtends;
+        [GhostField] public float3 Offset;
     }
     
     public struct RayCast : IComponentData
