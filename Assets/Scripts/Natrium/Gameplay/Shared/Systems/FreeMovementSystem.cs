@@ -40,10 +40,10 @@ namespace Natrium.Gameplay.Shared.Systems
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
             var deltaTime = SystemAPI.Time.DeltaTime;
             
-            foreach (var (position, inputAxis, speed, entity) 
+            /*foreach (var (position, inputAxis, speed, entity) 
                      in SystemAPI.Query<RefRW<Position>, RefRO<InputMove>, RefRO<Speed>>()
                          .WithAll<MoveFreeTag, Simulate>()
-                         .WithDisabled<MoveTowardsTargetTag, OverlapBox>()
+                         .WithDisabled<MovingTowardsTargetTag, OverlapBox>()
                          .WithEntityAccess()) //If its moving Ignore it
             {
                 if (!state.EntityManager.IsComponentEnabled<MoveFreeTag>(entity))
@@ -69,10 +69,10 @@ namespace Natrium.Gameplay.Shared.Systems
                     }
                     else
                     {
-                        ecb.SetComponentEnabled<MoveTowardsTargetTag>(entity, true);   
+                        ecb.SetComponentEnabled<MovingTowardsTargetTag>(entity, true);   
                     }
                 }
-            }
+            }*/
             
             ecb.Playback(state.EntityManager);
             ecb.Dispose();

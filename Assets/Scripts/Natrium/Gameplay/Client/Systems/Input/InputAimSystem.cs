@@ -61,7 +61,7 @@ namespace Natrium.Gameplay.Client.Systems.Input
 
         protected override void OnUpdate()
         {
-            var currentTick = SystemAPI.GetSingleton<NetworkTime>().InterpolationTick;
+            var networkTime = SystemAPI.GetSingleton<NetworkTime>();
             var inputAim = EntityManager.GetBuffer<InputAim>(_entityLocalPlayer);
 
             var mouseInputPosition = _inputActions.Map_Gameplay.Axn_MousePosition.ReadValue<Vector2>();
@@ -70,14 +70,14 @@ namespace Natrium.Gameplay.Client.Systems.Input
 
             inputAim.AddCommandData(new InputAim
             {
-                Tick = currentTick,
+                Tick = networkTime.ServerTick,
                 Set = _inputActions.Map_Gameplay.Axn_MouseRealease.WasPerformedThisFrame(),
                 MouseWorldPosition = mouseWorldPosition
             });
                 
             if (_inputActions.Map_Gameplay.Axn_MouseRealease.WasPerformedThisFrame())
             {
-                Log.Debug($"OnPrimaryMouseRelease Tick: {currentTick}");
+                Log.Debug($"OnPrimaryMouseRelease Tick: {networkTime.ServerTick}");
                 
                 Log.Debug($"mouseWorldPosition: {mouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}\n" +
                           $"mouseInputPosition: {mouseInputPosition}\n" + 

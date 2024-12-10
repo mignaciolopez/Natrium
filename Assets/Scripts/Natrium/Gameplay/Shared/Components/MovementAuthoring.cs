@@ -17,6 +17,8 @@ namespace Natrium.Gameplay.Shared.Components
     {
         public float speed = 5.0f;
         public MovementTypes moveType = MovementTypes.Classic;
+        [Range(0.1f, 1.0f)]
+        public float percentNextMove = 0.1f;
         
         public class Baker : Baker<MovementAuthoring>
         {
@@ -28,42 +30,13 @@ namespace Natrium.Gameplay.Shared.Components
                 {
                     Value = authoring.speed
                 });
-            
-                AddComponent(e, new Position
-                {
-                    Previous = (int3)(float3)authoring.transform.position,
-                    Target = (int3)(float3)authoring.transform.position,
-                });
-            
-                AddComponent<MoveClassicTag>(e);
-                AddComponent<MoveDiagonalTag>(e);
-                AddComponent<MoveFreeTag>(e);
+
+                AddComponent<TargetCommand>(e);
+                AddComponent<MovementData>(e);
+                AddComponent<Reckoning>(e);
                 
-                switch (authoring.moveType)
-                {
-                    default:
-                    case MovementTypes.Classic:
-                        SetComponentEnabled<MoveClassicTag>(e, true);
-                        SetComponentEnabled<MoveDiagonalTag>(e, false);
-                        SetComponentEnabled<MoveFreeTag>(e, false);
-                        break;
-                    case MovementTypes.Diagonal:
-                        SetComponentEnabled<MoveClassicTag>(e, false);
-                        SetComponentEnabled<MoveDiagonalTag>(e, true);
-                        SetComponentEnabled<MoveFreeTag>(e, false);
-                        break;
-                    case MovementTypes.Free:
-                        SetComponentEnabled<MoveClassicTag>(e, false);
-                        SetComponentEnabled<MoveDiagonalTag>(e, false);
-                        SetComponentEnabled<MoveFreeTag>(e, true);
-                        break;
-                }
-            
                 AddComponent<OverlapBox>(e);
                 SetComponentEnabled<OverlapBox>(e, false);
-                
-                AddComponent<MoveTowardsTargetTag>(e);
-                SetComponentEnabled<MoveTowardsTargetTag>(e, false);
             }
         }
     }
@@ -73,27 +46,27 @@ namespace Natrium.Gameplay.Shared.Components
     {
         [GhostField] public float Value;
     }
-    
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
-    public struct Position : IComponentData
+
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
+    public struct TargetCommand : ICommandData
     {
-        [GhostField] public float3 Previous;
-        [GhostField] public float3 Target;
+        public NetworkTick Tick { get; set; }
+        public int3 Target;
+    }
+
+    public struct MovementData : IComponentData
+    {
+        public int3 Target;
+        public int3 Previous;
+        public bool IsMoving;
+        public bool CanNotMove;
     }
     
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToOwner)]
-    [GhostEnabledBit]
-    public struct MoveFreeTag : IComponentData, IEnableableComponent { }
-    
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToOwner)]
-    [GhostEnabledBit]
-    public struct MoveDiagonalTag : IComponentData, IEnableableComponent { }
-    
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToOwner)]
-    [GhostEnabledBit]
-    public struct MoveClassicTag : IComponentData, IEnableableComponent { }
-    
-    //[GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToNonOwner)]
-    //[GhostEnabledBit]
-    public struct MoveTowardsTargetTag : IComponentData, IEnableableComponent { }
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
+    public struct Reckoning : IComponentData
+    {
+        [GhostField] public NetworkTick Tick { get; set; }
+        [GhostField] public int3 Target;
+        [GhostField] public bool ShouldReckon;
+    }
 }

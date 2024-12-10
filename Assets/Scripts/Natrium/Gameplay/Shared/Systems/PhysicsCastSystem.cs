@@ -1,23 +1,27 @@
 using Unity.Entities;
 using Unity.Physics;
 using Natrium.Gameplay.Shared.Components;
+using Natrium.Gameplay.Shared.Components.Input;
 using Natrium.Shared;
+using Natrium.Shared.Extensions;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Mathematics;
 using Unity.NetCode;
-using Unity.Transforms;
 
 namespace Natrium.Gameplay.Shared.Systems
 {
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
     [UpdateBefore(typeof(MoveTowardsTargetSystem))]
-    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ServerSimulation)]
+    [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation | WorldSystemFilterFlags.ClientSimulation)]
     public partial struct PhysicsCastSystem : ISystem, ISystemStartStop
     {
         public void OnCreate(ref SystemState state)
         {
+            state.RequireForUpdate<NetworkTime>();
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
             state.RequireForUpdate<PhysicsWorldSingleton>();
+            state.RequireForUpdate<PhysicsWorldHistorySingleton>();
         }
 
         public void OnStartRunning(ref SystemState state)
@@ -39,32 +43,52 @@ namespace Natrium.Gameplay.Shared.Systems
         public void OnUpdate(ref SystemState state)
         {
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
-            var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
-
-            foreach (var (position, localTransform, physicsCollider, overlapBox, entity) in
-                     SystemAPI.Query<RefRW<Position>, RefRO<LocalTransform>, RefRO<PhysicsCollider>, RefRO<OverlapBox>>()
-                         .WithDisabled<MoveTowardsTargetTag>() //Ignore Already Moving Entities
-                         .WithAll<OverlapBox, Simulate>()
+            var networkTime = SystemAPI.GetSingleton<NetworkTime>();
+            var physicsWorld = SystemAPI.GetSingletonRW<PhysicsWorldSingleton>();
+            
+            /*foreach (var (position, inputMoves, physicsCollider, overlapBox, entity) 
+                     in SystemAPI.Query<RefRW<Position>, DynamicBuffer<InputMoveCommand>, RefRO<PhysicsCollider>, RefRO<OverlapBox>>()
                          .WithEntityAccess())
             {
+                if (!inputMoves.GetDataAtTick(networkTime.ServerTick, out var inputMoveAtTick, true))
+                {
+                    Log.Warning($"Not processing inputMove on Tick: {networkTime.ServerTick}");
+                    continue;
+                }
+                
+                if (position.ValueRO.IsMoving)
+                    continue;
+                
                 var filter = physicsCollider.ValueRO.Value.Value.GetCollisionFilter();
-
+                
                 var outHits = new NativeList<DistanceHit>(state.WorldUpdateAllocator);
 
-                var realCollision = collisionWorld.OverlapBox(
+                NetworkTick interpolationDelay = networkTime.ServerTick;
+                if (state.World.IsServer())
+                {
+                    interpolationDelay.Subtract(inputMoveAtTick.Tick.TickIndexForValidTick);
+                }
+                
+                SystemAPI.GetSingleton<PhysicsWorldHistorySingleton>().GetCollisionWorldFromTick(
+                    inputMoveAtTick.Tick,
+                    interpolationDelay.TickIndexForValidTick,
+                    ref physicsWorld.ValueRW.PhysicsWorld, 
+                    out var collisionWorldHistory );
+                
+                var realCollision = collisionWorldHistory.OverlapBox(
                     position.ValueRO.Target + overlapBox.ValueRO.Offset,
-                    localTransform.ValueRO.Rotation,
+                    quaternion.identity,
                     overlapBox.ValueRO.HalfExtends,
                     ref outHits,
                     filter);
-
+                
                 if (realCollision)
                 {
                     foreach (var hit in outHits)
                     {
                         if (hit.Entity == entity)
                         {
-                            Log.Warning($"[{state.World.Name}] {entity} is colliding with itself hit {hit.Entity}");
+                            Log.Info($"[{state.World.Name}] {entity} is colliding with itself hit {hit.Entity}");
                             realCollision = false;
                         }
                         else
@@ -79,19 +103,12 @@ namespace Natrium.Gameplay.Shared.Systems
                         }
                     }
                 }
-
-                if (realCollision)
-                {
-                    position.ValueRW.Target = position.ValueRO.Previous;
-                }
-                else
-                {
-                    ecb.SetComponentEnabled<MoveTowardsTargetTag>(entity, true);    
-                }
-
+                
+                position.ValueRW.CanNotMove = realCollision;
                 ecb.SetComponentEnabled<OverlapBox>(entity, false);
+                
                 outHits.Dispose();
-            }
+            }*/
             
             ecb.Playback(state.EntityManager);
             ecb.Dispose();

@@ -10,7 +10,7 @@ using Unity.Transforms;
 namespace Natrium.Gameplay.Shared.Systems
 {
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
-    [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation | WorldSystemFilterFlags.ClientSimulation)]
+    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ServerSimulation)]
     public partial struct MoveTowardsTargetSystem : ISystem
     {
         public void OnCreate(ref SystemState state)
@@ -37,24 +37,29 @@ namespace Natrium.Gameplay.Shared.Systems
         public void OnUpdate(ref SystemState state)
         {
             var deltaTIme = SystemAPI.Time.DeltaTime;
-            var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
 
-            foreach (var (localTransform, position, speed, entity) 
-                     in SystemAPI.Query<RefRW<LocalTransform>, RefRO<Position>, RefRO<Speed>>()
-                         .WithAll<Simulate>()
-                         .WithEntityAccess())
+            var networkTime = SystemAPI.GetSingleton<NetworkTime>();
+            
+            if (!networkTime.IsFirstTimeFullyPredictingTick)
+                return;
+            
+            foreach (var (localTransform, movement, speed) 
+                     in SystemAPI.Query<RefRW<LocalTransform>, RefRW<MovementData>, RefRO<Speed>>()
+                         .WithAll<PredictedGhost, Simulate>())
             {
                 var maxDistanceDelta = speed.ValueRO.Value * deltaTIme;
-                localTransform.ValueRW.Position.MoveTowards(position.ValueRO.Target, maxDistanceDelta);
+                localTransform.ValueRW.Position.MoveTowards(movement.ValueRO.Target, maxDistanceDelta);
                 
-                if (math.distancesq(localTransform.ValueRO.Position, position.ValueRO.Target) < maxDistanceDelta * 0.1f)
+                if (math.distancesq(localTransform.ValueRO.Position, movement.ValueRO.Target) < maxDistanceDelta * 0.1f)
                 {
-                    ecb.SetComponentEnabled<MoveTowardsTargetTag>(entity, false);
+                    movement.ValueRW.IsMoving = false;
+                    movement.ValueRW.Previous = movement.ValueRO.Target;
+                }
+                else
+                {
+                    movement.ValueRW.IsMoving = true;
                 }
             }
-            
-            ecb.Playback(state.EntityManager);
-            ecb.Dispose();
         }
     }
 }

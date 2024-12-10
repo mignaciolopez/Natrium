@@ -17,6 +17,7 @@ namespace Natrium.Gameplay.Shared.Systems
         public void OnCreate(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
+            state.RequireForUpdate<NetworkTime>();
         }
 
         public void OnStartRunning(ref SystemState state)
@@ -37,50 +38,59 @@ namespace Natrium.Gameplay.Shared.Systems
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
+            var networkTime = SystemAPI.GetSingleton<NetworkTime>();
+            //Log.Debug($"[{state.WorldUnmanaged.Name}] ServerTick: {networkTime.ServerTick} ");
+            //Log.Debug($"[{state.WorldUnmanaged.Name}] InterpolationTick: {networkTime.InterpolationTick} ");
             
-            foreach (var (position, inputAxis, localTransform, entity) 
-                     in SystemAPI.Query<RefRW<Position>, RefRO<InputMove>, RefRO<LocalTransform>>()
+            /*var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
+            
+            foreach (var (position, inputMove, localTransform, entity) 
+                     in SystemAPI.Query<RefRW<MoveCommands>, DynamicBuffer<InputMove>, RefRO<LocalTransform>>()
                          .WithAll<MoveClassicTag, Simulate>()
-                         .WithDisabled<MoveTowardsTargetTag, OverlapBox>()
+                         .WithDisabled<MovingTowardsTargetTag, OverlapBox>()
                          .WithEntityAccess()) //If its moving Ignore it
             {
                 if (!state.EntityManager.IsComponentEnabled<MoveClassicTag>(entity))
                     Log.Error($".WithAll<MoveClassicTag");
 
+                inputMove.GetDataAtTick(networkTime.ServerTick, out var inputMoveAtTick);
+
                 position.ValueRW.Target = math.round(localTransform.ValueRO.Position); 
                 position.ValueRW.Previous = position.ValueRO.Target;
                 
                 //This bunch of Ifs Simulates the original Behavior of Movement.
-                if (inputAxis.ValueRO.Value.y > 0)
+                if (inputMoveAtTick.Value.y > 0)
                     position.ValueRW.Target.z++;
-                else if (inputAxis.ValueRO.Value.x > 0)
+                else if (inputMoveAtTick.Value.x > 0)
                     position.ValueRW.Target.x++;
-                else if (inputAxis.ValueRO.Value.y < 0)
+                else if (inputMoveAtTick.Value.y < 0)
                     position.ValueRW.Target.z--;
-                else if (inputAxis.ValueRO.Value.x < 0)
+                else if (inputMoveAtTick.Value.x < 0)
                     position.ValueRW.Target.x--;
 
-                if (inputAxis.ValueRO.Value.x != 0 || inputAxis.ValueRO.Value.y != 0)
+                if (inputMoveAtTick.Value.x != 0 || inputMoveAtTick.Value.y != 0)
                 {
                     if (state.EntityManager.HasComponent<GhostOwnerIsLocal>(entity))
                     {
                         ecb.SetComponent(entity, new OverlapBox
                         {
+                            Tick = inputMoveAtTick.Tick,
                             HalfExtends = 0.4f,
-                            Offset = new float3(0.1f * inputAxis.ValueRO.Value.x, 0, 0.1f * inputAxis.ValueRO.Value.y),
+                            Offset = new float3(0.1f * inputMoveAtTick.Value.x, 0, 0.1f * inputMoveAtTick.Value.y),
                         });
-                        ecb.SetComponentEnabled<OverlapBox>(entity, true);   
+                        //ecb.SetComponentEnabled<OverlapBox>(entity, true);
+                        ecb.SetComponentEnabled<MovingTowardsTargetTag>(entity, true); //Overriding collision check
                     }
                     else
                     {
-                        ecb.SetComponentEnabled<MoveTowardsTargetTag>(entity, true);
+                        ecb.SetComponentEnabled<MovingTowardsTargetTag>(entity, true);
                     }
                 }
             }
             
             ecb.Playback(state.EntityManager);
             ecb.Dispose();
+            */
         }
     }
 }

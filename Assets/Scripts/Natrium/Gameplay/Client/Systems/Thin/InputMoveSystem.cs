@@ -42,10 +42,7 @@ namespace Natrium.Gameplay.Client.Systems.Thin
         protected override void OnUpdate()
         {
             Log.Verbose("OnUpdate");
-            foreach (var inputAxis in SystemAPI.Query<RefRW<InputMove>>())
-            {
-                inputAxis.ValueRW.Value = _inputActions.Map_Gameplay.Axn_PlayerMove.ReadValue<Vector2>();
-            }
+
         }
     }
 }

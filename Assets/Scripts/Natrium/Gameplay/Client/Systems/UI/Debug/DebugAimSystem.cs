@@ -55,27 +55,23 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         private void QueryAndShowInputAims(ref SystemState state)
         {
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
-            var currentTick = networkTime.InterpolationTick;
-            if (currentTick.TickIndexForValidTick == _previousNetworkTick.TickIndexForValidTick)
-            {
-                //Log.Debug($"currentTick {currentTick} is not newer than {_previousNetworkTick}. Skipping.");
-                return;
-            }
-            _previousNetworkTick = currentTick;
             
-            foreach (var (inputAims, e)
+            foreach (var (inputAims, entity)
                      in SystemAPI.Query<DynamicBuffer<InputAim>>()
                          .WithAll<PlayerTag, GhostOwnerIsLocal>().WithEntityAccess())
             {
-                inputAims.GetDataAtTick(currentTick, out var inputAimAtTick);
-                if (!inputAimAtTick.Set)
+                if (!inputAims.GetDataAtTick(networkTime.ServerTick, out var inputAimAtTick, true))
                 {
-                    //Log.Debug($"inputAimAtTick {currentTick} is not Set.");
+                    //Log.Warning($"Not processing {nameof(InputAim)} on Tick: {networkTime.ServerTick}");
                     continue;
                 }
                 
-                Log.Debug($"Processing InputAim on Tick: {currentTick}");
+                if (!inputAimAtTick.Set)
+                    continue;
+                
+                Log.Debug($"Processing InputAim on Tick: {networkTime.ServerTick}");
                 Log.Debug($"inputAimAtTick: {inputAimAtTick.Tick}");
+                
                 var prefab = SystemAPI.GetSingleton<DebugAimInputPrefab>().Prefab;
                 var prefabEntity = state.EntityManager.Instantiate(prefab);
                 state.EntityManager.SetComponentData(prefabEntity, new LocalTransform
@@ -87,7 +83,7 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
 
                 var color = UnityEngine.Color.white;
                 
-                foreach (var child in state.EntityManager.GetBuffer<Child>(e))
+                foreach (var child in state.EntityManager.GetBuffer<Child>(entity))
                 {
                     if (state.EntityManager.HasComponent<MaterialPropertyBaseColor>(child.Value))
                     {

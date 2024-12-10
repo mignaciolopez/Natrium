@@ -70,11 +70,8 @@ namespace Natrium.Gameplay.Server.Systems
                 hp.ValueRW.Value = hp.ValueRO.MaxValue;
                 
                 speed.ValueRW.Value /= 2.0f;
-                
-                ecb.SetComponentEnabled<MoveTowardsTargetTag>(entity, false);
+
                 ecb.SetComponentEnabled<OverlapBox>(entity, false);
-                ecb.SetComponentEnabled<MoveFreeTag>(entity, false);
-                ecb.SetComponentEnabled<MoveClassicTag>(entity, true);
                 
                 var collisionFilter = physicsCollider.ValueRO.Value.Value.GetCollisionFilter();
                 collisionFilter.CollidesWith = ~0u;

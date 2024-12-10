@@ -51,11 +51,19 @@ namespace Natrium.Gameplay.Client.Systems
 
         private void OnKeyCodeReturn(Stream stream)
         {
-            foreach(var conState in SystemAPI.Query<ConnectionState>().WithAll<GhostOwnerIsLocal>())
+            foreach(var conState in SystemAPI.Query<RefRO<ConnectionState>>().WithAll<GhostOwnerIsLocal>())
             {
-                Log.Warning($"Connection State: {conState.CurrentState}");
-                if (conState.CurrentState == ConnectionState.State.Connecting || conState.CurrentState == ConnectionState.State.Connected || conState.CurrentState == ConnectionState.State.Unknown)
+                Log.Warning($"Connection State: {conState.ValueRO.CurrentState}");
+                if (conState.ValueRO.CurrentState == ConnectionState.State.Connecting || 
+                    conState.ValueRO.CurrentState == ConnectionState.State.Connected || 
+                    conState.ValueRO.CurrentState == ConnectionState.State.Unknown)
                     return;
+            }
+
+            foreach (var networkStreamRequestConnect in SystemAPI.Query<RefRO<NetworkStreamRequestConnect>>())
+            {
+                Log.Info($"Already Connecting to :{networkStreamRequestConnect.ValueRO.Endpoint}");
+                return;
             }
             
             if (SystemAPI.TryGetSingleton<SystemsSettings>(out var ss))
@@ -116,6 +124,7 @@ namespace Natrium.Gameplay.Client.Systems
                 ecb.AddComponent<NetworkStreamInGame>(e);
                 ecb.AddComponent<GhostOwnerIsLocal>(e);
                 ecb.AddComponent<ConnectionState>(e);
+                ecb.AddComponent<NetworkSnapshotAck>(e);
 
                 var req = ecb.CreateEntity();
                 ecb.AddComponent<RpcConnect>(req);

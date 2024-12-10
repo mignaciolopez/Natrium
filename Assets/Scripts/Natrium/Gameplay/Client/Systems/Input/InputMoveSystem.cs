@@ -5,8 +5,7 @@ using Unity.NetCode;
 using Natrium.Gameplay.Shared.Components.Input;
 using Natrium.Settings.Input;
 using Natrium.Shared;
-using Natrium.Shared.Systems;
-using Unity.Mathematics;
+using Unity.Transforms;
 
 namespace Natrium.Gameplay.Client.Systems.Input
 {
@@ -14,19 +13,36 @@ namespace Natrium.Gameplay.Client.Systems.Input
     public partial class InputMoveSystem : SystemBase
     {
         private InputActions _inputActions;
+        private Entity _entityLocalPlayer;
 
         protected override void OnCreate()
         {
             Log.Verbose("OnCreate");
             _inputActions = new InputActions();
-            var required = SystemAPI.QueryBuilder().WithAll<InputMove, GhostOwnerIsLocal, Simulate>().Build();
-            //RequireForUpdate(required);
+
+            RequireForUpdate<LocalTransform>();
+            RequireForUpdate<GhostOwnerIsLocal>();
+            RequireForUpdate<PlayerTag>();
         }
 
         protected override void OnStartRunning()
         {
             Log.Verbose("OnStartRunning");
             _inputActions.Enable();
+            
+            foreach (var (localTransform, entity) in SystemAPI.Query<RefRO<LocalTransform>>()
+                         .WithAll<GhostOwnerIsLocal>()
+                         .WithEntityAccess())
+            {
+                _entityLocalPlayer = entity;
+                break;
+            }
+
+            if (_entityLocalPlayer == Entity.Null)
+            {
+                Log.Error("Entity not found");
+                Enabled = false;
+            }
         }
 
         protected override void OnStopRunning()
@@ -40,36 +56,11 @@ namespace Natrium.Gameplay.Client.Systems.Input
             Log.Verbose("OnDestroy");
             base.OnDestroy();
         }
-        
+
         protected override void OnUpdate()
         {
-            foreach (var (inputAxis, entity) in SystemAPI.Query<RefRW<InputMove>>()
-                         .WithAll<GhostOwnerIsLocal, Simulate>()
-                         .WithEntityAccess())
-            {
-                inputAxis.ValueRW.Value = _inputActions.Map_Gameplay.Axn_PlayerMove.ReadValue<Vector2>();
-            }
-
-            
-            //Todo: Move all the following stuff to another system.
-            if (UnityEngine.Input.GetKeyUp(KeyCode.Return))
-                EventSystem.EnqueueEvent(Natrium.Shared.Events.OnKeyCodeReturn);
-            if (UnityEngine.Input.GetKeyUp(KeyCode.Escape))
-                EventSystem.EnqueueEvent(Natrium.Shared.Events.OnKeyCodeEscape);
-
-            if (UnityEngine.Input.GetKeyUp(KeyCode.F11))
-            {
-                if (Screen.fullScreen)
-                    Screen.fullScreenMode = FullScreenMode.Windowed;
-                else
-                    Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
-            }
-
-            if (UnityEngine.Input.GetKeyUp(KeyCode.F2))
-            {
-                EventSystem.EnqueueEvent(Natrium.Shared.Events.OnSendPing);
-            }
-            //End //Todo: Move all the following stuff to another system.
+            var inputMove = SystemAPI.GetComponentRW<InputMove>(_entityLocalPlayer);
+            inputMove.ValueRW.Value = _inputActions.Map_Gameplay.Axn_PlayerMove.ReadValue<Vector2>();
         }
     }
 }

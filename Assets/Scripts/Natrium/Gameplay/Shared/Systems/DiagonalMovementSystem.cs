@@ -39,10 +39,10 @@ namespace Natrium.Gameplay.Shared.Systems
         {
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
             
-            foreach (var (position, inputAxis, localTransform, entity) 
+            /*foreach (var (position, inputAxis, localTransform, entity) 
                      in SystemAPI.Query<RefRW<Position>, RefRO<InputMove>, RefRO<LocalTransform>>()
                          .WithAll<MoveDiagonalTag, Simulate>()
-                         .WithDisabled<MoveTowardsTargetTag, OverlapBox>()//If its moving Ignore it
+                         .WithDisabled<MovingTowardsTargetTag, OverlapBox>()//If its moving Ignore it
                          .WithEntityAccess()) 
             {
                 if (!state.EntityManager.IsComponentEnabled<MoveDiagonalTag>(entity))
@@ -85,10 +85,10 @@ namespace Natrium.Gameplay.Shared.Systems
                     }
                     else
                     {
-                        ecb.SetComponentEnabled<MoveTowardsTargetTag>(entity, true);   
+                        ecb.SetComponentEnabled<MovingTowardsTargetTag>(entity, true);   
                     }
                 }
-            }
+            }*/
             
             ecb.Playback(state.EntityManager);
             ecb.Dispose();

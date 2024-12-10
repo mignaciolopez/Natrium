@@ -147,6 +147,8 @@ namespace Natrium.Gameplay.Server.Systems
             EntityManager.GetName(_playerPrefab, out var prefabName);
             var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
 
+            var networkTime = SystemAPI.GetSingleton<NetworkTime>();
+
             //EntitiesJournaling.Enabled = true;
             foreach (var (rpcConnect, rpcSource, rpcEntity) in SystemAPI.Query<RefRO<RpcConnect>, RefRO<ReceiveRpcCommandRequest>>().WithEntityAccess())
             {
@@ -171,12 +173,28 @@ namespace Natrium.Gameplay.Server.Systems
                     Value = (FixedString64Bytes)$"Player {networkId}",
                 });
 
-                /*var localTransform = EntityManager.GetComponentData<LocalTransform>(_playerPrefab);
-                EntityManager.SetComponentData(player, new Position
+                var localTransform = EntityManager.GetComponentData<LocalTransform>(_playerPrefab);
+                EntityManager.SetComponentData(player, new LocalTransform
                 {
-                    Previous = localTransform.Position,
-                    Target = localTransform.Position
-                });*/
+                    Position = localTransform.Position,
+                    Rotation = localTransform.Rotation,
+                    Scale = localTransform.Scale,
+                });
+                
+                EntityManager.SetComponentData(player, new MovementData
+                {
+                    Target = (int3)localTransform.Position,
+                    Previous = (int3)localTransform.Position,
+                    IsMoving = false,
+                    CanNotMove = false,
+                });
+                
+                EntityManager.SetComponentData(player, new Reckoning
+                {
+                    Tick = networkTime.ServerTick,
+                    ShouldReckon = true,
+                    Target = (int3)localTransform.Position,
+                });
 
                 var healthPoints = EntityManager.GetComponentData<HealthPoints>(_playerPrefab);
                 EntityManager.SetComponentData(player, new HealthPoints

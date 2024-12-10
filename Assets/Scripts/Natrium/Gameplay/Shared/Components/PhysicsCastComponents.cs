@@ -1,8 +1,10 @@
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.NetCode;
 
 namespace Natrium.Gameplay.Shared.Components
 {
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.None)]
     public struct OverlapBox : IComponentData, IEnableableComponent
     {
         public float HalfExtends;

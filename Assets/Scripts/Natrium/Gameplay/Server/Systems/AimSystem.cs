@@ -3,6 +3,7 @@ using Unity.Entities;
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Gameplay.Shared.Components.Input;
 using Natrium.Shared;
+using Natrium.Shared.Extensions;
 using Unity.Mathematics;
 using Unity.Physics;
 //using Unity.Burst;
@@ -11,7 +12,7 @@ using UnityEngine;
 
 namespace Natrium.Gameplay.Server.Systems
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
+    [UpdateInGroup(typeof(SimulationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct AimSystem : ISystem, ISystemStartStop
     {
@@ -49,30 +50,31 @@ namespace Natrium.Gameplay.Server.Systems
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
+            var networkTime = SystemAPI.GetSingleton<NetworkTime>();
             var physicsWorld = SystemAPI.GetSingletonRW<PhysicsWorldSingleton>();
             
             foreach (var (inputAims, pc, ghostOwner, entity) 
                      in SystemAPI.Query<DynamicBuffer<InputAim>, RefRO<PhysicsCollider>, RefRO<GhostOwner>>()
                          .WithAll<Simulate, DamageDealerTag>().WithEntityAccess())
             {
-                inputAims.GetDataAtTick(currentTick, out var inputAimAtTick);
-                
-                if (!inputAimAtTick.Set)
+                if (!inputAims.GetDataAtTick(networkTime.ServerTick, out var inputAimAtTick, true))
                 {
-                    //Log.Debug($"inputAimAtTick {currentTick} is not Set.");
+                    //Log.Warning($"Not processing {nameof(InputAim)} on Tick: {networkTime.ServerTick}");
                     continue;
                 }
-
-                if (currentTick.IsNewerThan(inputAimAtTick.Tick))
+                
+                if (!inputAimAtTick.Set)
                     continue;
-                    
-                var interpolationDelay = currentTick;
-                interpolationDelay.Subtract(inputAimAtTick.Tick.TickIndexForValidTick);
+                
+                NetworkTick interpolationDelay = networkTime.ServerTick;
+                if (state.World.IsServer())
+                {
+                    interpolationDelay.Subtract(inputAimAtTick.Tick.TickIndexForValidTick);
+                }
                 
                 SystemAPI.GetSingleton<PhysicsWorldHistorySingleton>().GetCollisionWorldFromTick(
                         inputAimAtTick.Tick, 
-                        interpolationDelay.TickIndexForValidTick, 
+                        interpolationDelay.TickIndexForValidTick,
                         ref physicsWorld.ValueRW.PhysicsWorld, 
                         out var collisionWorld );
 
@@ -101,7 +103,7 @@ namespace Natrium.Gameplay.Server.Systems
                     {
                         var networkIdTarget = state.EntityManager.GetComponentData<GhostOwner>(closestHit.Entity);
                         
-                        Log.Debug($"Attack Event In Progress on Server Tick: {currentTick}");
+                        Log.Debug($"Attack Event In Progress on Server Tick: {networkTime.ServerTick}");
                         Log.Debug($"inputAimAtTick: {inputAimAtTick.Tick}");
                         
                         foreach (var attackEvents in SystemAPI.Query<DynamicBuffer<AttackEvents>>().WithAll<Simulate>())
