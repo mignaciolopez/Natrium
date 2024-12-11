@@ -15,7 +15,7 @@ MonoBehaviour:
   IsGlobalConfig: 0
   EnableClientServerBootstrap: 1
   ClientServerTickRate:
-    SimulationTickRate: 15
+    SimulationTickRate: 60
     PredictedFixedStepSimulationTickRatio: 1
     NetworkTickRate: 0
     MaxSimulationStepsPerFrame: 1
@@ -28,8 +28,8 @@ MonoBehaviour:
     InterpolationTimeMS: 0
     MaxExtrapolationTimeSimTicks: 20
     MaxPredictAheadTimeMS: 500
-    TargetCommandSlack: 2
-    NumAdditionalCommandsToSend: 2
+    TargetCommandSlack: 4
+    NumAdditionalCommandsToSend: 1
     MaxPredictionStepBatchSizeRepeatedTick: 0
     MaxPredictionStepBatchSizeFirstTimeTick: 0
     InterpolationDelayJitterScale: 1.25

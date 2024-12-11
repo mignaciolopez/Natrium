@@ -3,6 +3,7 @@ using Unity.Entities;
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Gameplay.Shared.Components.Input;
 using Natrium.Shared;
+using Natrium.Shared.Extensions;
 using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Burst;
@@ -47,15 +48,17 @@ namespace Natrium.Gameplay.Server.Systems
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
             var physicsWorld = SystemAPI.GetSingletonRW<PhysicsWorldSingleton>();
             
-            foreach (var (inputAims, pc, ghostOwner, entity) 
+            foreach (var (inputAims, physicsCollider, ghostOwner, entity) 
                      in SystemAPI.Query<DynamicBuffer<InputAim>, RefRO<PhysicsCollider>, RefRO<GhostOwner>>()
-                         .WithAll<Simulate, DamageDealerTag>().WithEntityAccess())
+                        .WithEntityAccess())
             {
-                if (!inputAims.GetDataAtTick(networkTime.ServerTick, out var inputAimAtTick))
+                if (!inputAims.GetDataAtTick(networkTime.ServerTick, out var inputAimAtTick, false))
                 {
                     Log.Warning($"No {nameof(InputAim)}@{networkTime.ServerTick}");
                     continue;
                 }
+                
+                //Log.Debug($"{nameof(InputAim)}@{networkTime.ServerTick} Set:{inputAimAtTick.Set}");
                 
                 if (!inputAimAtTick.Set)
                     continue;
@@ -64,7 +67,7 @@ namespace Natrium.Gameplay.Server.Systems
                 interpolationDelay.Subtract(inputAimAtTick.Tick.TickIndexForValidTick);
                 
                 SystemAPI.GetSingleton<PhysicsWorldHistorySingleton>().GetCollisionWorldFromTick(
-                        inputAimAtTick.Tick, 
+                        networkTime.ServerTick, 
                         interpolationDelay.TickIndexForValidTick,
                         ref physicsWorld.ValueRW.PhysicsWorld, 
                         out var collisionHistoryWorld );
@@ -76,7 +79,7 @@ namespace Natrium.Gameplay.Server.Systems
                 {
                     Start = inputAimAtTick.MouseWorldPosition + offset,
                     End = inputAimAtTick.MouseWorldPosition,
-                    Filter = pc.ValueRO.Value.Value.GetCollisionFilter()
+                    Filter = physicsCollider.ValueRO.Value.Value.GetCollisionFilter()
                 };
 
                 if (collisionHistoryWorld.CastRay(raycastInput, out var closestHit))

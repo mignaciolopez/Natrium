@@ -36,6 +36,7 @@ namespace Natrium.Gameplay.Shared.Components.Input
     }
 
     [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.SendToNonOwner)]
+    [InternalBufferCapacity(512)] //it remains at 64 at runtime
     public struct InputAim : ICommandData
     {
         [GhostField] public NetworkTick Tick { get; set; }

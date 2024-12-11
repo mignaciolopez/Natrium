@@ -69,7 +69,7 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
                 if (!inputAimAtTick.Set)
                     continue;
                 
-                Log.Debug($"Processing {nameof(InputAim)}@{inputAimAtTick.Tick} | {networkTime.ServerTick}");
+                Log.Debug($"Processing {nameof(InputAim)}@{inputAimAtTick.Tick}|{networkTime.ServerTick}");
                 
                 var prefabEntity = SystemAPI.GetSingleton<DebugAimInputPrefab>().Prefab;
                 var prefabLocalTransform = state.EntityManager.GetComponentData<LocalTransform>(prefabEntity);
