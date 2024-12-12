@@ -8,7 +8,7 @@ using Unity.NetCode;
 
 namespace Natrium.Gameplay.Client.Systems.UI.Debug
 {
-    [UpdateInGroup(typeof(GhostSimulationSystemGroup))]
+    [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct DebugAttackSystem : ISystem, ISystemStartStop
     {
@@ -17,6 +17,7 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         {
             Log.Verbose("OnCreate");
             state.RequireForUpdate<NetworkTime>();
+            state.RequireForUpdate<NetworkIdLookup>();
         }
 
         //[BurstCompile]
@@ -43,17 +44,21 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
 
+            if (!networkTime.IsFirstTimeFullyPredictingTick)
+                return;
+
             var networkIdLookup = SystemAPI.GetSingleton<NetworkIdLookup>();
             
             foreach (var (attacksBuffer, entity)
                      in SystemAPI.Query<DynamicBuffer<AttacksBuffer>>()
+                         .WithAll<Simulate>()
                          .WithEntityAccess())
             {
                 //Log.Debug($"Querying {nameof(AttacksBuffer)}");
                 
                 foreach (var attack in attacksBuffer)
                 {
-                    if (attack.InterpolationTick != networkTime.InterpolationTick)
+                    if (networkTime.InterpolationTick.IsNewerThan(attack.ServerTick))
                         continue;
                     
                     var entitySource = networkIdLookup.GetEntityPrefab(attack.NetworkIdSource);

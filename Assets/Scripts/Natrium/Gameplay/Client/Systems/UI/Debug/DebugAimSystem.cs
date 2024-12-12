@@ -11,11 +11,10 @@ using Natrium.Shared.Extensions;
 
 namespace Natrium.Gameplay.Client.Systems.UI.Debug
 {
-    [UpdateInGroup(typeof(GhostSimulationSystemGroup))]
+    [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct DebugAimSystem : ISystem, ISystemStartStop
     {
-        private NetworkTick _previousNetworkTick;
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
@@ -29,8 +28,6 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         public void OnStartRunning(ref SystemState state)
         {
             Log.Verbose("OnStartRunning");
-            _previousNetworkTick = SystemAPI.GetSingleton<NetworkTime>().InterpolationTick;
-            Log.Debug($"Starting network tick: {_previousNetworkTick}");
         }
 
         //[BurstCompile]
@@ -55,21 +52,19 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         private void QueryAndShowInputAims(ref SystemState state)
         {
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
+
+            if (!networkTime.IsFirstTimeFullyPredictingTick)
+                return;
             
             foreach (var (inputAim, entity)
-                     in SystemAPI.Query<DynamicBuffer<InputAim>>()
+                     in SystemAPI.Query<RefRO<InputAim>>()
+                         .WithAll<Simulate>()
                          .WithEntityAccess())
             {
-                if (!inputAim.GetDataAtTick(networkTime.ServerTick, out var inputAimAtTick))
-                {
-                    Log.Warning($"No {nameof(InputAim)}@{networkTime.ServerTick}");
-                    continue;
-                }
-                
-                if (!inputAimAtTick.Set)
+                if (!inputAim.ValueRO.InputEvent.IsSet)
                     continue;
                 
-                Log.Debug($"Processing {nameof(InputAim)}@{inputAimAtTick.Tick}|{networkTime.ServerTick}");
+                Log.Debug($"Processing {entity} {nameof(InputAim)}@{inputAim.ValueRO.ServerTick}|{networkTime.ServerTick}");
                 
                 var prefabEntity = SystemAPI.GetSingleton<DebugAimInputPrefab>().Prefab;
                 var prefabLocalTransform = state.EntityManager.GetComponentData<LocalTransform>(prefabEntity);
@@ -78,7 +73,7 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
                 
                 state.EntityManager.SetComponentData(debugEntity, new LocalTransform
                 {
-                    Position = math.round(new float3(inputAimAtTick.MouseWorldPosition.x, 5.0f, inputAimAtTick.MouseWorldPosition.z)),
+                    Position = math.round(new float3(inputAim.ValueRO.MouseWorldPosition.x, 5.0f, inputAim.ValueRO.MouseWorldPosition.z)),
                     Rotation = prefabLocalTransform.Rotation,
                     Scale = prefabLocalTransform.Scale,
                 });

@@ -4,7 +4,6 @@ using Unity.NetCode;
 using Natrium.Shared;
 using Natrium.Gameplay.Shared;
 using Natrium.Gameplay.Shared.Components;
-using Natrium.Gameplay.Server.Components;
 using Unity.Mathematics;
 using Unity.Transforms;
 using Unity.Networking.Transport;
@@ -15,7 +14,7 @@ using Natrium.Shared.Extensions;
 
 namespace Natrium.Gameplay.Server.Systems
 {
-    [UpdateInGroup(typeof(GhostSimulationSystemGroup), OrderLast = true)]
+    [UpdateBefore(typeof(GhostSendSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial class ServerSystem : SystemBase
     {

@@ -62,26 +62,20 @@ namespace Natrium.Gameplay.Client.Systems.Input
         protected override void OnUpdate()
         {
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
-            var inputAim = EntityManager.GetBuffer<InputAim>(_entityLocalPlayer);
+            var inputAim = SystemAPI.GetComponentRW<InputAim>(_entityLocalPlayer);
 
-            var mouseInputPosition = _inputActions.Map_Gameplay.Axn_MousePosition.ReadValue<Vector2>();
-            var mousePosition = new Vector3(mouseInputPosition.x, mouseInputPosition.y, _mainCamera.Camera.transform.position.y);
-            var mouseWorldPosition = (float3)_mainCamera.Camera.ScreenToWorldPoint(mousePosition);
+            inputAim.ValueRW.ServerTick = networkTime.ServerTick;
+            inputAim.ValueRW.InputEvent = default;
 
-            inputAim.AddCommandData(new InputAim
+            if (_inputActions.Map_Gameplay.Axn_MouseRealease.WasReleasedThisFrame())
             {
-                Tick = networkTime.ServerTick,
-                Set = _inputActions.Map_Gameplay.Axn_MouseRealease.WasPerformedThisFrame(),
-                MouseWorldPosition = mouseWorldPosition
-            });
+                var mouseInputPosition = _inputActions.Map_Gameplay.Axn_MousePosition.ReadValue<Vector2>();
+                var mousePosition = new Vector3(mouseInputPosition.x, mouseInputPosition.y, _mainCamera.Camera.transform.position.y);
+                var mouseWorldPosition = (float3)_mainCamera.Camera.ScreenToWorldPoint(mousePosition);
                 
-            if (_inputActions.Map_Gameplay.Axn_MouseRealease.WasPerformedThisFrame())
-            {
-                Log.Debug($"OnPrimaryMouseRelease Tick: {networkTime.ServerTick}");
-                
-                Log.Debug($"mouseWorldPosition: {mouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}\n" +
-                          $"mouseInputPosition: {mouseInputPosition}\n" + 
-                          $"mousePosition: {mousePosition}\n");
+                inputAim.ValueRW.InputEvent.Set();
+                inputAim.ValueRW.MouseWorldPosition = mouseWorldPosition;
+                Log.Debug($"OnPrimaryMouseRelease@{networkTime.ServerTick} | WorldPosition: {mouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}");
             }
         }
     }

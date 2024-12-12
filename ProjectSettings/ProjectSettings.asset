@@ -819,7 +819,7 @@ PlayerSettings:
   webGLCloseOnQuit: 0
   webWasm2023: 0
   scriptingDefineSymbols:
-    Standalone: UNITY_PHYSICS_CUSTOM
+    Standalone: UNITY_PHYSICS_CUSTOM;ENTITY_STORE_V1;UNITY_BURST_EXPERIMENTAL_ATOMIC_INTRINSICS;LATIOS_TRANSFORMS_UNITY
   additionalCompilerArguments: {}
   platformArchitecture: {}
   scriptingBackend:
@@ -852,7 +852,7 @@ PlayerSettings:
   gcIncremental: 1
   gcWBarrierValidation: 0
   apiCompatibilityLevelPerPlatform: {}
-  editorAssembliesCompatibilityLevel: 1
+  editorAssembliesCompatibilityLevel: 2
   m_RenderingPath: 1
   m_MobileRenderingPath: 1
   metroPackageName: Natrium

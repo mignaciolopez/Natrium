@@ -48,37 +48,29 @@ namespace Natrium.Gameplay.Server.Systems
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
             var physicsWorld = SystemAPI.GetSingletonRW<PhysicsWorldSingleton>();
             
-            foreach (var (inputAims, physicsCollider, ghostOwner, entity) 
-                     in SystemAPI.Query<DynamicBuffer<InputAim>, RefRO<PhysicsCollider>, RefRO<GhostOwner>>()
+            foreach (var (inputAim, physicsCollider, ghostOwner, entity) 
+                     in SystemAPI.Query<RefRO<InputAim>, RefRO<PhysicsCollider>, RefRO<GhostOwner>>()
                         .WithEntityAccess())
             {
-                if (!inputAims.GetDataAtTick(networkTime.ServerTick, out var inputAimAtTick, false))
-                {
-                    Log.Warning($"No {nameof(InputAim)}@{networkTime.ServerTick}");
+                if (!inputAim.ValueRO.InputEvent.IsSet)
                     continue;
-                }
-                
-                //Log.Debug($"{nameof(InputAim)}@{networkTime.ServerTick} Set:{inputAimAtTick.Set}");
-                
-                if (!inputAimAtTick.Set)
-                    continue;
-                
-                var interpolationDelay = networkTime.ServerTick;
-                interpolationDelay.Subtract(inputAimAtTick.Tick.TickIndexForValidTick);
+
+                var interpolationDelayTicks = networkTime.ServerTick;
+                interpolationDelayTicks.Subtract(inputAim.ValueRO.ServerTick.TickIndexForValidTick);
                 
                 SystemAPI.GetSingleton<PhysicsWorldHistorySingleton>().GetCollisionWorldFromTick(
-                        networkTime.ServerTick, 
-                        interpolationDelay.TickIndexForValidTick,
+                        inputAim.ValueRO.ServerTick, 
+                        interpolationDelayTicks.TickIndexForValidTick,
                         ref physicsWorld.ValueRW.PhysicsWorld, 
                         out var collisionHistoryWorld );
 
-                Log.Debug($"{nameof(InputAim)} from {entity}@{inputAimAtTick.Tick}: {inputAimAtTick.MouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}");
+                Log.Debug($"{nameof(InputAim)} from {entity}@{inputAim.ValueRO.ServerTick}: {inputAim.ValueRO.MouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}");
 
                 var offset = new float3(0, 10, 0); //ToDo: The plus 10 on y axis, comes from the offset of the camara
                 var raycastInput = new RaycastInput
                 {
-                    Start = inputAimAtTick.MouseWorldPosition + offset,
-                    End = inputAimAtTick.MouseWorldPosition,
+                    Start = inputAim.ValueRO.MouseWorldPosition + offset,
+                    End = inputAim.ValueRO.MouseWorldPosition,
                     Filter = physicsCollider.ValueRO.Value.Value.GetCollisionFilter()
                 };
 
@@ -97,7 +89,7 @@ namespace Natrium.Gameplay.Server.Systems
                     {
                         var attacksBuffer = state.EntityManager.GetBuffer<AttacksBuffer>(closestHit.Entity);
                         
-                        Log.Debug($"Attack In Progress@{inputAimAtTick.Tick}|{networkTime.ServerTick}");
+                        Log.Debug($"Attack In Progress@|{inputAim.ValueRO.ServerTick}");
 
                         attacksBuffer.Add(new AttacksBuffer
                         {

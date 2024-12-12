@@ -35,18 +35,18 @@ namespace Natrium.Gameplay.Shared.Components.Input
         public int3 Target;
     }
 
-    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.SendToNonOwner)]
-    [InternalBufferCapacity(512)] //it remains at 64 at runtime
-    public struct InputAim : ICommandData
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
+    public struct InputAim : IInputComponentData
     {
-        [GhostField] public NetworkTick Tick { get; set; }
-        [GhostField] public bool Set;
-        [GhostField] public float3 MouseWorldPosition;
+        public NetworkTick ServerTick { get; set; }
+        public InputEvent InputEvent;
+        public float3 MouseWorldPosition;
     }
 
-    public struct InputMelee : ICommandData
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]
+    public struct InputMelee : IInputComponentData
     {
-        public NetworkTick Tick { get; set; }
-        public bool Set;
+        public NetworkTick ServerTick { get; set; }
+        public InputEvent InputEvent;
     }
 }

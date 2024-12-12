@@ -22,7 +22,6 @@ namespace Natrium.Gameplay.Client.Systems.Input
             RequireForUpdate<PlayerTag>();
             RequireForUpdate<InputMelee>();
             RequireForUpdate<NetworkTime>();
-            RequireForUpdate<MainCameraTag>();
         }
 
         protected override void OnStartRunning()
@@ -55,18 +54,16 @@ namespace Natrium.Gameplay.Client.Systems.Input
 
         protected override void OnUpdate()
         {
-            var currentTick = SystemAPI.GetSingleton<NetworkTime>().InterpolationTick;
-            var inputMelee = EntityManager.GetBuffer<InputMelee>(_entityLocalPlayer);
+            var networkTime = SystemAPI.GetSingleton<NetworkTime>();
+            var inputMelee = SystemAPI.GetComponentRW<InputMelee>(_entityLocalPlayer);
+            
+            inputMelee.ValueRW.ServerTick = networkTime.ServerTick;
+            inputMelee.ValueRW.InputEvent = default;
 
-            inputMelee.AddCommandData(new InputMelee
-            {
-                Tick = currentTick,
-                Set = _inputActions.Map_Gameplay.Axn_MeleePrimary.WasPerformedThisFrame()
-            });
-                
             if (_inputActions.Map_Gameplay.Axn_MeleePrimary.WasPerformedThisFrame())
             {
-                Log.Verbose($"[{World.Name}] | OnPrimaryMeleeAction");
+                inputMelee.ValueRW.InputEvent.Set();
+                Log.Verbose($"OnPrimaryMeleeAction@{networkTime.ServerTick}");
             }
         }
     }

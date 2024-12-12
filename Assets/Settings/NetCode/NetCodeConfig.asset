@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: abd30ee0214cf6a45b2d76765a4615b1, type: 3}
   m_Name: NetCodeConfig
   m_EditorClassIdentifier: 
-  IsGlobalConfig: 0
+  IsGlobalConfig: 1
   EnableClientServerBootstrap: 1
   ClientServerTickRate:
     SimulationTickRate: 15
@@ -24,7 +24,7 @@ MonoBehaviour:
     m_SendSnapshotsForCatchUpTicks: 0
     HandshakeApprovalTimeoutMS: 5000
   ClientTickRate:
-    InterpolationTimeNetTicks: 2
+    InterpolationTimeNetTicks: 4
     InterpolationTimeMS: 0
     MaxExtrapolationTimeSimTicks: 20
     MaxPredictAheadTimeMS: 500
