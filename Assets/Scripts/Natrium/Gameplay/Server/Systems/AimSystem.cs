@@ -48,8 +48,8 @@ namespace Natrium.Gameplay.Server.Systems
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
             var physicsWorld = SystemAPI.GetSingletonRW<PhysicsWorldSingleton>();
             
-            foreach (var (inputAim, physicsCollider, ghostOwner, entity) 
-                     in SystemAPI.Query<RefRO<InputAim>, RefRO<PhysicsCollider>, RefRO<GhostOwner>>()
+            foreach (var (inputAim, physicsCollider, entity) 
+                     in SystemAPI.Query<RefRO<InputAim>, RefRO<PhysicsCollider>>()
                         .WithEntityAccess())
             {
                 if (!inputAim.ValueRO.InputEvent.IsSet)
@@ -89,7 +89,7 @@ namespace Natrium.Gameplay.Server.Systems
                     {
                         var attacksBuffer = state.EntityManager.GetBuffer<AttacksBuffer>(closestHit.Entity);
                         
-                        Log.Debug($"Attack In Progress@|{inputAim.ValueRO.ServerTick}");
+                        Log.Debug($"Attack In Progress@{inputAim.ValueRO.ServerTick}|{networkTime.ServerTick}");
 
                         attacksBuffer.Add(new AttacksBuffer
                         {

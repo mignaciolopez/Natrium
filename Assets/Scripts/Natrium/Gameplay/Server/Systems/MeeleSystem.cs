@@ -2,10 +2,12 @@ using System.Globalization;
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Gameplay.Shared.Components.Input;
 using Natrium.Shared;
+using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Physics;
+using Unity.Transforms;
 
 namespace Natrium.Gameplay.Server.Systems
 {
@@ -46,8 +48,8 @@ namespace Natrium.Gameplay.Server.Systems
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
             var physicsWorld = SystemAPI.GetSingletonRW<PhysicsWorldSingleton>();
             
-            foreach (var (inputMelee, physicsCollider, ghostOwner, entity) 
-                     in SystemAPI.Query<RefRO<InputMelee>, RefRO<PhysicsCollider>, RefRO<GhostOwner>>()
+            foreach (var (inputMelee, physicsCollider, localTransform, entity) 
+                     in SystemAPI.Query<RefRO<InputMelee>, RefRO<PhysicsCollider>, RefRO<LocalTransform>>()
                         .WithEntityAccess())
             {
                 if (!inputMelee.ValueRO.InputEvent.IsSet)
@@ -66,35 +68,49 @@ namespace Natrium.Gameplay.Server.Systems
                 
                 var raycastInput = new RaycastInput
                 {
-                    //Start = player position 
-                    //End = player forward vector + 1
+                    Start = localTransform.ValueRO.Position,
+                    End = localTransform.ValueRO.Position + math.forward(localTransform.ValueRO.Rotation),
                     Filter = physicsCollider.ValueRO.Value.Value.GetCollisionFilter()
                 };
 
-                if (collisionHistoryWorld.CastRay(raycastInput, out var closestHit))
+                var outHits = new NativeList<RaycastHit>(state.WorldUpdateAllocator);
+                
+                if (collisionHistoryWorld.CastRay(raycastInput, ref outHits))
                 {
-                    Log.Debug($"{nameof(InputMelee)} from: {entity} -> Collides with: {closestHit.Entity}");
-                    
-                    if (closestHit.Entity == Entity.Null)
+                    foreach (var hit in outHits)
                     {
-                        Log.Error($"Collision with {closestHit.Entity} is Null");
-                        continue;
-                    }
-                    
-                    if (state.EntityManager.HasComponent<AttacksBuffer>(closestHit.Entity) &&
-                        !state.EntityManager.IsComponentEnabled<DeathTag>(closestHit.Entity))
-                    {
-                        var attacksBuffer = state.EntityManager.GetBuffer<AttacksBuffer>(closestHit.Entity);
-                        
-                        Log.Debug($"Attack In Progress@|{inputMelee.ValueRO.ServerTick}");
-
-                        attacksBuffer.Add(new AttacksBuffer
+                        if (hit.Entity != entity)
                         {
-                            EntitySource = entity,
-                            EntityTarget = closestHit.Entity,
-                        });
+                            if (state.EntityManager.HasComponent<DeathTag>(hit.Entity) &&
+                                state.EntityManager.IsComponentEnabled<DeathTag>(hit.Entity))
+                                continue;
+                            
+                            Log.Debug($"{nameof(InputMelee)} from: {entity} -> Collides with: {hit.Entity}");
+                
+                            if (hit.Entity == Entity.Null)
+                            {
+                                Log.Error($"Collision with {hit.Entity} is Null");
+                                continue;
+                            }
+
+                            if (state.EntityManager.HasComponent<AttacksBuffer>(hit.Entity) &&
+                                !state.EntityManager.IsComponentEnabled<DeathTag>(hit.Entity))
+                            {
+                                var attacksBuffer = state.EntityManager.GetBuffer<AttacksBuffer>(hit.Entity);
+
+                                Log.Debug($"Attack In Progress@{inputMelee.ValueRO.ServerTick}|{networkTime.ServerTick}");
+
+                                attacksBuffer.Add(new AttacksBuffer
+                                {
+                                    EntitySource = entity,
+                                    EntityTarget = hit.Entity,
+                                });
+                            }
+                        }
                     }
                 }
+
+                outHits.Dispose();
             }
         }
     }
