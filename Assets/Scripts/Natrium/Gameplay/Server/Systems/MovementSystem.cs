@@ -50,8 +50,8 @@ namespace Natrium.Gameplay.Server.Systems
             if (!networkTime.IsFirstTimeFullyPredictingTick)
                 return;
             
-            foreach (var (movement, position, reckoning, localTransform)
-                     in SystemAPI.Query<RefRW<MovementData>, DynamicBuffer<MoveCommand>, RefRW<Reckoning>, RefRO<LocalTransform>>()
+            foreach (var (movementData, position, reckoning, localTransform)
+                     in SystemAPI.Query<RefRW<MovementData>, DynamicBuffer<MoveCommand>, RefRW<Reckoning>, RefRW<LocalTransform>>()
                          .WithAll<PredictedGhost, Simulate>())
             {
                 if (!position.GetDataAtTick(networkTime.ServerTick, out var positionAtTick))
@@ -60,25 +60,28 @@ namespace Natrium.Gameplay.Server.Systems
                     continue;
                 }
 
-                if (movement.ValueRO.IsMoving)
+                if (movementData.ValueRO.IsMoving)
                     continue;
                 
                 
                 var distance = math.distancesq(localTransform.ValueRO.Position, positionAtTick.Target);
-                movement.ValueRW.ShouldCheckCollision = distance > 0.1f;
+                movementData.ValueRW.ShouldCheckCollision = distance > 0.1f;
+                
+                if (movementData.ValueRO.ShouldCheckCollision)
+                    localTransform.ValueRW.Rotation.RotateTowards(movementData.ValueRO.Previous, positionAtTick.Target, 360f);
                 
                 if (distance > 2.0f)
                 {
-                    movement.ValueRW.Target = movement.ValueRO.Previous;
+                    movementData.ValueRW.Target = movementData.ValueRO.Previous;
                     
                     reckoning.ValueRW.Tick = networkTime.ServerTick;
                     reckoning.ValueRW.ShouldReckon = true;
-                    reckoning.ValueRW.Target = movement.ValueRO.Previous;
+                    reckoning.ValueRW.Target = movementData.ValueRO.Previous;
                 }
                 else
                 {
-                    movement.ValueRW.Target = positionAtTick.Target;
-                    movement.ValueRW.Previous = (int3)math.round(localTransform.ValueRO.Position);
+                    movementData.ValueRW.Target = positionAtTick.Target;
+                    movementData.ValueRW.Previous = (int3)math.round(localTransform.ValueRO.Position);
                     reckoning.ValueRW.ShouldReckon = false;
                 }
             }

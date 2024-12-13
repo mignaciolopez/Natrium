@@ -55,9 +55,6 @@ namespace Natrium.Gameplay.Shared.Systems
                 var maxDistanceDelta = speed.ValueRO.Value * deltaTIme;
                 localTransform.ValueRW.Position.MoveTowards(movementData.ValueRO.Target, maxDistanceDelta);
                 
-                if (movementData.ValueRO.IsMoving)
-                    localTransform.ValueRW.Rotation.RotateTowards(movementData.ValueRO.Previous, movementData.ValueRO.Target, 360f);
-                
                 if (math.distancesq(localTransform.ValueRO.Position, movementData.ValueRO.Target) < maxDistanceDelta * 0.1f)
                 {
                     movementData.ValueRW.IsMoving = false;

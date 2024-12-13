@@ -50,11 +50,11 @@ namespace Natrium.Gameplay.Client.Systems
             if (!networkTime.IsFirstTimeFullyPredictingTick)
                 return;
             
-            foreach (var (movement, position, inputMove, localTransform)
-                     in SystemAPI.Query<RefRW<MovementData>, DynamicBuffer<MoveCommand>, RefRO<InputMove>, RefRO<LocalTransform>>()
+            foreach (var (movementData, position, inputMove, localTransform)
+                     in SystemAPI.Query<RefRW<MovementData>, DynamicBuffer<MoveCommand>, RefRO<InputMove>, RefRW<LocalTransform>>()
                          .WithAll<PredictedGhost, Simulate>())
             {
-                if (movement.ValueRO.IsMoving)
+                if (movementData.ValueRO.IsMoving)
                     continue;
 
                 var target = (int3)math.round(localTransform.ValueRO.Position);
@@ -67,19 +67,20 @@ namespace Natrium.Gameplay.Client.Systems
                     target.z--;
                 else if (inputMove.ValueRO.Value.x < 0)
                     target.x--;
-
+                
                 position.AddCommandData(new MoveCommand
                 {
                     Tick = networkTime.ServerTick,
                     Target = target,
                 });
                 
-                movement.ValueRW.ShouldCheckCollision = false;
+                movementData.ValueRW.ShouldCheckCollision = false;
                 
                 if (inputMove.ValueRO.Value.x != 0 || inputMove.ValueRO.Value.y != 0)
                 {
-                    movement.ValueRW.Target = target;
-                    movement.ValueRW.ShouldCheckCollision = true;
+                    movementData.ValueRW.Target = target;
+                    movementData.ValueRW.ShouldCheckCollision = true;
+                    localTransform.ValueRW.Rotation.RotateTowards(movementData.ValueRO.Previous, target, 360f);
                 }
             }
             
