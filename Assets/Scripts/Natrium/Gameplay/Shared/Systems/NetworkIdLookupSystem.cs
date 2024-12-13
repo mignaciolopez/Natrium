@@ -36,7 +36,7 @@ namespace Natrium.Gameplay.Shared.Systems
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ServerSimulation)]
     public partial struct NetworkIdLookupSystem : ISystem, ISystemStartStop
     {
-        private NetworkIdLookup _networkIdLookup;
+        private Entity _singletonEntity;
         
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
@@ -49,32 +49,24 @@ namespace Natrium.Gameplay.Shared.Systems
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStartRunning");
 
-            if (!SystemAPI.HasSingleton<NetworkIdLookup>())
+            _singletonEntity = state.EntityManager.CreateEntity();
+
+            state.EntityManager.AddComponentData(_singletonEntity, new NetworkIdLookup
             {
-                var entity = state.EntityManager.CreateEntity();
-                Log.Verbose($"[{state.WorldUnmanaged.Name}] Creating Singleton {entity}");
-                
-                _networkIdLookup = new NetworkIdLookup
-                {
-                    PrefabsList = new NativeList<Entity>(Allocator.Persistent),
-                    ConnectionList = new NativeList<Entity>(Allocator.Persistent),
-                };
-                
-                state.EntityManager.AddComponentData(entity, _networkIdLookup);
-            }
+                PrefabsList = new NativeList<Entity>(Allocator.Persistent),
+                ConnectionList = new NativeList<Entity>(Allocator.Persistent),
+            });
         }
 
         //[BurstCompile]
         public void OnStopRunning(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStopRunning");
-            
-            if (SystemAPI.HasSingleton<NetworkIdLookup>())
+
+            if (SystemAPI.TryGetSingletonRW<NetworkIdLookup>(out var networkIdLookup))
             {
-                _networkIdLookup.Dispose();
-                var entity = SystemAPI.GetSingletonEntity<NetworkIdLookup>();
-                Log.Verbose($"[{state.WorldUnmanaged.Name}] Destroying Singleton {entity}");
-                state.EntityManager.DestroyEntity(entity);
+                networkIdLookup.ValueRW.Dispose();
+                state.EntityManager.DestroyEntity(_singletonEntity);
             }
         }
 
@@ -82,27 +74,35 @@ namespace Natrium.Gameplay.Shared.Systems
         public void OnDestroy(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
+            OnStopRunning(ref state);
         }
 
         [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
+            if (!SystemAPI.TryGetSingletonRW<NetworkIdLookup>(out var networkIdLookup))
+            {
+                return;
+            }
+                
             //Updating Ghosts Entities
-            _networkIdLookup.PrefabsList.Clear();
+            networkIdLookup.ValueRW.PrefabsList.Clear();
 
             foreach (var (ghostOwner, entity) in SystemAPI.Query<RefRO<GhostOwner>>().WithEntityAccess())
             {
-                _networkIdLookup.PrefabsList.Resize(ghostOwner.ValueRO.NetworkId + 1, NativeArrayOptions.UninitializedMemory);
-                _networkIdLookup.PrefabsList[ghostOwner.ValueRO.NetworkId] = entity;
+                if (networkIdLookup.ValueRW.PrefabsList.Length < ghostOwner.ValueRO.NetworkId + 1)
+                    networkIdLookup.ValueRW.PrefabsList.Resize(ghostOwner.ValueRO.NetworkId + 1, NativeArrayOptions.UninitializedMemory);
+                networkIdLookup.ValueRW.PrefabsList[ghostOwner.ValueRO.NetworkId] = entity;
             }
             
             //Updating Network Entities
-            _networkIdLookup.ConnectionList.Clear();
+            networkIdLookup.ValueRW.ConnectionList.Clear();
             
             foreach (var (networkId, entity) in SystemAPI.Query<RefRO<NetworkId>>().WithEntityAccess())
             {
-                _networkIdLookup.ConnectionList.Resize(networkId.ValueRO.Value + 1, NativeArrayOptions.UninitializedMemory);
-                _networkIdLookup.ConnectionList[networkId.ValueRO.Value] = entity;
+                if (networkIdLookup.ValueRW.ConnectionList.Length < networkId.ValueRO.Value + 1)
+                    networkIdLookup.ValueRW.ConnectionList.Resize(networkId.ValueRO.Value + 1, NativeArrayOptions.UninitializedMemory);
+                networkIdLookup.ValueRW.ConnectionList[networkId.ValueRO.Value] = entity;
             }
         }
     }
