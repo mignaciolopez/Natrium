@@ -58,7 +58,8 @@ namespace Natrium.Gameplay.Client.Systems
                 if (movementData.ValueRO.IsMoving)
                     continue;
 
-                var target = (int3)math.round(localTransform.ValueRO.Position);
+                var target = math.round(localTransform.ValueRO.Position);
+                target.y = localTransform.ValueRO.Position.y;
                 
                 if (inputMove.ValueRO.Value.y > 0)
                     target.z++;

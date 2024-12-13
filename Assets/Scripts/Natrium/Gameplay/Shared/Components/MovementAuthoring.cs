@@ -54,8 +54,8 @@ namespace Natrium.Gameplay.Shared.Components
 
     public struct MovementData : IComponentData
     {
-        public int3 Target;
-        public int3 Previous;
+        public float3 Target;
+        public float3 Previous;
         public bool IsMoving;
         public bool ShouldCheckCollision;
         public float3 Direction;
@@ -65,7 +65,7 @@ namespace Natrium.Gameplay.Shared.Components
     public struct Reckoning : IComponentData
     {
         [GhostField] public NetworkTick Tick { get; set; }
-        [GhostField] public int3 Target;
+        [GhostField] public float3 Target;
         [GhostField] public bool ShouldReckon;
     }
 }

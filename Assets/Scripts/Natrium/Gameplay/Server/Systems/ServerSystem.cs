@@ -182,8 +182,8 @@ namespace Natrium.Gameplay.Server.Systems
                 
                 EntityManager.SetComponentData(player, new MovementData
                 {
-                    Target = (int3)localTransform.Position,
-                    Previous = (int3)localTransform.Position,
+                    Target = localTransform.Position,
+                    Previous = localTransform.Position,
                     IsMoving = false,
                     ShouldCheckCollision = false,
                 });
@@ -192,7 +192,7 @@ namespace Natrium.Gameplay.Server.Systems
                 {
                     Tick = networkTime.ServerTick,
                     ShouldReckon = true,
-                    Target = (int3)localTransform.Position,
+                    Target = localTransform.Position,
                 });
 
                 var healthPoints = EntityManager.GetComponentData<HealthPoints>(_playerPrefab);

@@ -32,7 +32,7 @@ namespace Natrium.Gameplay.Shared.Components.Input
     public struct MoveCommand : ICommandData
     {
         public NetworkTick Tick { get; set; }
-        public int3 Target;
+        public float3 Target;
     }
 
     [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]

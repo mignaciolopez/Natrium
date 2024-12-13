@@ -79,7 +79,8 @@ namespace Natrium.Gameplay.Server.Systems
                 else
                 {
                     movementData.ValueRW.Target = positionAtTick.Target;
-                    movementData.ValueRW.Previous = (int3)math.round(localTransform.ValueRO.Position);
+                    movementData.ValueRW.Previous = math.round(localTransform.ValueRO.Position);
+                    movementData.ValueRW.Previous.y = localTransform.ValueRO.Position.y;
                     reckoning.ValueRW.ShouldReckon = false;
                 }
             }
