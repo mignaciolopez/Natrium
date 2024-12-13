@@ -6,6 +6,8 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Transforms;
+using UnityEngine.Analytics;
+using UnityEngine.SocialPlatforms;
 
 namespace Natrium.Gameplay.Shared.Systems
 {
@@ -43,8 +45,8 @@ namespace Natrium.Gameplay.Shared.Systems
             if (!networkTime.IsFirstTimeFullyPredictingTick)
                 return;
             
-            foreach (var (localTransform, movementData, speed) 
-                     in SystemAPI.Query<RefRW<LocalTransform>, RefRW<MovementData>, RefRO<Speed>>()
+            foreach (var (localTransform, movementData, speed, child) 
+                     in SystemAPI.Query<RefRW<LocalTransform>, RefRW<MovementData>, RefRO<Speed>, DynamicBuffer<Child>>()
                          .WithAll<PredictedGhost, Simulate>())
             {
                 if(movementData.ValueRO.ShouldCheckCollision)
@@ -52,6 +54,9 @@ namespace Natrium.Gameplay.Shared.Systems
                 
                 var maxDistanceDelta = speed.ValueRO.Value * deltaTIme;
                 localTransform.ValueRW.Position.MoveTowards(movementData.ValueRO.Target, maxDistanceDelta);
+                
+                if (movementData.ValueRO.IsMoving)
+                    localTransform.ValueRW.Rotation.RotateTowards(movementData.ValueRO.Previous, movementData.ValueRO.Target, 360f);
                 
                 if (math.distancesq(localTransform.ValueRO.Position, movementData.ValueRO.Target) < maxDistanceDelta * 0.1f)
                 {
