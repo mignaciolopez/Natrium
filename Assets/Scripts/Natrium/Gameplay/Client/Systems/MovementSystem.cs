@@ -50,9 +50,10 @@ namespace Natrium.Gameplay.Client.Systems
             if (!networkTime.IsFirstTimeFullyPredictingTick)
                 return;
             
-            foreach (var (movementData, position, inputMove, localTransform)
+            foreach (var (movementData, position, inputMove, localTransform, entity)
                      in SystemAPI.Query<RefRW<MovementData>, DynamicBuffer<MoveCommand>, RefRO<InputMove>, RefRW<LocalTransform>>()
-                         .WithAll<PredictedGhost, Simulate>())
+                         .WithAll<PredictedGhost, Simulate>()
+                         .WithEntityAccess())
             {
                 if (movementData.ValueRO.IsMoving)
                     continue;
@@ -79,8 +80,7 @@ namespace Natrium.Gameplay.Client.Systems
                 if (inputMove.ValueRO.Value.x != 0 || inputMove.ValueRO.Value.y != 0)
                 {
                     movementData.ValueRW.Target = target;
-                    movementData.ValueRW.ShouldCheckCollision = true;
-                    localTransform.ValueRW.Rotation.RotateTowards(movementData.ValueRO.Previous, target, 360f);
+                    movementData.ValueRW.ShouldCheckCollision = !state.EntityManager.IsComponentEnabled<DeathTag>(entity);
                 }
             }
             

@@ -1,4 +1,5 @@
 using Natrium.Gameplay.Shared.Components;
+using Natrium.Gameplay.Shared.Components.Input;
 using Natrium.Shared;
 using Natrium.Shared.Extensions;
 using Unity.Burst;
@@ -6,18 +7,18 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Transforms;
-using UnityEngine.Analytics;
-using UnityEngine.SocialPlatforms;
 
 namespace Natrium.Gameplay.Shared.Systems
 {
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
+    [UpdateAfter(typeof(MoveTowardsTargetSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ServerSimulation)]
-    public partial struct MoveTowardsTargetSystem : ISystem
+    public partial struct RotateTowardsTargetSystem : ISystem
     {
         public void OnCreate(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
+            state.RequireForUpdate<NetworkTime>();
         }
 
         public void OnStartRunning(ref SystemState state)
@@ -45,25 +46,19 @@ namespace Natrium.Gameplay.Shared.Systems
             if (!networkTime.IsFirstTimeFullyPredictingTick)
                 return;
             
-            foreach (var (localTransform, movementData, speed) 
-                     in SystemAPI.Query<RefRW<LocalTransform>, RefRW<MovementData>, RefRO<Speed>>()
+            foreach (var (localTransform, movementData, moveCommand, speed) 
+                     in SystemAPI.Query<RefRW<LocalTransform>, RefRW<MovementData>, DynamicBuffer<MoveCommand>, RefRO<Speed>>()
                          .WithAll<PredictedGhost, Simulate>())
             {
-                if(movementData.ValueRO.ShouldCheckCollision)
+                if (!moveCommand.GetDataAtTick(networkTime.ServerTick, out var moveLastTick))
                     continue;
                 
-                var maxDistanceDelta = speed.ValueRO.Translation * deltaTIme;
-                localTransform.ValueRW.Position.MoveTowards(movementData.ValueRO.Target, maxDistanceDelta);
+                var maxRotationDelta = speed.ValueRO.Rotation;
                 
-                if (math.distancesq(localTransform.ValueRO.Position, movementData.ValueRO.Target) < maxDistanceDelta * 0.1f)
-                {
-                    movementData.ValueRW.IsMoving = false;
-                    movementData.ValueRW.Previous = movementData.ValueRO.Target;
-                }
-                else
-                {
-                    movementData.ValueRW.IsMoving = true;
-                }
+                if (math.distancesq(movementData.ValueRO.Previous, moveLastTick.Target) > 0.1f)
+                    movementData.ValueRW.Direction =  moveLastTick.Target - movementData.ValueRO.Previous;
+                
+                localTransform.ValueRW.Rotation.RotateTowards(math.normalize(movementData.ValueRW.Direction), maxRotationDelta);
             }
         }
     }

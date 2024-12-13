@@ -15,7 +15,8 @@ namespace Natrium.Gameplay.Shared.Components
     [DisallowMultipleComponent]
     public class MovementAuthoring : MonoBehaviour
     {
-        public float speed = 5.0f;
+        public float translation = 4.0f;
+        public float rotation = 360.0f;
         public MovementTypes moveType = MovementTypes.Classic;
         [Range(0.1f, 1.0f)]
         public float percentNextMove = 0.1f;
@@ -24,17 +25,18 @@ namespace Natrium.Gameplay.Shared.Components
         {
             public override void Bake(MovementAuthoring authoring)
             {
-                var e = GetEntity(TransformUsageFlags.Dynamic);
+                var entity = GetEntity(TransformUsageFlags.Dynamic);
 
-                AddComponent(e, new Speed
+                AddComponent(entity, new Speed
                 {
-                    Value = authoring.speed
+                    Translation = authoring.translation,
+                    Rotation = authoring.rotation
                 });
                 
-                AddComponent<MovementData>(e);
-                AddComponent<Reckoning>(e);
+                AddComponent<MovementData>(entity);
+                AddComponent<Reckoning>(entity);
                 
-                AddComponent(e, new OverlapBox
+                AddComponent(entity, new OverlapBox
                 {
                     HalfExtends = 0.4f,
                     Offset = float3.zero,
@@ -46,7 +48,8 @@ namespace Natrium.Gameplay.Shared.Components
     [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]
     public struct Speed : IComponentData
     {
-        [GhostField] public float Value;
+        [GhostField] public float Translation;
+        [GhostField] public float Rotation;
     }
 
     public struct MovementData : IComponentData
@@ -55,6 +58,7 @@ namespace Natrium.Gameplay.Shared.Components
         public int3 Previous;
         public bool IsMoving;
         public bool ShouldCheckCollision;
+        public float3 Direction;
     }
     
     [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]

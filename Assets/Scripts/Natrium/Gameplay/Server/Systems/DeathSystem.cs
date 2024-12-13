@@ -60,7 +60,7 @@ namespace Natrium.Gameplay.Server.Systems
                     a.Value = b.Value.ToFloat4();
                     state.EntityManager.SetComponentData(child.Value, a);
                 }
-                speed.ValueRW.Value *= 2.0f;
+                speed.ValueRW.Translation *= 2.0f;
                 
                 ecb.AddComponent<DeathInitialized>(entity);
             }

@@ -73,7 +73,7 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
                 
                 state.EntityManager.SetComponentData(debugEntity, new LocalTransform
                 {
-                    Position = math.round(new float3(inputAim.ValueRO.MouseWorldPosition.x, 5.0f, inputAim.ValueRO.MouseWorldPosition.z)),
+                    Position = math.round(inputAim.ValueRO.MouseWorldPosition),
                     Rotation = prefabLocalTransform.Rotation,
                     Scale = prefabLocalTransform.Scale,
                 });

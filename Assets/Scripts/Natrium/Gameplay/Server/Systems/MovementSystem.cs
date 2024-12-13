@@ -50,9 +50,10 @@ namespace Natrium.Gameplay.Server.Systems
             if (!networkTime.IsFirstTimeFullyPredictingTick)
                 return;
             
-            foreach (var (movementData, position, reckoning, localTransform)
+            foreach (var (movementData, position, reckoning, localTransform, entity)
                      in SystemAPI.Query<RefRW<MovementData>, DynamicBuffer<MoveCommand>, RefRW<Reckoning>, RefRW<LocalTransform>>()
-                         .WithAll<PredictedGhost, Simulate>())
+                         .WithAll<PredictedGhost, Simulate>()
+                         .WithEntityAccess())
             {
                 if (!position.GetDataAtTick(networkTime.ServerTick, out var positionAtTick))
                 {
@@ -65,10 +66,7 @@ namespace Natrium.Gameplay.Server.Systems
                 
                 
                 var distance = math.distancesq(localTransform.ValueRO.Position, positionAtTick.Target);
-                movementData.ValueRW.ShouldCheckCollision = distance > 0.1f;
-                
-                if (movementData.ValueRO.ShouldCheckCollision)
-                    localTransform.ValueRW.Rotation.RotateTowards(movementData.ValueRO.Previous, positionAtTick.Target, 360f);
+                movementData.ValueRW.ShouldCheckCollision = distance > 0.1f && !state.EntityManager.IsComponentEnabled<DeathTag>(entity);
                 
                 if (distance > 2.0f)
                 {

@@ -8,6 +8,7 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
 using Unity.NetCode;
+using Unity.Transforms;
 
 namespace Natrium.Gameplay.Shared.Systems
 {
@@ -80,42 +81,38 @@ namespace Natrium.Gameplay.Shared.Systems
                         ref physicsWorld.ValueRW.PhysicsWorld, 
                         out collisionWorld );
                 }
-                
-                var realCollision = collisionWorld.OverlapBox(
+
+                var collision = collisionWorld.OverlapBox(
                     movementData.ValueRO.Target + overlapBox.ValueRO.Offset,
-                    quaternion.identity,
+                    quaternion.Euler(0, 0, 0),
                     overlapBox.ValueRO.HalfExtends,
                     ref outHits,
                     filter);
                 
-                if (realCollision)
+                if (collision)
                 {
                     foreach (var hit in outHits)
                     {
                         if (hit.Entity == entity)
                         {
-                            Log.Info($"[{state.World.Name}] {entity} is colliding with itself hit {hit.Entity}");
-                            realCollision = false;
+                            Log.Warning($"[{state.World.Name}] {entity} is colliding with itself hit {hit.Entity}");
                         }
                         else
                         {
                             if (state.EntityManager.HasComponent<DeathTag>(hit.Entity) &&
                                 state.EntityManager.IsComponentEnabled<DeathTag>(hit.Entity))
-                                realCollision = false;
+                            {
+                            }
                             else
                             {
-                                realCollision = true;
+                                movementData.ValueRW.Target = movementData.ValueRO.Previous;
+                                //reckoning.ValueRW.Tick = networkTime.ServerTick;
+                                //reckoning.ValueRW.ShouldReckon = true;
+                                //reckoning.ValueRW.Target = movementData.ValueRO.Previous;
+                                Log.Debug($"[{state.World.Name}] {entity} is colliding with {hit.Entity}");
                             }
                         }
                     }
-                }
-
-                if (realCollision)
-                {
-                    movementData.ValueRW.Target = movementData.ValueRO.Previous;
-                    //reckoning.ValueRW.Tick = networkTime.ServerTick;
-                    //reckoning.ValueRW.ShouldReckon = true;
-                    //reckoning.ValueRW.Target = movementData.ValueRO.Previous;
                 }
 
                 movementData.ValueRW.ShouldCheckCollision = false;

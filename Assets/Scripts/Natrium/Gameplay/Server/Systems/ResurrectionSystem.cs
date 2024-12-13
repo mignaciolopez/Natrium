@@ -69,7 +69,7 @@ namespace Natrium.Gameplay.Server.Systems
                 
                 hp.ValueRW.Value = hp.ValueRO.MaxValue;
                 
-                speed.ValueRW.Value /= 2.0f;
+                speed.ValueRW.Translation /= 2.0f;
                 
                 var collisionFilter = physicsCollider.ValueRO.Value.Value.GetCollisionFilter();
                 collisionFilter.CollidesWith = ~0u;
