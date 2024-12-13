@@ -52,12 +52,15 @@ namespace Natrium.Gameplay.Shared.Components
         [GhostField] public TeamEnum Value;
     }
     
-    [GhostComponent(PrefabType = GhostPrefabType.All, OwnerSendType = SendToOwnerType.All)]
-    public struct AttacksBuffer : IBufferElementData
+    public struct AttacksBuffer : IBufferElementData //Server Only
     {
-        [GhostField] public NetworkTick ServerTick { get; set; }
-        [GhostField] public NetworkTick InterpolationTick { get; set; }
-        [GhostField] public Entity EntitySource;
-        [GhostField] public int NetworkIdSource;
+        public Entity EntitySource; //Server Only
+        public Entity EntityTarget; //Server Only
+    }
+
+    public struct RPCAttack : IRpcCommand
+    {
+        public int NetworkIdSource;
+        public int NetworkIdTarget;
     }
 }

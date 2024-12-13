@@ -93,10 +93,8 @@ namespace Natrium.Gameplay.Server.Systems
 
                         attacksBuffer.Add(new AttacksBuffer
                         {
-                            ServerTick = networkTime.ServerTick,
-                            InterpolationTick = networkTime.InterpolationTick,
                             EntitySource = entity,
-                            NetworkIdSource = ghostOwner.ValueRO.NetworkId,
+                            EntityTarget = closestHit.Entity,
                         });
                     }
                 }
