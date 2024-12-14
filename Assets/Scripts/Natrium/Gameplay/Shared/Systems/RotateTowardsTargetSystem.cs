@@ -10,7 +10,7 @@ using Unity.Transforms;
 
 namespace Natrium.Gameplay.Shared.Systems
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
+    [UpdateInGroup(typeof(MovementSystemGroup))]
     [UpdateAfter(typeof(MoveTowardsTargetSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ServerSimulation)]
     public partial struct RotateTowardsTargetSystem : ISystem
