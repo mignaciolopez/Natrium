@@ -64,13 +64,14 @@ namespace Natrium.Gameplay.Server.Systems
                         ref physicsWorld.ValueRW.PhysicsWorld, 
                         out var collisionHistoryWorld );
 
-                Log.Debug($"{nameof(InputAim)} from {entity}@{inputAim.ValueRO.ServerTick}: {inputAim.ValueRO.MouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}");
-
-                var offset = new float3(0, 10, 0); //ToDo: The plus 10 on y axis, comes from the offset of the camara
+                Log.Debug($"{nameof(InputAim)} from {entity}@{inputAim.ValueRO.ServerTick}|{networkTime.ServerTick}: " +
+                          $"{inputAim.ValueRO.Origin.ToString("F2", CultureInfo.InvariantCulture)} " +
+                          $"{inputAim.ValueRO.Direction.ToString("F2", CultureInfo.InvariantCulture)}");
+                
                 var raycastInput = new RaycastInput
                 {
-                    Start = inputAim.ValueRO.MouseWorldPosition + offset,
-                    End = inputAim.ValueRO.MouseWorldPosition,
+                    Start = inputAim.ValueRO.Origin,
+                    End = inputAim.ValueRO.Origin + inputAim.ValueRO.Direction * 30f,
                     Filter = physicsCollider.ValueRO.Value.Value.GetCollisionFilter()
                 };
 

@@ -40,7 +40,8 @@ namespace Natrium.Gameplay.Shared.Components.Input
     {
         public NetworkTick ServerTick { get; set; }
         public InputEvent InputEvent;
-        public float3 MouseWorldPosition;
+        public float3 Origin;
+        public float3 Direction;
     }
 
     [GhostComponent(PrefabType = GhostPrefabType.AllPredicted)]

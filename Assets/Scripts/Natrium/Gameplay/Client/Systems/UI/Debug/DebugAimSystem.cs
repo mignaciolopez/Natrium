@@ -8,6 +8,7 @@ using Unity.NetCode;
 using Unity.Mathematics;
 using Unity.Transforms;
 using Natrium.Shared.Extensions;
+using Unity.Physics;
 
 namespace Natrium.Gameplay.Client.Systems.UI.Debug
 {
@@ -22,6 +23,7 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
             state.RequireForUpdate<DebugAimInputPrefab>();
             state.RequireForUpdate<NetworkTime>();
             state.RequireForUpdate<InputAim>();
+            state.RequireForUpdate<PhysicsWorldSingleton>();
         }
 
         //[BurstCompile]
@@ -45,54 +47,63 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            QueryAndShowInputAims(ref state);
-        }
-
-        //[BurstCompile]
-        private void QueryAndShowInputAims(ref SystemState state)
-        {
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
 
             if (!networkTime.IsFirstTimeFullyPredictingTick)
                 return;
             
-            foreach (var (inputAim, entity)
-                     in SystemAPI.Query<RefRO<InputAim>>()
+            var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
+            
+            foreach (var (inputAim, physicsCollider, entity)
+                     in SystemAPI.Query<RefRO<InputAim>, RefRO<PhysicsCollider>>()
                          .WithAll<Simulate>()
                          .WithEntityAccess())
             {
                 if (!inputAim.ValueRO.InputEvent.IsSet)
                     continue;
-                
-                Log.Debug($"Processing {entity} {nameof(InputAim)}@{inputAim.ValueRO.ServerTick}|{networkTime.ServerTick}");
-                
-                var prefabEntity = SystemAPI.GetSingleton<DebugAimInputPrefab>().Prefab;
-                var prefabLocalTransform = state.EntityManager.GetComponentData<LocalTransform>(prefabEntity);
-                
-                var debugEntity = state.EntityManager.Instantiate(prefabEntity);
-                
-                state.EntityManager.SetComponentData(debugEntity, new LocalTransform
-                {
-                    Position = math.round(inputAim.ValueRO.MouseWorldPosition),
-                    Rotation = prefabLocalTransform.Rotation,
-                    Scale = prefabLocalTransform.Scale,
-                });
 
-                var color = UnityEngine.Color.white;
-                
-                foreach (var child in state.EntityManager.GetBuffer<Child>(entity))
+                Log.Debug($"Processing {entity}'s {nameof(InputAim)}@{inputAim.ValueRO.ServerTick}|{networkTime.ServerTick}");
+
+                var raycastInput = new RaycastInput
                 {
-                    if (state.EntityManager.HasComponent<MaterialPropertyBaseColor>(child.Value))
+                    Start = inputAim.ValueRO.Origin,
+                    End = inputAim.ValueRO.Origin + inputAim.ValueRO.Direction * 30,
+                    Filter = physicsCollider.ValueRO.Value.Value.GetCollisionFilter(),
+                };
+
+                if (collisionWorld.CastRay(raycastInput, out var closestHit))
+                {
+                    var prefabEntity = SystemAPI.GetSingleton<DebugAimInputPrefab>().Prefab;
+                    var prefabLocalTransform = state.EntityManager.GetComponentData<LocalTransform>(prefabEntity);
+                
+                    var debugEntity = state.EntityManager.Instantiate(prefabEntity);
+
+                    var position = math.round(closestHit.Position);
+                    position.y = 0.01f;
+                    
+                    state.EntityManager.SetComponentData(debugEntity, new LocalTransform
                     {
-                        color = state.EntityManager.GetComponentData<MaterialPropertyBaseColor>(child.Value).Value.ToColor();
-                        break;
+                        Position = position,
+                        Rotation = prefabLocalTransform.Rotation,
+                        Scale = prefabLocalTransform.Scale,
+                    });
+
+                    var color = UnityEngine.Color.white;
+                
+                    foreach (var child in state.EntityManager.GetBuffer<Child>(entity))
+                    {
+                        if (state.EntityManager.HasComponent<MaterialPropertyBaseColor>(child.Value))
+                        {
+                            color = state.EntityManager.GetComponentData<MaterialPropertyBaseColor>(child.Value).Value.ToColor();
+                            break;
+                        }
                     }
+                
+                    color.a = 0.5f;
+                
+                    var spriteRenderer = state.EntityManager.GetComponentObject<UnityEngine.SpriteRenderer>(debugEntity);
+                    spriteRenderer.color = color;
                 }
-                
-                color.a = 0.5f;
-                
-                var spriteRenderer = state.EntityManager.GetComponentObject<UnityEngine.SpriteRenderer>(debugEntity);
-                spriteRenderer.color = color;
             }
         }
     }

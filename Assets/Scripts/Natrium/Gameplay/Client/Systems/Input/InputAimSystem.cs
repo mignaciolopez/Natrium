@@ -70,12 +70,12 @@ namespace Natrium.Gameplay.Client.Systems.Input
             if (_inputActions.Map_Gameplay.Axn_MouseRealease.WasReleasedThisFrame())
             {
                 var mouseInputPosition = _inputActions.Map_Gameplay.Axn_MousePosition.ReadValue<Vector2>();
-                var mousePosition = new Vector3(mouseInputPosition.x, mouseInputPosition.y, _mainCamera.Camera.transform.position.y);
-                var mouseWorldPosition = (float3)_mainCamera.Camera.ScreenToWorldPoint(mousePosition);
-                
+                var ray = _mainCamera.Camera.ScreenPointToRay(mouseInputPosition);
                 inputAim.ValueRW.InputEvent.Set();
-                inputAim.ValueRW.MouseWorldPosition = mouseWorldPosition;
-                Log.Debug($"OnPrimaryMouseRelease@{networkTime.ServerTick} | WorldPosition: {mouseWorldPosition.ToString("F2", CultureInfo.InvariantCulture)}");
+                inputAim.ValueRW.Origin = ray.origin;
+                inputAim.ValueRW.Direction = ray.direction;
+                
+                Log.Debug($"OnPrimaryMouseRelease@{networkTime.ServerTick} | mouseInputPosition: {mouseInputPosition.ToString("F2", CultureInfo.InvariantCulture)}");
             }
         }
     }
