@@ -20,20 +20,20 @@ namespace Natrium.Gameplay.Shared.Systems
     {
         public void OnCreate(ref SystemState state)
         {
-            state.RequireForUpdate<NetworkTime>();
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
+            state.RequireForUpdate<NetworkTime>();
             state.RequireForUpdate<PhysicsWorldSingleton>();
             state.RequireForUpdate<PhysicsWorldHistorySingleton>();
         }
 
         public void OnStartRunning(ref SystemState state)
         {
-            //Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStartRunning");
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStartRunning");
         }
         
         public void OnStopRunning(ref SystemState state)
         {
-            //Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStopRunning");
+            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStopRunning");
         }
         
         public void OnDestroy(ref SystemState state)

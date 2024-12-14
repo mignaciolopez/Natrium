@@ -8,21 +8,16 @@ namespace Natrium.Shared.Systems
     [Serializable] public class CustomUnityEvent : UnityEvent<Stream>
     {
     }
-
-    [UpdateInGroup(typeof(SharedSystemGroup))]
-    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation | WorldSystemFilterFlags.ServerSimulation)]
+    
     public partial class EventSystem : SystemBase
     {
         private static Dictionary<Events, CustomUnityEvent> _handlers;
         private static Queue<Tuple<Events, Stream>> _eventsQueue;
-        private Log _logInstance;
 
         protected override void OnCreate()
         {
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnCreate()");
             base.OnCreate();
-
-            _logInstance = Log.Instance;
+            Log.Verbose($"[{World.Name}] OnCreate");
 
             _handlers = new Dictionary<Events, CustomUnityEvent>();
 
@@ -35,23 +30,23 @@ namespace Natrium.Shared.Systems
 
         protected override void OnStartRunning()
         {
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStartRunning()");
             base.OnStartRunning();
+            Log.Verbose($"[{World.Name}] OnStartRunning");
             _eventsQueue = new Queue<Tuple<Events, Stream>>();
         }
 
         protected override void OnStopRunning()
         {
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnStopRunning()");
             base.OnStopRunning();
+            Log.Verbose($"[{World.Name}] OnStopRunning");
             _eventsQueue.Clear();
             //_eventsQueue = null;
         }
 
         protected override void OnDestroy()
         {
-            Log.Verbose($"[{World.Name}] | {this.ToString()}.OnDestroy()");
             base.OnDestroy();
+            Log.Verbose($"[{World.Name}] OnDestroy");
             //foreach (var evnt in (Events[])Enum.GetValues(typeof(Events)))
             //    _handlers[evnt] = null;
 

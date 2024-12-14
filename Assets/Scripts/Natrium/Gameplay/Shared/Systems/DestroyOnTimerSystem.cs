@@ -12,7 +12,6 @@ namespace Natrium.Gameplay.Shared.Systems
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
             state.RequireForUpdate<NetworkTime>();
-            state.RequireForUpdate<EndSimulationEntityCommandBufferSystem.Singleton>();
         }
         
         public void OnStartRunning(ref SystemState state)
@@ -41,7 +40,9 @@ namespace Natrium.Gameplay.Shared.Systems
                          .WithNone<DestroyEntityTag>()
                          .WithEntityAccess())
             {
-                if (networkTime.ServerTick.Equals(destroyAtTick.ValueRO.Value) || 
+                if (!networkTime.ServerTick.IsValid ||
+                    !destroyAtTick.ValueRO.Value.IsValid ||
+                    networkTime.ServerTick.Equals(destroyAtTick.ValueRO.Value) || 
                     networkTime.ServerTick.IsNewerThan(destroyAtTick.ValueRO.Value))
                 {
                     ecb.AddComponent<DestroyEntityTag>(entity);
