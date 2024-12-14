@@ -61,30 +61,6 @@ namespace Natrium.Gameplay.Server.Systems
 
             GetListeningStatus();
             RPC_Connect();
-            //TODO: delete Resurrect()
-            Resurrect();
-        }
-
-        private void Resurrect()
-        {
-            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
-            const float range = 2.0f;
-            
-            foreach (var (ltw, dt, e) in SystemAPI.Query<LocalToWorld, EnabledRefRO<DeathTag>>()
-                         .WithDisabled<ResurrectTag>().WithEntityAccess())
-            {
-                if (ltw.Position.x > -range && ltw.Position.x < range)
-                {
-                    if (ltw.Position.z > -range && ltw.Position.z < range)
-                    {
-                        Log.Debug($"Setting ResurrectTag to true on {e}");
-                        ecb.SetComponentEnabled<ResurrectTag>(e, true);
-                    }
-                }
-            }
-            
-            ecb.Playback(EntityManager);
-            ecb.Dispose();
         }
 
         private void Listen()

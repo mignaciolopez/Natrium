@@ -2,14 +2,13 @@ using Natrium.Gameplay.Shared.Components;
 using Natrium.Gameplay.Shared.Components.Debug;
 using Natrium.Gameplay.Shared.Systems;
 using Natrium.Shared;
-//using Unity.Burst;
+using Unity.Burst;
 using Unity.Entities;
 using Unity.NetCode;
 
 namespace Natrium.Gameplay.Client.Systems.UI.Debug
 {
-    [UpdateInGroup(typeof(SimulationSystemGroup))]
-    [UpdateAfter(typeof(NetworkReceiveSystemGroup))]
+    [UpdateInGroup(typeof(LateSimulationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct DebugAttackSystem : ISystem, ISystemStartStop
     {

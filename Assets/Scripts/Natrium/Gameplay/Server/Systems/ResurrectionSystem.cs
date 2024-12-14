@@ -3,13 +3,13 @@ using Natrium.Shared;
 using Natrium.Shared.Extensions;
 using Unity.Entities;
 using Unity.NetCode;
-using Unity.Collections;
 using Unity.Physics;
 using Unity.Transforms;
 
 namespace Natrium.Gameplay.Server.Systems
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup), OrderLast = true)]
+    [UpdateInGroup(typeof(AttackSystemGroup))]
+    [UpdateAfter(typeof(DeathSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct ResurrectionSystem : ISystem, ISystemStartStop
     {
@@ -45,6 +45,8 @@ namespace Natrium.Gameplay.Server.Systems
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
+            Resurrect(ref state);
+            
             var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
 
@@ -81,6 +83,28 @@ namespace Natrium.Gameplay.Server.Systems
                 ecb.SetComponentEnabled<ResurrectTag>(entity, false);
                 
                 ecb.RemoveComponent<DeathInitialized>(entity);
+            }
+            
+            ecb.Playback(state.EntityManager);
+            ecb.Dispose();
+        }
+        
+        private void Resurrect(ref SystemState state)
+        {
+            var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
+            const float range = 2.0f;
+            
+            foreach (var (ltw, dt, e) in SystemAPI.Query<LocalToWorld, EnabledRefRO<DeathTag>>()
+                         .WithDisabled<ResurrectTag>().WithEntityAccess())
+            {
+                if (ltw.Position.x > -range && ltw.Position.x < range)
+                {
+                    if (ltw.Position.z > -range && ltw.Position.z < range)
+                    {
+                        Log.Debug($"Setting ResurrectTag to true on {e}");
+                        ecb.SetComponentEnabled<ResurrectTag>(e, true);
+                    }
+                }
             }
             
             ecb.Playback(state.EntityManager);

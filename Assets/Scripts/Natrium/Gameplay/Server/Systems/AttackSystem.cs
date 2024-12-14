@@ -2,12 +2,11 @@ using Natrium.Gameplay.Shared.Components;
 using Natrium.Shared;
 using Unity.Entities;
 using Unity.NetCode;
-using Unity.NetCode.LowLevel.Unsafe;
 
 namespace Natrium.Gameplay.Server.Systems
 {
-    [UpdateInGroup(typeof(GhostSimulationSystemGroup))]
-    [UpdateAfter(typeof(AimSystem))]
+    [UpdateInGroup(typeof(AttackSystemGroup))]
+    [UpdateBefore(typeof(CalculateFrameDamageSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct AttackSystem : ISystem, ISystemStartStop
     {

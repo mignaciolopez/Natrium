@@ -6,7 +6,7 @@ using Unity.Collections;
 
 namespace Natrium.Gameplay.Server.Systems
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup), OrderLast = true)]
+    [UpdateInGroup(typeof(AttackSystemGroup))]
     [UpdateAfter(typeof(CalculateFrameDamageSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct HealthSystem : ISystem, ISystemStartStop

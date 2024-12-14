@@ -2,7 +2,7 @@ using Natrium.Gameplay.Client.Components.UI.Debug;
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Gameplay.Shared.Components.Input;
 using Natrium.Shared;
-//using Unity.Burst;
+using Unity.Burst;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Mathematics;
@@ -12,7 +12,7 @@ using Unity.Physics;
 
 namespace Natrium.Gameplay.Client.Systems.UI.Debug
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
+    [UpdateInGroup(typeof(LateSimulationSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct DebugAimSystem : ISystem, ISystemStartStop
     {
@@ -48,9 +48,6 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         public void OnUpdate(ref SystemState state)
         {
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
-
-            if (!networkTime.IsFirstTimeFullyPredictingTick)
-                return;
             
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
             

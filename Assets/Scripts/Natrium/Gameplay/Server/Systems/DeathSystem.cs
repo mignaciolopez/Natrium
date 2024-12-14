@@ -2,13 +2,12 @@ using Natrium.Gameplay.Shared.Components;
 using Natrium.Shared;
 using Natrium.Shared.Extensions;
 using Unity.Entities;
-using Unity.NetCode;
 using Unity.Physics;
 using Unity.Transforms;
 
 namespace Natrium.Gameplay.Server.Systems
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup), OrderLast = true)]
+    [UpdateInGroup(typeof(AttackSystemGroup))]
     [UpdateAfter(typeof(HealthSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct DeathSystem : ISystem, ISystemStartStop

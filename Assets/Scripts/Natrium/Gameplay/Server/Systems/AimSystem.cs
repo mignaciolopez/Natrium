@@ -3,15 +3,14 @@ using Unity.Entities;
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Gameplay.Shared.Components.Input;
 using Natrium.Shared;
-using Natrium.Shared.Extensions;
-using Unity.Mathematics;
 using Unity.Physics;
 using Unity.Burst;
 using Unity.NetCode;
 
 namespace Natrium.Gameplay.Server.Systems
 {
-    [UpdateInGroup(typeof(GhostSimulationSystemGroup))]
+    [UpdateInGroup(typeof(AttackSystemGroup))]
+    [UpdateBefore(typeof(AttackSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct AimSystem : ISystem, ISystemStartStop
     {
