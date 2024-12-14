@@ -39,33 +39,27 @@ namespace Natrium.Gameplay.Shared.Systems
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
+            var deltaTIme = SystemAPI.Time.DeltaTime;
+
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
             
             if (!networkTime.IsFirstTimeFullyPredictingTick)
                 return;
             
-            foreach (var (movementData, moveCommand, speed, child) 
-                     in SystemAPI.Query<RefRW<MovementData>, DynamicBuffer<MoveCommand>, RefRO<Speed>, DynamicBuffer<Child>>()
+            foreach (var (localTransform, movementData, moveCommand, speed) 
+                     in SystemAPI.Query<RefRW<LocalTransform>, RefRW<MovementData>, DynamicBuffer<MoveCommand>, RefRO<Speed>>()
                          .WithAll<PredictedGhost, Simulate>())
             {
                 if (!moveCommand.GetDataAtTick(networkTime.ServerTick, out var moveLastTick))
                     continue;
                 
                 var maxRotationDelta = speed.ValueRO.Rotation;
-
+                
+                
                 if (math.distancesq(movementData.ValueRO.Previous, moveLastTick.Target) > 0.1f)
                     movementData.ValueRW.Direction =  moveLastTick.Target - movementData.ValueRO.Previous;
                 
-                foreach (var childEntity in child)
-                {
-                    if (!state.EntityManager.HasComponent<MaterialPropertyBaseColor>(childEntity.Value))
-                        continue;
-
-                    var childLocalTransform = state.EntityManager.GetComponentData<LocalTransform>(childEntity.Value);
-                    childLocalTransform.Rotation.RotateTowards(math.normalize(movementData.ValueRW.Direction), maxRotationDelta);
-                    state.EntityManager.SetComponentData(childEntity.Value, childLocalTransform);
-                    break;
-                }
+                localTransform.ValueRW.Rotation.RotateTowards(math.normalize(movementData.ValueRW.Direction), maxRotationDelta);
             }
         }
     }
