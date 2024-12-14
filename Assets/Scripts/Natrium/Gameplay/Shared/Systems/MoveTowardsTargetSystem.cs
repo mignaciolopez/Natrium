@@ -6,12 +6,11 @@ using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Transforms;
-using UnityEngine.Analytics;
-using UnityEngine.SocialPlatforms;
 
 namespace Natrium.Gameplay.Shared.Systems
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
+    [UpdateInGroup(typeof(MovementSystemGroup))]
+    [UpdateAfter(typeof(PhysicsCastSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ServerSimulation)]
     public partial struct MoveTowardsTargetSystem : ISystem
     {

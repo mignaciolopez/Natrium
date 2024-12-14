@@ -2,7 +2,6 @@ using Natrium.Gameplay.Shared.Components;
 using Natrium.Gameplay.Shared.Components.Input;
 using Natrium.Gameplay.Shared.Systems;
 using Natrium.Shared;
-using Natrium.Shared.Extensions;
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
@@ -10,7 +9,7 @@ using Unity.Transforms;
 
 namespace Natrium.Gameplay.Server.Systems
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
+    [UpdateInGroup(typeof(MovementSystemGroup))]
     [UpdateBefore(typeof(PhysicsCastSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
     public partial struct MovementSystem : ISystem, ISystemStartStop

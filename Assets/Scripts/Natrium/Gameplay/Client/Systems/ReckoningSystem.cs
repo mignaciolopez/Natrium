@@ -1,13 +1,12 @@
 using Natrium.Gameplay.Shared.Components;
 using Natrium.Shared;
-using Natrium.Shared.Extensions;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Transforms;
 
 namespace Natrium.Gameplay.Client.Systems
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
+    [UpdateInGroup(typeof(MovementSystemGroup))]
     [UpdateBefore(typeof(MovementSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct ReckoningSystem : ISystem, ISystemStartStop

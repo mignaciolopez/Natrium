@@ -1,3 +1,4 @@
+using System;
 using Unity.Entities;
 using Unity.Physics;
 using Natrium.Gameplay.Shared.Components;
@@ -8,12 +9,12 @@ using Unity.Burst;
 using Unity.Collections;
 using Unity.Mathematics;
 using Unity.NetCode;
+using Unity.Physics.Systems;
 using Unity.Transforms;
 
 namespace Natrium.Gameplay.Shared.Systems
 {
-    [UpdateInGroup(typeof(PredictedSimulationSystemGroup))]
-    [UpdateBefore(typeof(MoveTowardsTargetSystem))]
+    [UpdateInGroup(typeof(MovementSystemGroup))]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation | WorldSystemFilterFlags.ClientSimulation)]
     public partial struct PhysicsCastSystem : ISystem, ISystemStartStop
     {
@@ -125,6 +126,7 @@ namespace Natrium.Gameplay.Shared.Systems
         }
     }
 
+    [Obsolete]
     [BurstCompile]
     public partial struct RayCastJob : IJobEntity
     {
@@ -152,6 +154,7 @@ namespace Natrium.Gameplay.Shared.Systems
         }
     }
 
+    [Obsolete]
     [BurstCompile]
     public partial struct BoxCastJob : IJobEntity
     {
