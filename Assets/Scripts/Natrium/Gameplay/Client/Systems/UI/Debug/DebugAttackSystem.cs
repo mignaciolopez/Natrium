@@ -12,18 +12,22 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct DebugAttackSystem : ISystem, ISystemStartStop
     {
+        private BeginSimulationEntityCommandBufferSystem.Singleton _bsEcbS;
+        
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
             Log.Verbose("OnCreate");
             state.RequireForUpdate<NetworkTime>();
             state.RequireForUpdate<NetworkIdLookup>();
+            state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
         }
 
         //[BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
             Log.Verbose("OnStartRunning");
+            _bsEcbS = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
         }
 
         //[BurstCompile]
@@ -41,7 +45,7 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
+            var ecb = _bsEcbS.CreateCommandBuffer(state.WorldUnmanaged);
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
 
             var networkIdLookup = SystemAPI.GetSingleton<NetworkIdLookup>();
@@ -63,7 +67,7 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
                     {
                         if (!state.EntityManager.HasComponent<DebugTag>(child.Value))
                             continue;
-                
+                        
                         Log.Debug($"Enabling {child.Value}");
                         ecb.RemoveComponent<Disabled>(child.Value);
                     }
@@ -76,9 +80,6 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
                 //ToDo: Should not consume event just for debugging
                 ecb.DestroyEntity(rpcEntity);
             }
-            
-            ecb.Playback(state.EntityManager);
-            ecb.Dispose();
         }
     }
 }
