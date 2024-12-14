@@ -50,7 +50,8 @@ namespace Natrium.Gameplay.Server.Systems
             
             foreach (var (inputMelee, physicsCollider, localTransform, entity) 
                      in SystemAPI.Query<RefRO<InputMelee>, RefRO<PhysicsCollider>, RefRO<LocalTransform>>()
-                        .WithEntityAccess())
+                         .WithDisabled<DeathTag>()
+                         .WithEntityAccess())
             {
                 if (!inputMelee.ValueRO.InputEvent.IsSet)
                     continue;
