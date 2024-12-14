@@ -36,13 +36,10 @@ namespace Natrium.Gameplay.Shared.Systems
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
         }
 
-        //[BurstCompile]
+        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var deltaTIme = SystemAPI.Time.DeltaTime;
-
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
-            
             if (!networkTime.IsFirstTimeFullyPredictingTick)
                 return;
             
@@ -53,13 +50,10 @@ namespace Natrium.Gameplay.Shared.Systems
                 if (!moveCommand.GetDataAtTick(networkTime.ServerTick, out var moveLastTick))
                     continue;
                 
-                var maxRotationDelta = speed.ValueRO.Rotation;
-                
-                
                 if (math.distancesq(movementData.ValueRO.Previous, moveLastTick.Target) > 0.1f)
-                    movementData.ValueRW.Direction =  moveLastTick.Target - movementData.ValueRO.Previous;
+                    movementData.ValueRW.Direction =  math.normalize(moveLastTick.Target - movementData.ValueRO.Previous);
                 
-                localTransform.ValueRW.Rotation.RotateTowards(math.normalize(movementData.ValueRW.Direction), maxRotationDelta);
+                localTransform.ValueRW.Rotation.RotateTowards(movementData.ValueRW.Direction, speed.ValueRO.Rotation);
             }
         }
     }

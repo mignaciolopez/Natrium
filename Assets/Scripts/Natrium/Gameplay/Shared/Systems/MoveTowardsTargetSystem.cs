@@ -18,6 +18,7 @@ namespace Natrium.Gameplay.Shared.Systems
         public void OnCreate(ref SystemState state)
         {
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
+            state.RequireForUpdate<NetworkTime>();
         }
 
         public void OnStartRunning(ref SystemState state)
@@ -35,13 +36,11 @@ namespace Natrium.Gameplay.Shared.Systems
             Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
         }
 
-        //[BurstCompile]
+        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             var deltaTIme = SystemAPI.Time.DeltaTime;
-
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
-            
             if (!networkTime.IsFirstTimeFullyPredictingTick)
                 return;
             
@@ -55,7 +54,7 @@ namespace Natrium.Gameplay.Shared.Systems
                 var maxDistanceDelta = speed.ValueRO.Translation * deltaTIme;
                 localTransform.ValueRW.Position.MoveTowards(movementData.ValueRO.Target, maxDistanceDelta);
                 
-                if (math.distancesq(localTransform.ValueRO.Position, movementData.ValueRO.Target) < maxDistanceDelta * 0.1f)
+                if (math.distancesq(localTransform.ValueRO.Position, movementData.ValueRO.Target) < maxDistanceDelta * movementData.ValueRO.PercentNextMove)
                 {
                     movementData.ValueRW.IsMoving = false;
                     movementData.ValueRW.Previous = movementData.ValueRO.Target;

@@ -1,6 +1,7 @@
 using Unity.Entities;
 using Unity.Transforms;
 using Natrium.Gameplay.Client.Components;
+using Natrium.Gameplay.Shared.Components;
 using Natrium.Shared;
 using Unity.NetCode;
 

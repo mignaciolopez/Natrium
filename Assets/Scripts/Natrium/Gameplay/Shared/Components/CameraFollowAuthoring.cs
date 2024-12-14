@@ -1,8 +1,9 @@
 using UnityEngine;
 using Unity.Entities;
 using Unity.Mathematics;
+using Unity.NetCode;
 
-namespace Natrium.Gameplay.Client.Components
+namespace Natrium.Gameplay.Shared.Components
 {
     [DisallowMultipleComponent]
     public class CameraFollowAuthoring : MonoBehaviour
@@ -22,8 +23,9 @@ namespace Natrium.Gameplay.Client.Components
         }
     }
     
+    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToOwner)]
     public struct CameraFollow : IComponentData
     {
-        public float3 Offset;
+        [GhostField] public float3 Offset;
     }
 }

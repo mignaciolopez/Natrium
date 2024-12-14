@@ -25,18 +25,5 @@ namespace Natrium.Shared.Extensions
             current = new float3(current.x + x / num4 * maxDistanceDelta, current.y + y / num4 * maxDistanceDelta,
                 current.z + z / num4 * maxDistanceDelta);
         }
-        
-        public static void RotateTowards(this ref quaternion quaternion, float3 targetDirection, float maxDegreesDelta)
-        {
-            // Calculate the quaternion rotation between the two directions
-            quaternion targetRotation = quaternion.LookRotationSafe(targetDirection, math.up());
-
-            // Calculate the current rotation
-            var currentDirection = math.normalize(math.forward(quaternion));
-            quaternion currentRotation = quaternion.LookRotationSafe(currentDirection, math.up());
-
-            // Spherically interpolate between the current rotation and the target rotation
-            quaternion = math.slerp(currentRotation, targetRotation, maxDegreesDelta / 360f);
-        }
     }
 }

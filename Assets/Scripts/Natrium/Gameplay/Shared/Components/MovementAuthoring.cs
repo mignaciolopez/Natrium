@@ -16,10 +16,13 @@ namespace Natrium.Gameplay.Shared.Components
     public class MovementAuthoring : MonoBehaviour
     {
         public float translation = 4.0f;
-        public float rotation = 360.0f;
+        public float rotation = 90.0f;
+        
         public MovementTypes moveType = MovementTypes.Classic;
+        
         [Range(0.1f, 1.0f)]
         public float percentNextMove = 0.1f;
+        
         
         public class Baker : Baker<MovementAuthoring>
         {
@@ -33,7 +36,11 @@ namespace Natrium.Gameplay.Shared.Components
                     Rotation = authoring.rotation
                 });
                 
-                AddComponent<MovementData>(entity);
+                AddComponent(entity, new MovementData
+                {
+                    PercentNextMove = authoring.percentNextMove,
+                });
+                
                 AddComponent<Reckoning>(entity);
                 
                 AddComponent(entity, new OverlapBox
@@ -59,6 +66,7 @@ namespace Natrium.Gameplay.Shared.Components
         public bool IsMoving;
         public bool ShouldCheckCollision;
         public float3 Direction;
+        public float PercentNextMove;
     }
     
     [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.All)]

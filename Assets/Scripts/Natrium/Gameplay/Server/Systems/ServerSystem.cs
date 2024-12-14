@@ -180,12 +180,14 @@ namespace Natrium.Gameplay.Server.Systems
                     Scale = localTransform.Scale,
                 });
                 
+                var movementData = EntityManager.GetComponentData<MovementData>(_playerPrefab);
                 EntityManager.SetComponentData(player, new MovementData
                 {
                     Target = localTransform.Position,
                     Previous = localTransform.Position,
                     IsMoving = false,
                     ShouldCheckCollision = false,
+                    PercentNextMove = movementData.PercentNextMove,
                 });
                 
                 EntityManager.SetComponentData(player, new Reckoning
