@@ -12,7 +12,7 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial struct DebugAttackSystem : ISystem, ISystemStartStop
     {
-        private BeginSimulationEntityCommandBufferSystem.Singleton _bsEcbS;
+        private BeginInitializationEntityCommandBufferSystem.Singleton _biEcbS;
         
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
@@ -20,14 +20,14 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
             Log.Verbose("OnCreate");
             state.RequireForUpdate<NetworkTime>();
             state.RequireForUpdate<NetworkIdLookup>();
-            state.RequireForUpdate<BeginSimulationEntityCommandBufferSystem.Singleton>();
+            state.RequireForUpdate<BeginInitializationEntityCommandBufferSystem.Singleton>();
         }
 
         //[BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
             Log.Verbose("OnStartRunning");
-            _bsEcbS = SystemAPI.GetSingleton<BeginSimulationEntityCommandBufferSystem.Singleton>();
+            _biEcbS = SystemAPI.GetSingleton<BeginInitializationEntityCommandBufferSystem.Singleton>();
         }
 
         //[BurstCompile]
@@ -45,7 +45,7 @@ namespace Natrium.Gameplay.Client.Systems.UI.Debug
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var ecb = _bsEcbS.CreateCommandBuffer(state.WorldUnmanaged);
+            var ecb = _biEcbS.CreateCommandBuffer(state.WorldUnmanaged);
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
 
             var networkIdLookup = SystemAPI.GetSingleton<NetworkIdLookup>();
