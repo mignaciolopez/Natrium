@@ -112,13 +112,7 @@ namespace Natrium.Gameplay.Client.Systems.UI
                          .WithAll<PlayerNameTMPTextInitialized>()
                          .WithEntityAccess())
             {
-                if (EntityManager.Exists(entity))
-                {
-                    
-                }
-                GameObject.Destroy(playerNameTMPText.GameObject);
-                playerNameTMPText.GameObject = null;
-                playerNameTMPText.Value = null;
+                playerNameTMPText.Dispose();
                 
                 ecb.RemoveComponent<PlayerNameTMPText>(entity);
                 ecb.RemoveComponent<PlayerNameTMPTextInitialized>(entity);
