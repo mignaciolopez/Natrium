@@ -64,7 +64,7 @@ namespace Natrium.Gameplay.Client.Systems.UI
         private void InstantiatePlayerNames()
         {
             _tmpTextPropertiesComponentLookup.Update(this);
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
+            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
             
             foreach (var (playerName, localTransform, entity)
                      in SystemAPI.Query<RefRO<PlayerName>, RefRO<LocalTransform>>()
