@@ -50,11 +50,9 @@ namespace Natrium.Gameplay.Server.Systems
             var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
 
-            foreach (var (speed,
-                         physicsCollider, hp,dt, rt, entity)
-                     in SystemAPI.Query<RefRW<Speed>, RefRW<PhysicsCollider>,
-                        RefRW<HealthPoints>, EnabledRefRW<DeathTag>, EnabledRefRW<ResurrectTag>>()
-                         .WithEntityAccess())
+            foreach (var (speed, physicsCollider, hp, entity)
+                     in SystemAPI.Query<RefRW<Speed>, RefRW<PhysicsCollider>, RefRW<HealthPoints>>()
+                         .WithAll<DeathTag, ResurrectTag>().WithEntityAccess())
             {
                 Log.Debug($"Resurrecting {entity}");
 
