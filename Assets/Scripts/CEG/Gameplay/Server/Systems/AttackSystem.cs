@@ -1,5 +1,4 @@
 using CEG.Gameplay.Shared.Components;
-
 using Unity.Entities;
 using Unity.NetCode;
 
@@ -70,7 +69,5 @@ namespace CEG.Gameplay.Server.Systems
             ecb.Playback(state.EntityManager);
             ecb.Dispose();
         }
-
-        
     }
 }

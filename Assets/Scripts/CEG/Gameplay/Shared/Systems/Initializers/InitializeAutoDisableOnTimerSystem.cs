@@ -1,5 +1,4 @@
 using CEG.Gameplay.Shared.Components;
-using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 
@@ -38,7 +37,7 @@ namespace CEG.Gameplay.Shared.Systems.Initializers
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var ecb = new EntityCommandBuffer(Allocator.Temp);
+            var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
             
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
             var currentTick = state.WorldUnmanaged.IsServer() ? networkTime.ServerTick : networkTime.InterpolationTick;
@@ -53,7 +52,6 @@ namespace CEG.Gameplay.Shared.Systems.Initializers
             }
 
             ecb.Playback(state.EntityManager);
-            ecb.Dispose();
         }
     }
 }

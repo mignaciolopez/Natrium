@@ -1,8 +1,7 @@
 using CEG.Gameplay.Shared.Components;
-
+using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
-using Unity.Collections;
 
 namespace CEG.Gameplay.Server.Systems
 {

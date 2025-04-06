@@ -1,16 +1,15 @@
-using Unity.Collections;
-using Unity.Entities;
-using Unity.NetCode;
-
+using CEG.Extensions;
 using CEG.Gameplay.Shared;
 using CEG.Gameplay.Shared.Components;
-using Unity.Mathematics;
-using Unity.Transforms;
-using Unity.Networking.Transport;
-using System.Net;
 using System;
+using System.Net;
 using System.Net.Sockets;
-using CEG.Extensions;
+using Unity.Collections;
+using Unity.Entities;
+using Unity.Mathematics;
+using Unity.NetCode;
+using Unity.Networking.Transport;
+using Unity.Transforms;
 
 namespace CEG.Gameplay.Server.Systems
 {
@@ -97,9 +96,9 @@ namespace CEG.Gameplay.Server.Systems
                 Log.Fatal($"SystemsSettings Singleton not present!!!");
             }
 
-            foreach (var nsrlr in SystemAPI.Query<NetworkStreamRequestListenResult>())
+            foreach (var networkStreamRequestListenResult in SystemAPI.Query<RefRO<NetworkStreamRequestListenResult>>())
             {
-                _listenState = nsrlr.RequestState;
+                _listenState = networkStreamRequestListenResult.ValueRO.RequestState;
                 Log.Debug($"NetworkStreamRequestListenResult: {_listenState}");
 
             }
@@ -107,11 +106,11 @@ namespace CEG.Gameplay.Server.Systems
 
         private void GetListeningStatus()
         {
-            foreach (var nsrlr in SystemAPI.Query<NetworkStreamRequestListenResult>())
+            foreach (var networkStreamRequestListenResult in SystemAPI.Query<RefRO<NetworkStreamRequestListenResult>>())
             {
-                if (_listenState != nsrlr.RequestState)
+                if (_listenState != networkStreamRequestListenResult.ValueRO.RequestState)
                 {
-                    _listenState = nsrlr.RequestState;
+                    _listenState = networkStreamRequestListenResult.ValueRO.RequestState;
                     Log.Info($"NetworkStreamRequestListenResult: {_listenState}");
                 }
             }
@@ -125,7 +124,9 @@ namespace CEG.Gameplay.Server.Systems
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
 
             //EntitiesJournaling.Enabled = true;
-            foreach (var (rpcConnect, rpcSource, rpcEntity) in SystemAPI.Query<RefRO<RpcStartStreaming>, RefRO<ReceiveRpcCommandRequest>>().WithEntityAccess())
+            foreach (var (rpcSource, rpcEntity) in SystemAPI.Query<RefRO<ReceiveRpcCommandRequest>>()
+                         .WithAll<RpcStartStreaming>()
+                         .WithEntityAccess())
             {
                 Log.Debug($"Processing RpcConnect for {rpcSource.ValueRO.SourceConnection}");
                 

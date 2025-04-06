@@ -1,16 +1,13 @@
-using System;
-using Unity.Entities;
-using Unity.Physics;
+using CEG.Extensions;
 using CEG.Gameplay.Shared.Components;
 using CEG.Gameplay.Shared.Components.Input;
-
-using CEG.Extensions;
+using System;
 using Unity.Burst;
 using Unity.Collections;
+using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;
-using Unity.Physics.Systems;
-using Unity.Transforms;
+using Unity.Physics;
 
 namespace CEG.Gameplay.Shared.Systems
 {
@@ -53,8 +50,8 @@ namespace CEG.Gameplay.Shared.Systems
             var physicsWorld = SystemAPI.GetSingletonRW<PhysicsWorldSingleton>();
             var collisionWorld = SystemAPI.GetSingleton<PhysicsWorldSingleton>().CollisionWorld;
             
-            foreach (var (movementData, targetCommand, reckoning, physicsCollider, overlapBox, entity) 
-                     in SystemAPI.Query<RefRW<MovementData>, DynamicBuffer<MoveCommand>, RefRW<Reckoning>, RefRO<PhysicsCollider>, RefRO<OverlapBox>>()
+            foreach (var (movementData, targetCommand, physicsCollider, overlapBox, entity) 
+                     in SystemAPI.Query<RefRW<MovementData>, DynamicBuffer<MoveCommand>, RefRO<PhysicsCollider>, RefRO<OverlapBox>>()
                          .WithAll<PredictedGhost, Simulate>()
                          .WithEntityAccess())
             {
@@ -130,11 +127,11 @@ namespace CEG.Gameplay.Shared.Systems
     [BurstCompile]
     public partial struct RayCastJob : IJobEntity
     {
-        public EntityCommandBuffer ecb;
-        public CollisionWorld collisionWorld;
+        public EntityCommandBuffer ECB;
+        public CollisionWorld CollisionWorld;
         private void Execute(RefRO<RayCast> cr, RefRO<PhysicsCollider> pc, Entity e)
         {
-            ecb.RemoveComponent<RayCast>(e);
+            ECB.RemoveComponent<RayCast>(e);
 
             var input = new RaycastInput()
             {
@@ -143,8 +140,8 @@ namespace CEG.Gameplay.Shared.Systems
                 Filter = pc.ValueRO.Value.Value.GetCollisionFilter()
             };
 
-            var isHit = collisionWorld.CastRay(input, out var hit);
-            ecb.AddComponent(e, new RayCastOutput
+            var isHit = CollisionWorld.CastRay(input, out var hit);
+            ECB.AddComponent(e, new RayCastOutput
             {
                 IsHit = isHit,
                 Hit = hit,
@@ -158,16 +155,16 @@ namespace CEG.Gameplay.Shared.Systems
     [BurstCompile]
     public partial struct BoxCastJob : IJobEntity
     {
-        public EntityCommandBuffer ecb;
-        public CollisionWorld collisionWorld;
+        public EntityCommandBuffer ECB;
+        public CollisionWorld CollisionWorld;
         private void Execute(RefRO<BoxCast> bc, RefRO<PhysicsCollider> pc, Entity e)
         {
-            ecb.RemoveComponent<BoxCast>(e);
+            ECB.RemoveComponent<BoxCast>(e);
 
             var filter = pc.ValueRO.Value.Value.GetCollisionFilter();
 
-            var isHit = collisionWorld.BoxCast(bc.ValueRO.Center, bc.ValueRO.Orientation, bc.ValueRO.HalfExtents, bc.ValueRO.Direction, bc.ValueRO.MaxDistance, out var hit, filter);
-            ecb.AddComponent(e, new BoxCastOutput { IsHit = isHit, Hit = hit });
+            var isHit = CollisionWorld.BoxCast(bc.ValueRO.Center, bc.ValueRO.Orientation, bc.ValueRO.HalfExtents, bc.ValueRO.Direction, bc.ValueRO.MaxDistance, out var hit, filter);
+            ECB.AddComponent(e, new BoxCastOutput { IsHit = isHit, Hit = hit });
         }
     }
 }

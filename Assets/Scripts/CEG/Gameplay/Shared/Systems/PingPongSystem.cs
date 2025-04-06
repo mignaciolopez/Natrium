@@ -53,19 +53,19 @@ namespace CEG.Gameplay.Shared.Systems
 
         private void ProcessPings(ref EntityCommandBuffer ecb)
         {
-            foreach (var (rpcPing, receiveRpc, reqEntity) in SystemAPI.Query<RpcPing, ReceiveRpcCommandRequest>().WithEntityAccess())
+            foreach (var (rpcPing, receiveRpc, reqEntity) in SystemAPI.Query<RefRO<RpcPing>, RefRO<ReceiveRpcCommandRequest>>().WithEntityAccess())
             {
-                SendPong(receiveRpc.SourceConnection, rpcPing.UnixTime, ref ecb);
+                SendPong(receiveRpc.ValueRO.SourceConnection, rpcPing.ValueRO.UnixTime, ref ecb);
                 ecb.DestroyEntity(reqEntity);
             }
         }
 
         private void ProcessPongs(ref EntityCommandBuffer ecb)
         {
-            foreach (var (rpcPong, receiveRpc, reqEntity) in SystemAPI.Query<RefRW<RpcPong>, ReceiveRpcCommandRequest>().WithEntityAccess())
+            foreach (var (rpcPong, receiveRpc, reqEntity) in SystemAPI.Query<RefRW<RpcPong>, RefRO<ReceiveRpcCommandRequest>>().WithEntityAccess())
             {
-                SetLatency(receiveRpc.SourceConnection, rpcPong.ValueRO.PongUnixTime, ref ecb);
-                SetRTT(receiveRpc.SourceConnection, rpcPong.ValueRO.PingUnixTime, ref ecb);
+                SetLatency(receiveRpc.ValueRO.SourceConnection, rpcPong.ValueRO.PongUnixTime, ref ecb);
+                SetRTT(receiveRpc.ValueRO.SourceConnection, rpcPong.ValueRO.PingUnixTime, ref ecb);
 
                 ecb.DestroyEntity(reqEntity);
             }
@@ -106,8 +106,8 @@ namespace CEG.Gameplay.Shared.Systems
             var unixTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             var lat = (unixTime - pongUnixTime);
 
-            if (SystemAPI.TryGetSingleton<Latency>(out var latency))
-                latency.Value = lat;
+            if (SystemAPI.TryGetSingletonRW<Latency>(out var latency))
+                latency.ValueRW.Value = lat;
             else
                 ecb.AddComponent(e, new Latency { Value = lat });
 
@@ -119,8 +119,8 @@ namespace CEG.Gameplay.Shared.Systems
             var unixTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
             var rtt = (unixTime - pingUnixTime);
 
-            if (SystemAPI.TryGetSingleton<RoundTripTime>(out var roundTripTime))
-                roundTripTime.Value = rtt;
+            if (SystemAPI.TryGetSingletonRW<RoundTripTime>(out var roundTripTime))
+                roundTripTime.ValueRW.Value = rtt;
             else
                 ecb.AddComponent(e, new RoundTripTime { Value = rtt });
 

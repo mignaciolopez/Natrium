@@ -1,6 +1,5 @@
 using CEG.Gameplay.Shared.Components;
 using CEG.Gameplay.Shared.Components.Input;
-
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -13,7 +12,7 @@ namespace CEG.Gameplay.Server.Systems
     [UpdateInGroup(typeof(AttackSystemGroup))]
     [UpdateBefore(typeof(AttackSystem))]
     [WorldSystemFilter(WorldSystemFilterFlags.ServerSimulation)]
-    public partial struct MeeleSystem : ISystem, ISystemStartStop
+    public partial struct MeleeSystem : ISystem, ISystemStartStop
     {
         //[BurstCompile]
         public void OnCreate(ref SystemState state)

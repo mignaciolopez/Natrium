@@ -1,6 +1,5 @@
-using CEG.Gameplay.Shared.Components;
-
 using CEG.Extensions;
+using CEG.Gameplay.Shared.Components;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;

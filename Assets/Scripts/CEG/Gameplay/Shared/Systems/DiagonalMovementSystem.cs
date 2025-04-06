@@ -90,7 +90,6 @@ namespace CEG.Gameplay.Shared.Systems
             }*/
             
             ecb.Playback(state.EntityManager);
-            ecb.Dispose();
         }
     }
 }

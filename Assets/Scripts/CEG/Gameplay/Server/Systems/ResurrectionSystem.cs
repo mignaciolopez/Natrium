@@ -1,5 +1,4 @@
 using CEG.Gameplay.Shared.Components;
-
 using CEG.Extensions;
 using Unity.Entities;
 using Unity.NetCode;
@@ -47,14 +46,14 @@ namespace CEG.Gameplay.Server.Systems
         {
             Resurrect(ref state);
             
-            var currentTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
+            var serverTick = SystemAPI.GetSingleton<NetworkTime>().ServerTick;
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
 
             foreach (var (speed, physicsCollider, hp, entity)
                      in SystemAPI.Query<RefRW<Speed>, RefRW<PhysicsCollider>, RefRW<HealthPoints>>()
                          .WithAll<DeathTag, ResurrectTag>().WithEntityAccess())
             {
-                Log.Debug($"Resurrecting {entity}");
+                Log.Debug($"Resurrecting {entity}@{serverTick}");
 
                 foreach (var child in state.EntityManager.GetBuffer<Child>(entity))
                 {

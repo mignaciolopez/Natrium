@@ -3,7 +3,6 @@ using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
 
-
 namespace CEG.Gameplay.Shared.Utilities
 {
     public static class Utils
