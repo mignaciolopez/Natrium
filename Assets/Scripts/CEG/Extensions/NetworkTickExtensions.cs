@@ -1,4 +1,4 @@
-namespace CEG.Shared.Extensions
+namespace CEG.Extensions
 {
     public static class NetworkTickExtensions
     {

@@ -1,7 +1,7 @@
 using Unity.Entities;
 using Unity.NetCode;
 
-namespace CEG.Shared.Extensions
+namespace CEG.Extensions
 {
     public static class CommandDataUtilityExtensions
     {

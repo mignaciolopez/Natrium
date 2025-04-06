@@ -1,5 +1,4 @@
 using CEG.Gameplay.Client.Components;
-using CEG.Shared;
 using Unity.Entities;
 using UnityEngine;
 

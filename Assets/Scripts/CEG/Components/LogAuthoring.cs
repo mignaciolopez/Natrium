@@ -3,7 +3,7 @@ using Unity.Entities;
 using Unity.Logging;
 using Unity.Collections;
 
-namespace CEG.Shared.Components
+namespace CEG.Components
 {
     [DisallowMultipleComponent]
     public class LogAuthoring : MonoBehaviour

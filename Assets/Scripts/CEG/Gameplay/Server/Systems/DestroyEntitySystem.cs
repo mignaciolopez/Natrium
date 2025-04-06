@@ -1,5 +1,5 @@
 using CEG.Gameplay.Shared.Components;
-using CEG.Shared;
+
 using Unity.Burst;
 using Unity.Entities;
 

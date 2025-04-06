@@ -1,6 +1,6 @@
 using CEG.Gameplay.Shared.Components;
-using CEG.Shared;
-using CEG.Shared.Extensions;
+
+using CEG.Extensions;
 using Unity.Entities;
 using Unity.Physics;
 using Unity.Transforms;

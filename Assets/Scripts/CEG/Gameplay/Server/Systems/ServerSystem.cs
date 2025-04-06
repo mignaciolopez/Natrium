@@ -1,7 +1,7 @@
 using Unity.Collections;
 using Unity.Entities;
 using Unity.NetCode;
-using CEG.Shared;
+
 using CEG.Gameplay.Shared;
 using CEG.Gameplay.Shared.Components;
 using Unity.Mathematics;
@@ -10,7 +10,7 @@ using Unity.Networking.Transport;
 using System.Net;
 using System;
 using System.Net.Sockets;
-using CEG.Shared.Extensions;
+using CEG.Extensions;
 
 namespace CEG.Gameplay.Server.Systems
 {
@@ -125,7 +125,7 @@ namespace CEG.Gameplay.Server.Systems
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
 
             //EntitiesJournaling.Enabled = true;
-            foreach (var (rpcConnect, rpcSource, rpcEntity) in SystemAPI.Query<RefRO<RpcConnect>, RefRO<ReceiveRpcCommandRequest>>().WithEntityAccess())
+            foreach (var (rpcConnect, rpcSource, rpcEntity) in SystemAPI.Query<RefRO<RpcStartStreaming>, RefRO<ReceiveRpcCommandRequest>>().WithEntityAccess())
             {
                 Log.Debug($"Processing RpcConnect for {rpcSource.ValueRO.SourceConnection}");
                 

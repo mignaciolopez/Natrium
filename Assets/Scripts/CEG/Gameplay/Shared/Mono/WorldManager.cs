@@ -1,7 +1,6 @@
 using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
-using CEG.Shared;
 
 namespace CEG.Gameplay.Shared.Mono
 {

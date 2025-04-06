@@ -1,11 +1,13 @@
+using CEG.Gameplay.Client.Components;
+using CEG.Gameplay.Shared.Components;
 using CEG.Settings.Input;
-using CEG.Shared;
-using CEG.Shared.Systems;
 using Unity.Entities;
 using UnityEngine;
 
 namespace CEG.Gameplay.Client.Systems.Input
 {
+    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
+    [UpdateBefore(typeof(ClientSystem))]
     public partial class Input : SystemBase
     {
         private InputActions _inputActions;
@@ -36,11 +38,20 @@ namespace CEG.Gameplay.Client.Systems.Input
         }
         protected override void OnUpdate()
         {
+            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
+            
             //Todo: Move all the following stuff to another system.
             if (UnityEngine.Input.GetKeyUp(KeyCode.Return))
-                EventSystem.EnqueueEvent(CEG.Shared.Events.OnKeyCodeReturn);
+            {
+                var entity = ecb.CreateEntity();
+                ecb.AddComponent<ConnectRequest>(entity);
+            }
+
             if (UnityEngine.Input.GetKeyUp(KeyCode.Escape))
-                EventSystem.EnqueueEvent(CEG.Shared.Events.OnKeyCodeEscape);
+            {
+                var entity = ecb.CreateEntity();
+                ecb.AddComponent<DisconnectRequest>(entity);
+            }
 
             if (UnityEngine.Input.GetKeyUp(KeyCode.F11))
             {
@@ -52,9 +63,12 @@ namespace CEG.Gameplay.Client.Systems.Input
 
             if (UnityEngine.Input.GetKeyUp(KeyCode.F2))
             {
-                EventSystem.EnqueueEvent(CEG.Shared.Events.OnSendPing);
+                var entity = ecb.CreateEntity();
+                ecb.AddComponent<PingRequest>(entity);
             }
             //End //Todo: Move all the following stuff to another system.
+            
+            ecb.Playback(EntityManager);
         }
     }
 }

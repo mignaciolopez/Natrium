@@ -1,18 +1,15 @@
-using CEG.Shared;
-using CEG.Shared.Systems;
+using CEG.Gameplay.Client.Components;
+using CEG.Gameplay.Shared;
 using Unity.Entities;
 using Unity.NetCode;
-using CEG.Gameplay.Shared.Components;
-using CEG.Gameplay.Shared;
-using System.Net;
 using Unity.Networking.Transport;
 using System;
+using System.Net;
 using System.Net.Sockets;
 
 namespace CEG.Gameplay.Client.Systems
 {
-    [UpdateInGroup(typeof(GhostSimulationSystemGroup), OrderLast = true)]
-    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation | WorldSystemFilterFlags.ThinClientSimulation)]
+    [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     public partial class ClientSystem : SystemBase
     {
         protected override void OnCreate()
@@ -26,16 +23,12 @@ namespace CEG.Gameplay.Client.Systems
         {
             Log.Verbose("OnStartRunning");
             base.OnStartRunning();
-            EventSystem.Subscribe(Events.OnKeyCodeReturn, OnKeyCodeReturn);
-            EventSystem.Subscribe(Events.OnKeyCodeEscape, OnKeyCodeEscape);
         }
 
         protected override void OnStopRunning()
         {
             Log.Verbose("OnStopRunning");
             base.OnStopRunning();
-            EventSystem.UnSubscribe(Events.OnKeyCodeReturn, OnKeyCodeReturn);
-            EventSystem.UnSubscribe(Events.OnKeyCodeEscape, OnKeyCodeEscape);
         }
 
         protected override void OnDestroy()
@@ -46,18 +39,46 @@ namespace CEG.Gameplay.Client.Systems
         
         protected override void OnUpdate()
         {
-            OnConnect(null);
+            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
+
+            var shouldConnect = false;
+            var shouldDisconnect = false;
+
+            foreach (var entity in SystemAPI.Query<RefRO<ConnectRequest>>()
+                         .WithNone<DisconnectRequest>()
+                         .WithEntityAccess())
+            {
+                shouldConnect = true;
+                ecb.DestroyEntity(entity.Item2);
+            }
+            
+            foreach (var entity in SystemAPI.Query<RefRO<DisconnectRequest>>().WithEntityAccess())
+            {
+                shouldConnect = false;
+                shouldDisconnect = true;
+                ecb.DestroyEntity(entity.Item2);
+            }
+
+            ecb.Playback(EntityManager);
+
+            if (shouldConnect)
+                Connect();
+            if (shouldDisconnect)
+                Disconnect();
         }
 
-        private void OnKeyCodeReturn(Stream stream)
+        private void Connect()
         {
-            foreach(var conState in SystemAPI.Query<RefRO<ConnectionState>>().WithAll<GhostOwnerIsLocal>())
+            foreach(var connectionState in SystemAPI.Query<RefRO<ConnectionState>>().WithAll<GhostOwnerIsLocal>())
             {
-                Log.Warning($"Connection State: {conState.ValueRO.CurrentState}");
-                if (conState.ValueRO.CurrentState == ConnectionState.State.Connecting || 
-                    conState.ValueRO.CurrentState == ConnectionState.State.Connected || 
-                    conState.ValueRO.CurrentState == ConnectionState.State.Unknown)
+                if (connectionState.ValueRO.CurrentState
+                    is ConnectionState.State.Connecting
+                    or ConnectionState.State.Connected
+                    or ConnectionState.State.Unknown)
+                {
+                    Log.Warning($"Connection State: {connectionState.ValueRO.CurrentState}");
                     return;
+                }
             }
 
             foreach (var networkStreamRequestConnect in SystemAPI.Query<RefRO<NetworkStreamRequestConnect>>())
@@ -70,23 +91,18 @@ namespace CEG.Gameplay.Client.Systems
             {
                 Log.Debug($"SystemsSettings: {ss.Fqdn}:{ss.Port}");
 
-                var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
-
-                IPAddress[] ipv4Addresses = Array.FindAll(Dns.GetHostEntry(ss.Fqdn.ToString()).AddressList, a => a.AddressFamily == AddressFamily.InterNetwork);
+                var ipv4Addresses = Array.FindAll(Dns.GetHostEntry(ss.Fqdn.ToString()).AddressList, a => a.AddressFamily == AddressFamily.InterNetwork);
                 if (ipv4Addresses.Length > 0)
                 {
-                    Log.Debug($"ipv4Addresses[0]: {ipv4Addresses[0]}");
-
                     var endpoint = NetworkEndpoint.Parse(ipv4Addresses[0].ToString(), ss.Port);
-                    Log.Debug($"endpoint (Dns.GetHostEntry): {endpoint}");
+                    Log.Info($"Connecting to: {endpoint}");
 
-                    var req = ecb.CreateEntity();
-                    ecb.AddComponent(req, new NetworkStreamRequestConnect
+                    var requestEntity = EntityManager.CreateEntity();
+                    EntityManager.AddComponent<NetworkStreamRequestConnect>(requestEntity);
+                    EntityManager.SetComponentData(requestEntity, new NetworkStreamRequestConnect
                     {
                         Endpoint = endpoint
                     });
-
-                    ecb.Playback(EntityManager);
                 }
                 else
                 {
@@ -99,44 +115,19 @@ namespace CEG.Gameplay.Client.Systems
             }
         }
 
-        private void OnKeyCodeEscape(Stream stream)
+        private void Disconnect()
         {
             var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
 
-            foreach (var (nid, e) in SystemAPI.Query<NetworkId>().WithEntityAccess().WithAll<NetworkStreamInGame, GhostOwnerIsLocal>())
+            foreach (var (networkId, entity) in SystemAPI.Query<RefRO<NetworkId>>()
+                         .WithAll<NetworkStreamInGame, GhostOwnerIsLocal>()
+                         .WithEntityAccess())
             {
-                Log.Info($"Disconnecting... Entity: {e}, NetworkId: {nid.Value}");
-                var req = ecb.CreateEntity();
-                ecb.AddComponent<NetworkStreamRequestDisconnect>(e);
+                Log.Info($"Disconnecting... {entity}, NetworkId: {networkId.ValueRO.Value}");
+                ecb.AddComponent<NetworkStreamRequestDisconnect>(entity);
             }
 
             ecb.Playback(EntityManager);
-        }
-
-        private void OnConnect(Stream stream)
-        {
-            var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
-
-            foreach (var (nId, e) in SystemAPI.Query<NetworkId>().WithEntityAccess().WithNone<NetworkStreamInGame>())
-            {
-                Log.Info($"Connecting... Found Entity: {e} NetworkId: {nId.Value}");
-
-                ecb.AddComponent<NetworkStreamInGame>(e);
-                ecb.AddComponent<GhostOwnerIsLocal>(e);
-                ecb.AddComponent<ConnectionState>(e);
-                ecb.AddComponent<NetworkSnapshotAck>(e);
-
-                var req = ecb.CreateEntity();
-                ecb.AddComponent<RpcConnect>(req);
-                ecb.AddComponent(req, new SendRpcCommandRequest { TargetConnection = e });
-            }
-
-            ecb.Playback(EntityManager);
-        }
-
-        private void OnDisconnect(Stream stream)
-        {
-            throw new NotImplementedException("OnDisconnected");
         }
     }
 }

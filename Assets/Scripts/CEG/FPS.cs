@@ -1,7 +1,7 @@
 using Unity.NetCode;
 using UnityEngine;
 
-namespace CEG.Shared
+namespace CEG
 {
     public class FPS : MonoBehaviour
     {

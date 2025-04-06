@@ -1,8 +1,8 @@
-using CEG.Shared.Components;
+using CEG.Components;
 using Unity.Entities;
 using Unity.Collections;
 
-namespace CEG.Shared.Systems
+namespace CEG.Systems
 {
     public partial class LogSystem : SystemBase
     {

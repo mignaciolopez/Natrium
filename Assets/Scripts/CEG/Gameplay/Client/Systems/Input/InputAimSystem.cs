@@ -4,10 +4,9 @@ using CEG.Gameplay.Shared.Components;
 using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
-using CEG.Shared;
 using CEG.Gameplay.Shared.Components.Input;
 using CEG.Settings.Input;
-using Unity.Mathematics;
+using Unity.Collections;
 
 namespace CEG.Gameplay.Client.Systems.Input
 {
@@ -38,11 +37,23 @@ namespace CEG.Gameplay.Client.Systems.Input
             
             var mainCameraEntity = SystemAPI.GetSingletonEntity<MainCameraTag>();
             _mainCamera = EntityManager.GetComponentObject<MainCamera>(mainCameraEntity);
-            foreach (var (playerTag, entity) in SystemAPI.Query<RefRO<PlayerTag>>()
-                         .WithAll<PlayerTag, GhostOwnerIsLocal>().WithEntityAccess())
+            
+            var entityQuery = SystemAPI.QueryBuilder()
+                .WithAll<PlayerTag, GhostOwnerIsLocal>()
+                .Build();
+
+            var entities = entityQuery.ToEntityArray(Allocator.Temp);
+            _entityLocalPlayer = entities.Length == 1 ? entities[0] : Entity.Null;
+
+            if (_entityLocalPlayer == Entity.Null)
             {
-                _entityLocalPlayer = entity;
+                Log.Error($"Failed to obtain just one entity with {nameof(PlayerTag)} and {nameof(GhostOwnerIsLocal)} " +
+                          $"entities.Length: {entities.Length}");
+
+                Enabled = false;
             }
+            
+            entities.Dispose();
         }
 
         protected override void OnStopRunning()

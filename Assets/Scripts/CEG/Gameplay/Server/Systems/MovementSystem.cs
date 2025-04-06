@@ -1,7 +1,7 @@
 using CEG.Gameplay.Shared.Components;
 using CEG.Gameplay.Shared.Components.Input;
 using CEG.Gameplay.Shared.Systems;
-using CEG.Shared;
+
 using Unity.Entities;
 using Unity.Mathematics;
 using Unity.NetCode;

@@ -1,10 +1,9 @@
-using CEG.Gameplay.Client.Components;
 using CEG.Gameplay.Shared.Components;
 using Unity.Entities;
 using Unity.NetCode;
-using CEG.Shared;
 using CEG.Gameplay.Shared.Components.Input;
 using CEG.Settings.Input;
+using Unity.Collections;
 
 namespace CEG.Gameplay.Client.Systems.Input
 {
@@ -29,13 +28,23 @@ namespace CEG.Gameplay.Client.Systems.Input
             base.OnStartRunning();
             Log.Verbose("OnStartRunning");
             _inputActions.Enable();
-            var mainCameraEntity = SystemAPI.GetSingletonEntity<MainCameraTag>();
             
-            foreach (var (playerTag, entity) in SystemAPI.Query<RefRO<PlayerTag>>()
-                         .WithAll<PlayerTag, GhostOwnerIsLocal>().WithEntityAccess())
+            var entityQuery = SystemAPI.QueryBuilder()
+                .WithAll<PlayerTag, GhostOwnerIsLocal>()
+                .Build();
+
+            var entities = entityQuery.ToEntityArray(Allocator.Temp);
+            _entityLocalPlayer = entities.Length == 1 ? entities[0] : Entity.Null;
+
+            if (_entityLocalPlayer == Entity.Null)
             {
-                _entityLocalPlayer = entity;
+                Log.Error($"Failed to obtain just one entity with {nameof(PlayerTag)} and {nameof(GhostOwnerIsLocal)} " +
+                          $"entities.Length: {entities.Length}");
+
+                Enabled = false;
             }
+            
+            entities.Dispose();
         }
 
         protected override void OnStopRunning()

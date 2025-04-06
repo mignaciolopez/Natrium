@@ -7,7 +7,7 @@ using Unity.Logging.Internal.Debug;
 using Unity.Logging.Sinks;
 using UnityEngine;
 
-namespace CEG.Shared
+namespace CEG
 {
     public class Log : MonoBehaviour
     {
@@ -15,7 +15,7 @@ namespace CEG.Shared
         private static Log _instance;
         public static Log Instance
         {
-            private set { _instance = value; }
+            private set => _instance = value;
             get
             {
                 if (_instance == null)
@@ -41,23 +41,40 @@ namespace CEG.Shared
         #endregion Singleton
 
         #region Logger
-        [SerializeField] private LogLevel _logLevel;
+        [SerializeField] private LogLevel logLevel;
         private LogLevel _previousLogLevel;
 
         [Serializable]
-        private struct LogFilter
+        private struct LogFilter : IEquatable<LogFilter>
         {
             public string name;
             public bool isLogging;
             public Color color;
+
+            public bool Equals(LogFilter other)
+            {
+                return name == other.name && isLogging == other.isLogging && color.Equals(other.color);
+            }
+
+            public override bool Equals(object obj)
+            {
+                return obj is LogFilter other && Equals(other);
+            }
+
+            public override int GetHashCode()
+            {
+                return HashCode.Combine(name, isLogging, color);
+            }
         }
-        [SerializeField] private List<LogFilter> _logFilterWorlds;
-        [SerializeField] private List<LogFilter> _logFilterClass;
-        [SerializeField] private int _stackFrameIndex = 3;
+        
+        [SerializeField] private List<LogFilter> logFilterWorlds;
+        [SerializeField] private List<LogFilter> logFilterClass;
+        [SerializeField] private int stackFrameIndex = 3;
+        
         private void AwakeLogger()
         {
-            _logFilterWorlds ??= new List<LogFilter>();
-            _logFilterClass ??= new List<LogFilter>();
+            logFilterWorlds ??= new List<LogFilter>();
+            logFilterClass ??= new List<LogFilter>();
 
             var path = $"{Application.persistentDataPath}/Logs";
             var file = $"{DateTime.Now:yyyy.MM.dd - HH.mm.ss}.json";
@@ -68,7 +85,7 @@ namespace CEG.Shared
             var fullPath = $"{path}/{file}";
 
             Unity.Logging.Log.Logger = new Unity.Logging.Logger(new LoggerConfig()
-                .MinimumLevel.Set(_logLevel)
+                .MinimumLevel.Set(logLevel)
                 .RedirectUnityLogs(false)
                 .WriteTo.File(fullPath, minLevel: LogLevel.Verbose, formatter: LogFormatterJson.Formatter));
 
@@ -92,15 +109,15 @@ namespace CEG.Shared
 
         private void Update()
         {
-            if (_previousLogLevel != _logLevel)
+            if (_previousLogLevel != logLevel)
                 OnLogLevelChanged();
         }
 
         private void OnLogLevelChanged()
         {
-            Verbose($"OnLogLevelChanged: {_logLevel}", this.name, gameObject);
-            Unity.Logging.Log.Logger.Config.MinimumLevel.Set(_logLevel);
-            _previousLogLevel = _logLevel;
+            Verbose($"OnLogLevelChanged: {logLevel}", this.name, gameObject);
+            Unity.Logging.Log.Logger.Config.MinimumLevel.Set(logLevel);
+            _previousLogLevel = logLevel;
         }
 
         private string ResolveClassName(string className, UnityEngine.Object context = null)
@@ -117,7 +134,7 @@ namespace CEG.Shared
             else
             {
                 var stackFrames = new StackTrace();
-                var methodInfo = stackFrames.GetFrame(_stackFrameIndex).GetMethod();
+                var methodInfo = stackFrames.GetFrame(stackFrameIndex).GetMethod();
                 if (methodInfo.ReflectedType != null) 
                     stackClassName = methodInfo.ReflectedType.Name;
             }
@@ -130,36 +147,36 @@ namespace CEG.Shared
             var worldName = "Unknown";
 
             var stackFrames = new StackTrace();
-            var methodInfo = stackFrames.GetFrame(_stackFrameIndex).GetMethod();
+            var methodInfo = stackFrames.GetFrame(stackFrameIndex).GetMethod();
             if (methodInfo.ReflectedType == null)
                 return worldName;
             
-            var nameSpace = methodInfo.ReflectedType.Namespace;
+            var fullNameSpace = methodInfo.ReflectedType.Namespace;
 
-            if (nameSpace == null)
+            if (fullNameSpace == null)
                 return worldName;
             
-            var names = nameSpace.Split(".");
-            foreach (var name in names)
+            var nameSpaces = fullNameSpace.Split(".");
+            foreach (var nameSpace in nameSpaces)
             {
-                if (name == "Client")
+                if (nameSpace == "Client")
                 {
-                    worldName = name;
+                    worldName = nameSpace;
                     break;
                 }
                 
-                if (name == "Server")
+                if (nameSpace == "Server")
                 {
-                    worldName = name;
+                    worldName = nameSpace;
                     break;
                 }
 
-                if (name == "Shared")
+                if (nameSpace == "Shared")
                 {
-                    worldName = name;
+                    worldName = nameSpace;
 
-                    nameSpace = stackFrames.GetFrame(_stackFrameIndex + 1).GetMethod().ReflectedType?.Namespace;
-                    var names2 = nameSpace?.Split(".");
+                    fullNameSpace = stackFrames.GetFrame(stackFrameIndex + 1).GetMethod().ReflectedType?.Namespace;
+                    var names2 = fullNameSpace?.Split(".");
                     if (names2 == null)
                         continue;
                     
@@ -185,9 +202,9 @@ namespace CEG.Shared
 
         private LogFilter UpdateLogFilterWorlds(string worldName)
         {
-            for (int i = 0; i < _logFilterWorlds.Count; i++)
-                if (_logFilterWorlds[i].name == worldName)
-                    return _logFilterWorlds[i];
+            for (var i = 0; i < logFilterWorlds.Count; i++)
+                if (logFilterWorlds[i].name == worldName)
+                    return logFilterWorlds[i];
 
             var logFilter = new LogFilter
             {
@@ -196,7 +213,7 @@ namespace CEG.Shared
                 color = new Color(UnityEngine.Random.Range(.4f, 1f), UnityEngine.Random.Range(.4f, 1f), UnityEngine.Random.Range(.4f, 1f)),
             };
 
-            _logFilterWorlds.Add(logFilter);
+            logFilterWorlds.Add(logFilter);
             Debug($"UpdateLogFilterWorlds: Add [{worldName}]", this.name, gameObject);
 
             return logFilter;
@@ -204,9 +221,9 @@ namespace CEG.Shared
 
         private LogFilter UpdateLogFilterClass(string className)
         {
-            for (int i = 0; i < _logFilterClass.Count; i++)
-                if (_logFilterClass[i].name == className)
-                    return _logFilterClass[i];
+            for (int i = 0; i < logFilterClass.Count; i++)
+                if (logFilterClass[i].name == className)
+                    return logFilterClass[i];
 
             var logFilter = new LogFilter
             {
@@ -215,7 +232,7 @@ namespace CEG.Shared
                 color = new Color(UnityEngine.Random.Range(.4f, 1f), UnityEngine.Random.Range(.4f, 1f), UnityEngine.Random.Range(.4f, 1f)),
             };
 
-            _logFilterClass.Add(logFilter);
+            logFilterClass.Add(logFilter);
             Debug($"UpdateLogFilterClass: Add [{className}]", this.name, gameObject);
 
             return logFilter;
@@ -223,49 +240,58 @@ namespace CEG.Shared
 
         private void LogInternal(LogLevel level, string message, string className = "", UnityEngine.Object context = null)
         {
-            if (Instance._logLevel <= level)
+            if (Instance.logLevel > level)
             {
-                string worldName = Instance.ResolveWorldName();
-                var worldFilter = Instance.UpdateLogFilterWorlds(worldName);
+                return;
+            }
 
-                if (Instance._logFilterWorlds[Instance._logFilterWorlds.IndexOf(worldFilter)].isLogging)
-                {
-                    string stackClassName = Instance.ResolveClassName(className);
-                    var classFilter = Instance.UpdateLogFilterClass(stackClassName);
+            var worldName = Instance.ResolveWorldName();
+            var worldFilter = Instance.UpdateLogFilterWorlds(worldName);
 
-                    if (Instance._logFilterClass[Instance._logFilterClass.IndexOf(classFilter)].isLogging)
-                    {
-                        var hexColorWorld = ColorUtility.ToHtmlStringRGB(worldFilter.color);
-                        var hexColorClass = ColorUtility.ToHtmlStringRGB(classFilter.color);
-                        switch(level)
-                        {
-                            case LogLevel.Verbose:
-                                UnityEngine.Debug.Log($"<b><color=grey>[{LogLevel.Verbose}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> {message}", context);
-                                Unity.Logging.Log.Verbose(message);
-                                break;
-                            case LogLevel.Debug:
-                                UnityEngine.Debug.Log($"<b><color=white>[{LogLevel.Debug}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <color=white>{message}</color>", context);
-                                Unity.Logging.Log.Debug(message);
-                                break;
-                            case LogLevel.Info:
-                                UnityEngine.Debug.Log($"<b><color=cyan>[{LogLevel.Info}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <color=white>{message}</color>", context);
-                                Unity.Logging.Log.Info(message);
-                                break;
-                            case LogLevel.Warning:
-                                UnityEngine.Debug.LogWarning($"<b><color=yellow>[{LogLevel.Warning}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <color=white>{message}</color>", context);
-                                Unity.Logging.Log.Warning(message);
-                                break;
-                            case LogLevel.Error:
-                                UnityEngine.Debug.LogError($"<b><color=#AB1B1B>[{LogLevel.Error}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <color=white>{message}</color>", context);
-                                Unity.Logging.Log.Error(message);
-                                break;
-                            case LogLevel.Fatal:
-                                UnityEngine.Debug.LogAssertion($"<b><color=red>[{LogLevel.Fatal}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <b><color=white>{message}</color></b>", context);
-                                Unity.Logging.Log.Fatal(message);
-                                break;
-                        }
-                    }
-                }
+            if (!Instance.logFilterWorlds[Instance.logFilterWorlds.IndexOf(worldFilter)].isLogging)
+            {
+                return;
+            }
+            
+            var stackClassName = Instance.ResolveClassName(className);
+            var classFilter = Instance.UpdateLogFilterClass(stackClassName);
+
+            if (!Instance.logFilterClass[Instance.logFilterClass.IndexOf(classFilter)].isLogging)
+            {
+                return;
+            }
+            
+            var hexColorWorld = ColorUtility.ToHtmlStringRGB(worldFilter.color);
+            var hexColorClass = ColorUtility.ToHtmlStringRGB(classFilter.color);
+            
+            switch(level)
+            {
+                case LogLevel.Verbose:
+                    UnityEngine.Debug.Log($"<b><color=grey>[{LogLevel.Verbose}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> {message}", context);
+                    Unity.Logging.Log.Verbose(message);
+                    break;
+                case LogLevel.Debug:
+                    UnityEngine.Debug.Log($"<b><color=white>[{LogLevel.Debug}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <color=white>{message}</color>", context);
+                    Unity.Logging.Log.Debug(message);
+                    break;
+                case LogLevel.Info:
+                    UnityEngine.Debug.Log($"<b><color=cyan>[{LogLevel.Info}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <color=white>{message}</color>", context);
+                    Unity.Logging.Log.Info(message);
+                    break;
+                case LogLevel.Warning:
+                    UnityEngine.Debug.LogWarning($"<b><color=yellow>[{LogLevel.Warning}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <color=white>{message}</color>", context);
+                    Unity.Logging.Log.Warning(message);
+                    break;
+                case LogLevel.Error:
+                    UnityEngine.Debug.LogError($"<b><color=#AB1B1B>[{LogLevel.Error}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <color=white>{message}</color>", context);
+                    Unity.Logging.Log.Error(message);
+                    break;
+                case LogLevel.Fatal:
+                    UnityEngine.Debug.LogAssertion($"<b><color=red>[{LogLevel.Fatal}]</color></b> <color=#{hexColorWorld}>[{worldName}]</color> <color=#{hexColorClass}>[{stackClassName}]</color> <b><color=white>{message}</color></b>", context);
+                    Unity.Logging.Log.Fatal(message);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(level), level, null);
             }
         }
 

@@ -1,7 +1,6 @@
 using CEG.Gameplay.Shared.Components;
 using CEG.Gameplay.Shared.Components.Debug;
 using CEG.Gameplay.Shared.Systems;
-using CEG.Shared;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.NetCode;
@@ -50,8 +49,9 @@ namespace CEG.Gameplay.Client.Systems.UI.Debug
 
             var networkIdLookup = SystemAPI.GetSingleton<NetworkIdLookup>();
             
-            foreach (var (rpcAttack, receiveRpcCommandRequest, rpcEntity) 
-                     in SystemAPI.Query<RefRO<RPCAttack>, RefRO<ReceiveRpcCommandRequest>>()
+            foreach (var (rpcAttack, rpcEntity) 
+                     in SystemAPI.Query<RefRO<RPCAttack>>()
+                         .WithAll<ReceiveRpcCommandRequest>()
                          .WithEntityAccess())
             {
                 var entitySource = networkIdLookup.GetEntityPrefab(rpcAttack.ValueRO.NetworkIdSource);
@@ -63,13 +63,15 @@ namespace CEG.Gameplay.Client.Systems.UI.Debug
                                 $"{entityTarget}|{rpcAttack.ValueRO.NetworkIdTarget}" +
                                 $"@ | {networkTime.ServerTick}");
                 
+                    //ToDo: Refactor | Find a way to avoid searching in children.
                     foreach (var child in SystemAPI.GetBuffer<LinkedEntityGroup>(entityTarget))
                     {
                         if (!state.EntityManager.HasComponent<DebugTag>(child.Value))
                             continue;
-                        
+
                         Log.Debug($"Enabling {child.Value}");
                         ecb.RemoveComponent<Disabled>(child.Value);
+                        break;
                     }
                 }
                 else

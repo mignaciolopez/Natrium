@@ -1,10 +1,10 @@
 using CEG.Gameplay.Shared.Components;
-using UnityEngine;
-using Unity.Entities;
-using Unity.NetCode;
 using CEG.Gameplay.Shared.Components.Input;
 using CEG.Settings.Input;
-using CEG.Shared;
+using UnityEngine;
+using Unity.Collections;
+using Unity.Entities;
+using Unity.NetCode;
 using Unity.Transforms;
 
 namespace CEG.Gameplay.Client.Systems.Input
@@ -30,19 +30,22 @@ namespace CEG.Gameplay.Client.Systems.Input
             Log.Verbose("OnStartRunning");
             _inputActions.Enable();
             
-            foreach (var (localTransform, entity) in SystemAPI.Query<RefRO<LocalTransform>>()
-                         .WithAll<GhostOwnerIsLocal>()
-                         .WithEntityAccess())
-            {
-                _entityLocalPlayer = entity;
-                break;
-            }
+            var entityQuery = SystemAPI.QueryBuilder()
+                .WithAll<PlayerTag, GhostOwnerIsLocal>()
+                .Build();
+
+            var entities = entityQuery.ToEntityArray(Allocator.Temp);
+            _entityLocalPlayer = entities.Length == 1 ? entities[0] : Entity.Null;
 
             if (_entityLocalPlayer == Entity.Null)
             {
-                Log.Error("Entity not found");
+                Log.Error($"Failed to obtain just one entity with {nameof(PlayerTag)} and {nameof(GhostOwnerIsLocal)} " +
+                          $"entities.Length: {entities.Length}");
+
                 Enabled = false;
             }
+            
+            entities.Dispose();
         }
 
         protected override void OnStopRunning()

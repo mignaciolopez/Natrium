@@ -1,5 +1,5 @@
 using CEG.Gameplay.Shared.Components;
-using CEG.Shared;
+
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Collections;

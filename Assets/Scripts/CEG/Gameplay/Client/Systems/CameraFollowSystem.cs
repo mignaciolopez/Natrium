@@ -1,9 +1,8 @@
-using Unity.Entities;
-using Unity.Transforms;
 using CEG.Gameplay.Client.Components;
 using CEG.Gameplay.Shared.Components;
-using CEG.Shared;
+using Unity.Entities;
 using Unity.NetCode;
+using Unity.Transforms;
 
 namespace CEG.Gameplay.Client.Systems
 {

@@ -2,11 +2,9 @@ using CEG.Gameplay.Client.Components.UI;
 using CEG.Gameplay.Shared.Components;
 using TMPro;
 using Unity.Entities;
-using CEG.Shared;
 using Unity.Transforms;
 using UnityEngine;
 using Unity.Collections;
-using Unity.Mathematics;
 
 namespace CEG.Gameplay.Client.Systems.UI
 {
@@ -17,14 +15,10 @@ namespace CEG.Gameplay.Client.Systems.UI
         private GameObject _uiCanvas;
         private GameObject _playerTextPrefab;
 
-        private ComponentLookup<PlayerNameTMPTextProperties> _tmpTextPropertiesComponentLookup;
-        
         protected override void OnCreate()
         {
             base.OnCreate();
             Log.Verbose("OnCreate");
-            
-            _tmpTextPropertiesComponentLookup = GetComponentLookup<PlayerNameTMPTextProperties>();
         }
 
         protected override void OnStartRunning()
@@ -33,7 +27,7 @@ namespace CEG.Gameplay.Client.Systems.UI
             Log.Verbose("OnStartRunning");
             
             _uiCanvas = GameObject.FindGameObjectWithTag("CanvasWorldSpace");
-            _playerTextPrefab = GameObject.FindFirstObjectByType<PlayerTextPrefabAuthoring>().prefab;
+            _playerTextPrefab = Object.FindFirstObjectByType<PlayerTextPrefabAuthoring>().prefab;
             
             InstantiatePlayerNames();
         }
@@ -63,11 +57,10 @@ namespace CEG.Gameplay.Client.Systems.UI
 
         private void InstantiatePlayerNames()
         {
-            _tmpTextPropertiesComponentLookup.Update(this);
             var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
             
-            foreach (var (playerName, localTransform, entity)
-                     in SystemAPI.Query<RefRO<PlayerName>, RefRO<LocalTransform>>()
+            foreach (var (playerName, playerNameTMPTextOffset, localTransform, entity)
+                     in SystemAPI.Query<RefRO<PlayerName>, RefRO<PlayerNameTMPTextProperties>, RefRO<LocalTransform>>()
                          .WithNone<PlayerNameTMPTextInitialized>()
                          .WithEntityAccess())
             {
@@ -75,17 +68,8 @@ namespace CEG.Gameplay.Client.Systems.UI
                 //Move the component PlayerNameTMPTextProperties to shared
                 //Make it a ghost Component
 
-                var offset = float3.zero;
-                if (_tmpTextPropertiesComponentLookup.HasComponent(entity))
-                {
-                    var playerNameTMPTextOffset = _tmpTextPropertiesComponentLookup[entity];
-                    playerNameTMPTextOffset.Offset = new float3(0, 0, -1.0f);
-                    _tmpTextPropertiesComponentLookup[entity] = playerNameTMPTextOffset;
-                    offset = playerNameTMPTextOffset.Offset;
-                }
-                
-                var gameObject = GameObject.Instantiate(_playerTextPrefab, _uiCanvas.transform);
-                gameObject.transform.position = localTransform.ValueRO.Position + offset;
+                var gameObject = Object.Instantiate(_playerTextPrefab, _uiCanvas.transform);
+                gameObject.transform.position = localTransform.ValueRO.Position + playerNameTMPTextOffset.ValueRO.Offset;
                 
                 var tmpText = gameObject.GetComponent<TMP_Text>();
                 tmpText.text = playerName.ValueRO.Value.ToString();
@@ -124,8 +108,6 @@ namespace CEG.Gameplay.Client.Systems.UI
 
         private void UpdatePlayerNamesPositions()
         {
-            _tmpTextPropertiesComponentLookup.Update(this);
-            
             foreach (var (playerNameTMPText, localTransform, playerNameTMPTextOffset, entity) 
                      in SystemAPI.Query<PlayerNameTMPText, RefRO<LocalTransform>, RefRO<PlayerNameTMPTextProperties>>()
                          .WithAll<PlayerNameTMPTextInitialized>()
@@ -136,12 +118,8 @@ namespace CEG.Gameplay.Client.Systems.UI
                     Log.Warning($"{entity} has PlayerNameTMPText with a null GameObject");
                     continue;
                 }
-                
-                var offset = float3.zero;
-                if (_tmpTextPropertiesComponentLookup.HasComponent(entity))
-                    offset = _tmpTextPropertiesComponentLookup[entity].Offset;
-                
-                playerNameTMPText.GameObject.transform.position = localTransform.ValueRO.Position + offset;
+
+                playerNameTMPText.GameObject.transform.position = localTransform.ValueRO.Position + playerNameTMPTextOffset.ValueRO.Offset;
             }
         }
     }

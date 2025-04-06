@@ -3,10 +3,12 @@ using Unity.NetCode;
 
 namespace CEG.Gameplay.Shared.Components
 {
-    public struct RpcConnect : IRpcCommand { }
+    public struct RpcStartStreaming : IRpcCommand { }
 
     public struct RpcDisconnect : IRpcCommand { }
 
+    public struct PingRequest : IComponentData { }
+    
     public struct RpcPing : IRpcCommand
     {
         public long UnixTime;

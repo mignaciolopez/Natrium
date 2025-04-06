@@ -2,7 +2,7 @@ using System.Globalization;
 using Unity.Entities;
 using CEG.Gameplay.Shared.Components;
 using CEG.Gameplay.Shared.Components.Input;
-using CEG.Shared;
+
 using Unity.Physics;
 using Unity.Burst;
 using Unity.NetCode;

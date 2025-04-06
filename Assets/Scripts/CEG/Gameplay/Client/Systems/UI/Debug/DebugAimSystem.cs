@@ -1,13 +1,12 @@
 using CEG.Gameplay.Client.Components.UI.Debug;
 using CEG.Gameplay.Shared.Components;
 using CEG.Gameplay.Shared.Components.Input;
-using CEG.Shared;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Mathematics;
 using Unity.Transforms;
-using CEG.Shared.Extensions;
+using CEG.Extensions;
 using Unity.Physics;
 
 namespace CEG.Gameplay.Client.Systems.UI.Debug

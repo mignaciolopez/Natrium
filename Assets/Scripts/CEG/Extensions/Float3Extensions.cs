@@ -1,6 +1,6 @@
 using Unity.Mathematics;
 
-namespace CEG.Shared.Extensions
+namespace CEG.Extensions
 {
     public static class Float3Extensions
     {

@@ -1,7 +1,7 @@
 using UnityEngine;
 using UnityEngine.Events;
 
-namespace CEG.Shared
+namespace CEG
 {
     public class Gizmos : MonoBehaviour
     {

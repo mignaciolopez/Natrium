@@ -8,13 +8,18 @@ namespace CEG.Gameplay.Client.Components.UI
 {
     public class PlayerNameTMPTextAuthoring : MonoBehaviour
     {
+        [SerializeField] private float3 textOffset = new (0, 0, -1.0f);
+        
         public class Baker : Baker<PlayerNameTMPTextAuthoring>
         {
             public override void Bake(PlayerNameTMPTextAuthoring authoring)
             {
                 var entity = GetEntity(TransformUsageFlags.Dynamic);
                 AddComponentObject(entity, new PlayerNameTMPText());
-                AddComponent<PlayerNameTMPTextProperties>(entity);
+                AddComponent(entity, new PlayerNameTMPTextProperties
+                {
+                    Offset = authoring.textOffset
+                });
             }
         }
     }
@@ -28,7 +33,7 @@ namespace CEG.Gameplay.Client.Components.UI
         {
             if (GameObject != null)
             {
-                GameObject.DestroyImmediate(GameObject);
+                UnityEngine.Object.DestroyImmediate(GameObject);
                 Value = null;
             }
         }

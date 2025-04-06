@@ -1,7 +1,7 @@
 using Unity.Entities;
 using Unity.NetCode;
 
-namespace CEG.Shared
+namespace CEG
 {
     [UpdateInGroup(typeof(PredictedSimulationSystemGroup), OrderFirst = true)]
     [UpdateBefore(typeof(PredictedFixedStepSimulationSystemGroup))]
