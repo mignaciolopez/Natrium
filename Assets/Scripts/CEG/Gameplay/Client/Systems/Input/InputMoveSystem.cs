@@ -21,6 +21,7 @@ namespace CEG.Gameplay.Client.Systems.Input
             _inputActions = new InputActions();
 
             RequireForUpdate<LocalTransform>();
+            
             RequireForUpdate<GhostOwnerIsLocal>();
             RequireForUpdate<PlayerTag>();
         }
