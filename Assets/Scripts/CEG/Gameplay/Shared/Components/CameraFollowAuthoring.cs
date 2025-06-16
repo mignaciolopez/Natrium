@@ -8,7 +8,8 @@ namespace CEG.Gameplay.Shared.Components
     [DisallowMultipleComponent]
     public class CameraFollowAuthoring : MonoBehaviour
     {
-        public float3 offset;
+        [SerializeField] private bool overrideSceneSettings;
+        [SerializeField] private float3 offset;
         
         public class Baker : Baker<CameraFollowAuthoring>
         {
@@ -17,15 +18,16 @@ namespace CEG.Gameplay.Shared.Components
                 var e = GetEntity(TransformUsageFlags.Dynamic);
                 AddComponent(e, new CameraFollow
                 {
+                    OverrideSceneSettings = authoring.overrideSceneSettings,
                     Offset = authoring.offset
                 });
             }
         }
     }
     
-    [GhostComponent(PrefabType = GhostPrefabType.AllPredicted, OwnerSendType = SendToOwnerType.SendToOwner)]
     public struct CameraFollow : IComponentData
     {
-        [GhostField] public float3 Offset;
+        public bool OverrideSceneSettings;
+        public float3 Offset;
     }
 }

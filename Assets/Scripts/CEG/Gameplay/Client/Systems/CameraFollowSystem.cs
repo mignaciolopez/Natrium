@@ -1,6 +1,7 @@
 using CEG.Gameplay.Client.Components;
 using CEG.Gameplay.Shared.Components;
 using Unity.Entities;
+using Unity.Mathematics;
 using Unity.NetCode;
 using Unity.Transforms;
 
@@ -14,7 +15,6 @@ namespace CEG.Gameplay.Client.Systems
         public void OnCreate(ref SystemState state)
         {
             Log.Verbose("OnCreate");
-            state.RequireForUpdate<MainCameraTag>();
         }
 
         //[BurstCompile]
@@ -35,13 +35,26 @@ namespace CEG.Gameplay.Client.Systems
             Log.Verbose("OnDestroy");
         }
         
+        //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
-            var mainCameraEntity = SystemAPI.GetSingletonEntity<MainCameraTag>();
+            SystemAPI.TryGetSingletonEntity<MainCameraTag>(out var mainCameraEntity);
+            if (mainCameraEntity == Entity.Null)
+            {
+                Log.Error($"Need {nameof(MainCameraTag)} to work.");
+                return;
+            }
+            
             var mainCamera = state.EntityManager.GetComponentObject<MainCamera>(mainCameraEntity);
             
-            foreach(var (ltw, cf) in SystemAPI.Query<RefRO<LocalToWorld>, RefRO<CameraFollow>>().WithAll<GhostOwnerIsLocal>())
+            foreach(var (ltw, cf) in SystemAPI.Query<RefRO<LocalToWorld>, RefRW<CameraFollow>>().WithAll<GhostOwnerIsLocal>())
             {
+                if (!cf.ValueRO.OverrideSceneSettings)
+                {
+                    cf.ValueRW.Offset = (float3)mainCamera.Camera.transform.position - ltw.ValueRO.Position;
+                    cf.ValueRW.OverrideSceneSettings = true;
+                }
+
                 mainCamera.Camera.transform.position = ltw.ValueRO.Position + cf.ValueRO.Offset;
             }
         }
