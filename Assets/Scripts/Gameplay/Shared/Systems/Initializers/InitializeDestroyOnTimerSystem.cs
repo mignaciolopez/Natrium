@@ -11,26 +11,26 @@ namespace Gameplay.Shared.Systems.Initializers
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
+            Log.Verbose($"OnCreate");
             state.RequireForUpdate<NetworkTime>();
         }
 
         //[BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStartRunning");
+            Log.Verbose($"OnStartRunning");
         }
 
         //[BurstCompile]
         public void OnStopRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStopRunning");
+            Log.Verbose($"OnStopRunning");
         }
 
         //[BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
+            Log.Verbose($"OnDestroy");
         }
 
         //[BurstCompile]
@@ -45,7 +45,7 @@ namespace Gameplay.Shared.Systems.Initializers
                          .WithNone<DestroyAtTick>()
                          .WithEntityAccess())
             {
-                Log.Debug($"[{state.WorldUnmanaged.Name}] | Initializing {nameof(DestroyOnTimer)} on: {entity}");
+                Log.Debug($"Initializing {nameof(DestroyOnTimer)} on: {entity}");
                 var lifeTimeInTicks = (uint)(destroyOnTimer.ValueRO.Value * simulationTickRate);
                 var targetTick = networkTime.ServerTick;
                 targetTick.Add(lifeTimeInTicks);

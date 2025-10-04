@@ -11,171 +11,129 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: eb19927743ae4004a333ca5038f426c0, type: 3}
   m_Name: LoggerSettings
-  m_EditorClassIdentifier: 
+  m_EditorClassIdentifier: com.ceg::CEG.Logging.LoggerSettings
   logFilterWorlds:
   - name: Default World
-    isLogging: 1
-    color: {r: 0.5477301, g: 0.84326714, b: 0.57639587, a: 0}
-  - name: 
-    isLogging: 1
-    color: {r: 0.8629809, g: 0.8271336, b: 0.63937813, a: 0}
-  - name: Server
-    isLogging: 1
-    color: {r: 0.9563129, g: 0.84215635, b: 0.5643501, a: 0}
-  - name: 
-    isLogging: 1
-    color: {r: 0.58245194, g: 0.63311213, b: 0.5606361, a: 0}
-  - name: 
-    isLogging: 1
-    color: {r: 0.86338294, g: 0.7313382, b: 0.4539185, a: 0}
+    isLogging: 0
+    color: {r: 1, g: 1, b: 1, a: 0}
   - name: Client
     isLogging: 1
-    color: {r: 0.8391381, g: 0.8483907, b: 0.83635443, a: 0}
-  - name: Shared
+    color: {r: 0.480153, g: 0.530706, b: 0.796945, a: 0}
+  - name: Unknown
+    isLogging: 0
+    color: {r: 1, g: 1, b: 1, a: 0}
+  - name: Server
     isLogging: 1
-    color: {r: 0.5302819, g: 0.808936, b: 0.590569, a: 0}
-  - name: 
-    isLogging: 1
-    color: {r: 0.61446697, g: 0.6663854, b: 0.44942862, a: 0}
-  - name: 
-    isLogging: 1
-    color: {r: 0.850941, g: 0.62583923, b: 0.40252143, a: 0}
-  - name: 
-    isLogging: 1
-    color: {r: 0.72808325, g: 0.9199892, b: 0.5262063, a: 0}
-  - name: 
-    isLogging: 1
-    color: {r: 0.67629963, g: 0.7387382, b: 0.56562626, a: 0}
-  - name: 
-    isLogging: 1
-    color: {r: 0.8966167, g: 0.53946644, b: 0.77812177, a: 0}
-  - name: 
-    isLogging: 1
-    color: {r: 0.54591, g: 0.9387638, b: 0.8142639, a: 0}
-  - name: 
-    isLogging: 1
-    color: {r: 0.96262896, g: 0.47302297, b: 0.6433022, a: 0}
-  - name: 
-    isLogging: 1
-    color: {r: 0.46368045, g: 0.568949, b: 0.9421688, a: 0}
-  - name: 
-    isLogging: 1
-    color: {r: 0.60698485, g: 0.6334981, b: 0.8410304, a: 0}
-  - name: 
-    isLogging: 1
-    color: {r: 0.86538774, g: 0.4279454, b: 0.8133761, a: 0}
+    color: {r: 0.7289217, g: 0.4983345, b: 0.53511846, a: 0}
   logFilterClass:
   - name: Log
     isLogging: 1
-    color: {r: 0.6121596, g: 0.6518193, b: 0.5366895, a: 1}
-  - name: CooldownSystem
-    isLogging: 1
-    color: {r: 0.40765482, g: 0.5366165, b: 0.5966571, a: 1}
-  - name: LoggingSystem
-    isLogging: 1
-    color: {r: 0.43767625, g: 0.6828232, b: 0.9104662, a: 1}
-  - name: LoggingAuthoring
-    isLogging: 1
-    color: {r: 0.43576744, g: 0.90527195, b: 0.840746, a: 1}
+    color: {r: 0.94149375, g: 0.56253743, b: 0.881927, a: 1}
   - name: WorldManager
     isLogging: 1
-    color: {r: 0.49383283, g: 0.90532744, b: 0.52168965, a: 1}
+    color: {r: 0.43938592, g: 0.7754701, b: 0.67563874, a: 1}
+  - name: CooldownSystem
+    isLogging: 1
+    color: {r: 0.90910363, g: 0.5557349, b: 0.4042499, a: 1}
   - name: InputMeleeSystem
     isLogging: 1
-    color: {r: 0.75475454, g: 0.7967095, b: 0.9627514, a: 1}
+    color: {r: 0.4059889, g: 0.43237084, b: 0.6871894, a: 1}
   - name: InitializeAutoDisableOnTimerSystem
     isLogging: 1
-    color: {r: 0.46499085, g: 0.93557763, b: 0.6802832, a: 1}
-  - name: InitializeMainCameraSystem
+    color: {r: 0.94937915, g: 0.5211123, b: 0.49889663, a: 1}
+  - name: LoggingSystem
     isLogging: 1
-    color: {r: 0.9322182, g: 0.57261, b: 0.7893653, a: 1}
+    color: {r: 0.7781698, g: 0.7402213, b: 0.58361185, a: 1}
   - name: InitializeDestroyOnTimerSystem
     isLogging: 1
-    color: {r: 0.869853, g: 0.53186, b: 0.9167478, a: 1}
+    color: {r: 0.9128011, g: 0.65108436, b: 0.4683434, a: 1}
   - name: InputAimSystem
     isLogging: 1
-    color: {r: 0.7713187, g: 0.77964616, b: 0.7204278, a: 1}
+    color: {r: 0.5238379, g: 0.9385959, b: 0.7732742, a: 1}
   - name: InputMoveSystem
     isLogging: 1
-    color: {r: 0.48898768, g: 0.73116934, b: 0.63907206, a: 1}
+    color: {r: 0.8577491, g: 0.88809454, b: 0.45417863, a: 1}
   - name: DestroyOnTimerSystem
     isLogging: 1
-    color: {r: 0.7274858, g: 0.40061855, b: 0.9389283, a: 1}
+    color: {r: 0.44700775, g: 0.8636673, b: 0.69541657, a: 1}
   - name: AimSystem
     isLogging: 1
-    color: {r: 0.51367354, g: 0.4844248, b: 0.65289795, a: 1}
+    color: {r: 0.84628254, g: 0.9484911, b: 0.8602333, a: 1}
   - name: DestroyEntitySystem
     isLogging: 1
-    color: {r: 0.9872842, g: 0.9443838, b: 0.99528044, a: 1}
+    color: {r: 0.7555321, g: 0.66137516, b: 0.62875015, a: 1}
   - name: ResurrectionSystem
     isLogging: 1
-    color: {r: 0.60575485, g: 0.92154944, b: 0.5519141, a: 1}
+    color: {r: 0.5880246, g: 0.74500895, b: 0.8616767, a: 1}
   - name: AttackSystem
     isLogging: 1
-    color: {r: 0.83119535, g: 0.9610276, b: 0.9458198, a: 1}
+    color: {r: 0.85748297, g: 0.6434018, b: 0.8024274, a: 1}
   - name: DeathSystem
     isLogging: 1
-    color: {r: 0.6563037, g: 0.45580354, b: 0.75856066, a: 1}
+    color: {r: 0.93749565, g: 0.6451203, b: 0.46640378, a: 1}
   - name: DiagonalMovementSystem
     isLogging: 1
-    color: {r: 0.48554224, g: 0.8221799, b: 0.5274886, a: 1}
+    color: {r: 0.64764684, g: 0.5813156, b: 0.5624718, a: 1}
   - name: HealthSystem
     isLogging: 1
-    color: {r: 0.5541966, g: 0.52073944, b: 0.71713936, a: 1}
+    color: {r: 0.56424797, g: 0.5396762, b: 0.7295946, a: 1}
   - name: FreeMovementSystem
     isLogging: 1
-    color: {r: 0.6559803, g: 0.5382477, b: 0.6574484, a: 1}
+    color: {r: 0.8854187, g: 0.44650277, b: 0.6397481, a: 1}
   - name: CalculateFrameDamageSystem
     isLogging: 1
-    color: {r: 0.8430699, g: 0.4704685, b: 0.5793437, a: 1}
+    color: {r: 0.8558573, g: 0.5809222, b: 0.7718122, a: 1}
   - name: MoveTowardsTargetSystem
     isLogging: 1
-    color: {r: 0.7962429, g: 0.5982507, b: 0.8183072, a: 1}
+    color: {r: 0.97373396, g: 0.77149016, b: 0.9024676, a: 1}
   - name: PhysicsCastSystem
     isLogging: 1
-    color: {r: 0.8346036, g: 0.7563764, b: 0.7007778, a: 1}
+    color: {r: 0.53126895, g: 0.96993107, b: 0.42580393, a: 1}
   - name: NetworkIdLookupSystem
     isLogging: 1
-    color: {r: 0.60632885, g: 0.46794108, b: 0.63737416, a: 1}
+    color: {r: 0.63978225, g: 0.9997002, b: 0.92316896, a: 1}
   - name: MovementSystem
     isLogging: 1
-    color: {r: 0.96636087, g: 0.4854605, b: 0.84676987, a: 1}
+    color: {r: 0.9529935, g: 0.44281814, b: 0.7055103, a: 1}
   - name: RotateTowardsTargetSystem
     isLogging: 1
-    color: {r: 0.85940325, g: 0.5120303, b: 0.9615673, a: 1}
+    color: {r: 0.99289757, g: 0.43363914, b: 0.71886283, a: 1}
   - name: MeleeSystem
     isLogging: 1
-    color: {r: 0.5833274, g: 0.7055807, b: 0.8135563, a: 1}
+    color: {r: 0.62684005, g: 0.44651422, b: 0.7004608, a: 1}
   - name: ServerSystem
     isLogging: 1
-    color: {r: 0.7844959, g: 0.9493599, b: 0.90344346, a: 1}
+    color: {r: 0.7854178, g: 0.80871654, b: 0.70824116, a: 1}
   - name: PingPongSystem
     isLogging: 1
-    color: {r: 0.7923274, g: 0.8338804, b: 0.45468774, a: 1}
+    color: {r: 0.8387459, g: 0.60268927, b: 0.60223806, a: 1}
   - name: CameraFollowSystem
     isLogging: 1
-    color: {r: 0.76921725, g: 0.996819, b: 0.69223166, a: 1}
+    color: {r: 0.911853, g: 0.5258938, b: 0.9058326, a: 1}
   - name: DebugAttackSystem
     isLogging: 1
-    color: {r: 0.44358325, g: 0.69555855, b: 0.96036994, a: 1}
+    color: {r: 0.45844218, g: 0.56302977, b: 0.9277731, a: 1}
+  - name: InitializeMainCameraSystem
+    isLogging: 1
+    color: {r: 0.99452126, g: 0.64520967, b: 0.89109236, a: 1}
   - name: ClientSystem
     isLogging: 1
-    color: {r: 0.66812104, g: 0.76450217, b: 0.9198142, a: 1}
+    color: {r: 0.852821, g: 0.5749825, b: 0.8427424, a: 1}
   - name: GoInGameSystem
     isLogging: 1
-    color: {r: 0.7847444, g: 0.78810066, b: 0.5483885, a: 1}
+    color: {r: 0.41613346, g: 0.5813236, b: 0.43009326, a: 1}
   - name: DebugAimSystem
     isLogging: 1
-    color: {r: 0.6100538, g: 0.80026126, b: 0.99112976, a: 1}
+    color: {r: 0.44131947, g: 0.63863605, b: 0.90188485, a: 1}
   - name: DisableEntitySystem
     isLogging: 1
-    color: {r: 0.41117817, g: 0.9203353, b: 0.84050304, a: 1}
+    color: {r: 0.5351059, g: 0.4131602, b: 0.43507692, a: 1}
   - name: Input
     isLogging: 1
-    color: {r: 0.9875009, g: 0.7818071, b: 0.83782035, a: 1}
+    color: {r: 0.80930084, g: 0.984655, b: 0.7508005, a: 1}
   - name: ReckoningSystem
     isLogging: 1
-    color: {r: 0.7572617, g: 0.5295496, b: 0.44469577, a: 1}
+    color: {r: 0.46873695, g: 0.9790548, b: 0.53202134, a: 1}
   - name: PlayerNameSystem
     isLogging: 1
-    color: {r: 0.648604, g: 0.51407933, b: 0.9856918, a: 1}
+    color: {r: 0.71669585, g: 0.5208795, b: 0.66292477, a: 1}

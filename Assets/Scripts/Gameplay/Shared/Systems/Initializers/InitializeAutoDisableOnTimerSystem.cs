@@ -12,27 +12,27 @@ namespace Gameplay.Shared.Systems.Initializers
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
+            Log.Verbose($"OnCreate");
             state.RequireForUpdate<NetworkTime>();
         }
 
         //[BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStartRunning");
+            Log.Verbose($"OnStartRunning");
             _simulationTickRate = NetCodeConfig.Global.ClientServerTickRate.SimulationTickRate;
         }
 
         //[BurstCompile]
         public void OnStopRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStopRunning");
+            Log.Verbose($"OnStopRunning");
         }
 
         //[BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
+            Log.Verbose($"OnDestroy");
         }
 
         //[BurstCompile]
@@ -45,7 +45,7 @@ namespace Gameplay.Shared.Systems.Initializers
 
             foreach (var (dot, e) in SystemAPI.Query<RefRO<DisableOnTimer>>().WithNone<DisableAtTick>().WithEntityAccess())
             {
-                Log.Debug($"[{state.WorldUnmanaged.Name}] | Initializing {e} DisableOnTimer on tick: {currentTick}");
+                Log.Debug($"Initializing {e} DisableOnTimer on tick: {currentTick}");
                 var lifeTimeInTicks = (uint)(dot.ValueRO.Value * _simulationTickRate);
                 var targetTick = currentTick;
                 targetTick.Add(lifeTimeInTicks);

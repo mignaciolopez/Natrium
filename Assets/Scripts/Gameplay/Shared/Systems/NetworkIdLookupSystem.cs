@@ -41,13 +41,13 @@ namespace Gameplay.Shared.Systems
         //[BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
+            Log.Verbose($"OnCreate");
         }
 
         //[BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStartRunning");
+            Log.Verbose($"OnStartRunning");
 
             _singletonEntity = state.EntityManager.CreateEntity();
 
@@ -61,7 +61,7 @@ namespace Gameplay.Shared.Systems
         //[BurstCompile]
         public void OnStopRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStopRunning");
+            Log.Verbose($"OnStopRunning");
 
             if (SystemAPI.TryGetSingletonRW<NetworkIdLookup>(out var networkIdLookup))
             {
@@ -73,7 +73,7 @@ namespace Gameplay.Shared.Systems
         //[BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
+            Log.Verbose($"OnDestroy");
             OnStopRunning(ref state);
         }
 

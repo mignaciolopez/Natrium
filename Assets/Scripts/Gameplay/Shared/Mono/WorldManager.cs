@@ -9,22 +9,23 @@ namespace Gameplay.Shared.Mono
     {
         private enum Role
         {
-            ServerAndClient = 0,
+            ClientAndServer = 0,
             Server,
             Client
         }
         
         [SerializeField] private string serverName = "Server";
         [SerializeField] private string clientName = "Client"; 
-        private static World _serverWorld = null;
-        private static World _clientWorld = null;
-        private Role _role = Role.ServerAndClient;
+        private static World _serverWorld;
+        private static World _clientWorld;
+        private Role _role = Role.ClientAndServer;
 
         private void Awake()
         {
             //Log.Verbose("Awake");
             UpdateCurrentRole();
-            InitWorlds();
+            if (!InitWorlds())
+                Log.Fatal("Error InitWorlds()");
         }
 
         private void UpdateCurrentRole()
@@ -50,7 +51,7 @@ namespace Gameplay.Shared.Mono
                             _role = Role.Server;
                             break;
                         case ClientServerBootstrap.PlayType.ClientAndServer:
-                            _role = Role.ServerAndClient;
+                            _role = Role.ClientAndServer;
                             break;
                         case ClientServerBootstrap.PlayType.Client:
                         default:
@@ -85,7 +86,7 @@ namespace Gameplay.Shared.Mono
                 break;
             }
 
-            if (_role == Role.ServerAndClient || _role == Role.Server)
+            if (_role == Role.ClientAndServer || _role == Role.Server)
             {
                 Log.Debug($"WorldManager.InitWorlds Creating World: {serverName}");
                 _serverWorld = ClientServerBootstrap.CreateServerWorld(serverName);
@@ -99,7 +100,7 @@ namespace Gameplay.Shared.Mono
                 Log.Debug($"WorldManager.InitWorlds Set DefaultGameObjectInjectionWorld to: {_serverWorld.Name}");
             }
 
-            if (_role == Role.ServerAndClient || _role == Role.Client)
+            if (_role == Role.ClientAndServer || _role == Role.Client)
             {
                 Log.Debug($"WorldManager.InitWorlds Creating World: {clientName}");
                 _clientWorld = ClientServerBootstrap.CreateClientWorld(clientName);
