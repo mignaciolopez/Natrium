@@ -1,4 +1,6 @@
 using CEG.Gameplay.Shared.Components;
+using CyberEntt.Logging;
+using Unity.Burst;
 using Unity.Entities;
 using Unity.NetCode;
 
@@ -7,36 +9,36 @@ namespace CEG.Gameplay.Shared.Systems.Initializers
     [UpdateInGroup(typeof(SimulationSystemGroup), OrderLast = true)]
     public partial struct InitializeDestroyOnTimerSystem : ISystem, ISystemStartStop
     {
-        //[BurstCompile]
+        [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
+            Log.Verbose("OnCreate", ref state);
             state.RequireForUpdate<NetworkTime>();
         }
 
-        //[BurstCompile]
+        [BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStartRunning");
+            Log.Verbose("OnStartRunning", ref state);
         }
 
-        //[BurstCompile]
+        [BurstCompile]
         public void OnStopRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStopRunning");
+            Log.Verbose("OnStopRunning", ref state);
         }
 
-        //[BurstCompile]
+        [BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
+            Log.Verbose("OnDestroy", ref state);
         }
 
         //[BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
-            var simulationTickRate = NetCodeConfig.Global.ClientServerTickRate.SimulationTickRate;
+            var simulationTickRate = NetCodeConfig.Global.ClientServerTickRate.SimulationTickRate; // Burst Incompatible
             var networkTime = SystemAPI.GetSingleton<NetworkTime>();
 
             foreach (var (destroyOnTimer, entity)
@@ -44,7 +46,7 @@ namespace CEG.Gameplay.Shared.Systems.Initializers
                          .WithNone<DestroyAtTick>()
                          .WithEntityAccess())
             {
-                Log.Debug($"[{state.WorldUnmanaged.Name}] | Initializing {nameof(DestroyOnTimer)} on: {entity}");
+                Log.Debug($"Initializing DestroyOnTimerSystem on Entity:'{entity.Index}'", ref state);
                 var lifeTimeInTicks = (uint)(destroyOnTimer.ValueRO.Value * simulationTickRate);
                 var targetTick = networkTime.ServerTick;
                 targetTick.Add(lifeTimeInTicks);

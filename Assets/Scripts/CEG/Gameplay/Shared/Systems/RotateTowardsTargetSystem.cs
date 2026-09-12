@@ -1,6 +1,7 @@
 using CEG.Extensions;
 using CEG.Gameplay.Shared.Components;
 using CEG.Gameplay.Shared.Components.Input;
+using CyberEntt.Logging;
 using Unity.Burst;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -16,23 +17,23 @@ namespace CEG.Gameplay.Shared.Systems
     {
         public void OnCreate(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
+            Log.Verbose("OnCreate", ref state);
             state.RequireForUpdate<NetworkTime>();
         }
 
         public void OnStartRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStartRunning");
+            Log.Verbose("OnStartRunning", ref state);
         }
         
         public void OnStopRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStopRunning");
+            Log.Verbose("OnStopRunning", ref state);
         }
         
         public void OnDestroy(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
+            Log.Verbose("OnDestroy", ref state);
         }
 
         [BurstCompile]

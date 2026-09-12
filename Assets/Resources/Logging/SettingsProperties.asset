@@ -1,0 +1,343 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: eb19927743ae4004a333ca5038f426c0, type: 3}
+  m_Name: SettingsProperties
+  m_EditorClassIdentifier: CyberEntity.Logging::CyberEntity.Logging.Settings
+  isEnabled: 1
+  shouldLogAsserts: 1
+  isDeferredLoggingEnabled: 1
+  environment: 5
+  level: 0
+  stackTrace:
+    log: 1
+    warning: 1
+    error: 2
+    exception: 2
+    assert: 2
+  worlds:
+  - name: Client
+    enabled: 1
+    color: {r: 0.28627452, g: 0.52156866, b: 1, a: 1}
+    level: 0
+  - name: ClientWorld
+    enabled: 1
+    color: {r: 0.28490567, g: 0.5215973, b: 1, a: 1}
+    level: 0
+  - name: Default World
+    enabled: 1
+    color: {r: 0.41176474, g: 0.97647065, b: 0.47058827, a: 1}
+    level: 0
+  - name: Editor World
+    enabled: 1
+    color: {r: 0.41176474, g: 0.9764706, b: 0.47479972, a: 1}
+    level: 0
+  - name: Server
+    enabled: 1
+    color: {r: 1, g: 0.6117647, b: 0.011764707, a: 1}
+    level: 0
+  - name: ServerWorld
+    enabled: 1
+    color: {r: 1, g: 0.6121087, b: 0.013207495, a: 1}
+    level: 0
+  - name: TestWorld
+    enabled: 1
+    color: {r: 0.44488358, g: 0.8244915, b: 0.5446013, a: 1}
+    level: 0
+  - name: Unknown
+    enabled: 1
+    color: {r: 0.48427665, g: 0.48427665, b: 0.48427665, a: 1}
+    level: 0
+  systems:
+  - name: AimSystem
+    enabled: 1
+    color: {r: 0.8941177, g: 0.7411765, b: 0.7490196, a: 1}
+    level: 0
+  - name: AttackSystem
+    enabled: 1
+    color: {r: 0.6358563, g: 0.85031265, b: 0.5218168, a: 1}
+    level: 0
+  - name: AudioTestSystem
+    enabled: 1
+    color: {r: 0.4045904, g: 0.7975441, b: 0.7021934, a: 1}
+    level: 0
+  - name: BlobPrefabsManagerAuthoring
+    enabled: 1
+    color: {r: 0.45485932, g: 0.61339414, b: 0.8135649, a: 1}
+    level: 0
+  - name: CalculateFrameDamageSystem
+    enabled: 1
+    color: {r: 0.8932255, g: 0.74100673, b: 0.75039196, a: 1}
+    level: 0
+  - name: CameraFollowSystem
+    enabled: 1
+    color: {r: 0.8381729, g: 0.69779897, b: 0.86833775, a: 1}
+    level: 0
+  - name: ClientSystem
+    enabled: 1
+    color: {r: 0.890498, g: 0.9511833, b: 0.7245083, a: 1}
+    level: 0
+  - name: ClipsEnumGenerator
+    enabled: 1
+    color: {r: 0.4904103, g: 0.6843575, b: 0.60551494, a: 1}
+    level: 0
+  - name: CollisionCheckSystem
+    enabled: 1
+    color: {r: 0.65345675, g: 0.8739348, b: 0.47715926, a: 1}
+    level: 0
+  - name: CooldownSystem
+    enabled: 1
+    color: {r: 0.9672787, g: 0.7311056, b: 0.65997046, a: 1}
+    level: 0
+  - name: DeathSystem
+    enabled: 1
+    color: {r: 1, g: 0, b: 0.5760751, a: 1}
+    level: 0
+  - name: DebugAimSystem
+    enabled: 1
+    color: {r: 0.48627454, g: 0.75294125, b: 0.7411765, a: 1}
+    level: 0
+  - name: DebugAttackSystem
+    enabled: 1
+    color: {r: 0.6659492, g: 0.5338164, b: 0.6473942, a: 1}
+    level: 0
+  - name: DebugPhysicalDamageSystem
+    enabled: 1
+    color: {r: 0.79396784, g: 0.8346962, b: 0.9243224, a: 1}
+    level: 0
+  - name: DeferredLoggingInitializerSystem
+    enabled: 1
+    color: {r: 0.61960787, g: 0.45882356, b: 0.9725491, a: 1}
+    level: 0
+  - name: DeferredLoggingSystem
+    enabled: 1
+    color: {r: 0.61960787, g: 0.45882356, b: 0.9725491, a: 1}
+    level: 0
+  - name: DestroyEntitySystem
+    enabled: 1
+    color: {r: 0.6639351, g: 0.88969225, b: 0.73236805, a: 1}
+    level: 0
+  - name: DestroyOnTimerSystem
+    enabled: 1
+    color: {r: 0.989167, g: 0.4837398, b: 0.6604866, a: 1}
+    level: 0
+  - name: DiagonalMovementSystem
+    enabled: 1
+    color: {r: 0.7741737, g: 0.6482347, b: 0.93444103, a: 1}
+    level: 0
+  - name: DisableEntitySystem
+    enabled: 1
+    color: {r: 0.5962179, g: 0.70095235, b: 0.53635216, a: 1}
+    level: 0
+  - name: EditorExampleTest
+    enabled: 1
+    color: {r: 0.9816384, g: 0.7032385, b: 0.947639, a: 1}
+    level: 0
+  - name: FilterWindow
+    enabled: 1
+    color: {r: 0.6550752, g: 0.7492205, b: 0.8012455, a: 1}
+    level: 0
+  - name: FreeMovementSystem
+    enabled: 1
+    color: {r: 0.43509084, g: 0.5221658, b: 0.80097467, a: 1}
+    level: 0
+  - name: GoInGameSystem
+    enabled: 1
+    color: {r: 0.6071989, g: 0.7425595, b: 0.7637488, a: 1}
+    level: 0
+  - name: HealthSystem
+    enabled: 1
+    color: {r: 0.65902704, g: 0.44024423, b: 0.7895556, a: 1}
+    level: 0
+  - name: InitializeAutoDisableOnTimerSystem
+    enabled: 1
+    color: {r: 0.50276715, g: 0.5659115, b: 0.6970619, a: 1}
+    level: 0
+  - name: InitializeDestroyOnTimerSystem
+    enabled: 1
+    color: {r: 0.73918885, g: 0.84267855, b: 0.8272014, a: 1}
+    level: 0
+  - name: InitializeMainCameraSystem
+    enabled: 1
+    color: {r: 0.7479579, g: 0.6610008, b: 0.44265237, a: 1}
+    level: 0
+  - name: Input
+    enabled: 1
+    color: {r: 0.7753738, g: 0.865431, b: 0.52929705, a: 1}
+    level: 0
+  - name: InputAimSystem
+    enabled: 1
+    color: {r: 0.48235297, g: 0.75294125, b: 0.7411765, a: 1}
+    level: 0
+  - name: InputMeleeSystem
+    enabled: 1
+    color: {r: 0.595042, g: 0.7761595, b: 0.52654624, a: 1}
+    level: 0
+  - name: InputMoveSystem
+    enabled: 1
+    color: {r: 0.68576145, g: 0.4046653, b: 0.4995495, a: 1}
+    level: 0
+  - name: Light2DInitializerSystem
+    enabled: 1
+    color: {r: 0.9817418, g: 0.41934475, b: 0.8501023, a: 1}
+    level: 0
+  - name: LoadSystem
+    enabled: 1
+    color: {r: 0.5665378, g: 0.9849996, b: 0.7130167, a: 1}
+    level: 0
+  - name: Log
+    enabled: 1
+    color: {r: 0.6210063, g: 0.46215242, b: 0.97065806, a: 1}
+    level: 0
+  - name: LoggingSystem
+    enabled: 1
+    color: {r: 0.61960787, g: 0.45882356, b: 0.9725491, a: 1}
+    level: 0
+  - name: LogTestingJob
+    enabled: 1
+    color: {r: 1, g: 0.97053784, b: 0, a: 1}
+    level: 0
+  - name: LogTestingParallelJob
+    enabled: 1
+    color: {r: 1, g: 0, b: 0.057142735, a: 1}
+    level: 0
+  - name: LogTestingSystem
+    enabled: 1
+    color: {r: 0.89164305, g: 0, b: 1, a: 1}
+    level: 0
+  - name: ManagedLogTestingSystem
+    enabled: 1
+    color: {r: 0, g: 0.8303242, b: 1, a: 1}
+    level: 0
+  - name: Manager
+    enabled: 1
+    color: {r: 0.51536506, g: 0.4825232, b: 0.44194922, a: 1}
+    level: 0
+  - name: MeleeSystem
+    enabled: 1
+    color: {r: 0.5922541, g: 0.9401619, b: 0.50092137, a: 1}
+    level: 0
+  - name: MonoBehaviourExample
+    enabled: 1
+    color: {r: 0.9611671, g: 1, b: 0, a: 1}
+    level: 0
+  - name: MovementSystem
+    enabled: 1
+    color: {r: 0.81860256, g: 0.7508774, b: 0.915177, a: 1}
+    level: 0
+  - name: MoveTowardsTargetSystem
+    enabled: 1
+    color: {r: 0.84447247, g: 0.7717698, b: 0.6862157, a: 1}
+    level: 0
+  - name: MyCustomName
+    enabled: 1
+    color: {r: 0.99371064, g: 0.103120804, b: 0.57860523, a: 1}
+    level: 0
+  - name: NetworkIdLookupSystem
+    enabled: 1
+    color: {r: 0.7001422, g: 0.8658756, b: 0.6704189, a: 1}
+    level: 0
+  - name: ObjectRefDestroySystem
+    enabled: 1
+    color: {r: 0.8868136, g: 0.69762635, b: 0.56852937, a: 1}
+    level: 0
+  - name: ObjectRefDisableSystem
+    enabled: 1
+    color: {r: 0.7709537, g: 0.72559434, b: 0.50623906, a: 1}
+    level: 0
+  - name: PhysicalDefenseSystem
+    enabled: 1
+    color: {r: 0.8636073, g: 0.47441685, b: 0.42405942, a: 1}
+    level: 0
+  - name: PhysicsCastSystem
+    enabled: 1
+    color: {r: 0.5304683, g: 0.7321828, b: 0.73759496, a: 1}
+    level: 0
+  - name: PingPongSystem
+    enabled: 1
+    color: {r: 0.92929184, g: 0.6039581, b: 0.7622332, a: 1}
+    level: 0
+  - name: PlayerNameSystem
+    enabled: 1
+    color: {r: 0.70866007, g: 0.75276923, b: 0.56596935, a: 1}
+    level: 0
+  - name: PopupTextInitializerSystem
+    enabled: 1
+    color: {r: 0.48966622, g: 0.6786923, b: 0.7026411, a: 1}
+    level: 0
+  - name: PrefabObjectRefAuthoring
+    enabled: 1
+    color: {r: 0.55303687, g: 0.68179435, b: 0.76022506, a: 1}
+    level: 0
+  - name: PrefabObjectRefInitializerSystem
+    enabled: 1
+    color: {r: 0.5221466, g: 0.6419008, b: 0.68038106, a: 1}
+    level: 0
+  - name: ProgressBarInitializerSystem
+    enabled: 1
+    color: {r: 0.408706, g: 0.85386366, b: 0.6348801, a: 1}
+    level: 0
+  - name: ReceiveRpcCommandRequestJob
+    enabled: 1
+    color: {r: 0.71663046, g: 0.9746133, b: 0.813785, a: 1}
+    level: 0
+  - name: ReckoningSystem
+    enabled: 1
+    color: {r: 0.7672151, g: 0.44109398, b: 0.6242071, a: 1}
+    level: 0
+  - name: Registry
+    enabled: 1
+    color: {r: 0.49787664, g: 0.46320027, b: 0.7385837, a: 1}
+    level: 0
+  - name: ResurrectionSystem
+    enabled: 1
+    color: {r: 0.6072058, g: 0.45426965, b: 0.78952575, a: 1}
+    level: 0
+  - name: RigidBodyConstraintsSystemJob
+    enabled: 1
+    color: {r: 0.7141273, g: 0.5633445, b: 0.42163962, a: 1}
+    level: 0
+  - name: RotateTowardsTargetSystem
+    enabled: 1
+    color: {r: 0.53940827, g: 0.7851192, b: 0.48027885, a: 1}
+    level: 0
+  - name: RuntimeExampleTest
+    enabled: 1
+    color: {r: 0.6657716, g: 0.54754114, b: 0.6856031, a: 1}
+    level: 0
+  - name: SaveSystem
+    enabled: 1
+    color: {r: 0.6299447, g: 0.73401153, b: 0.92534286, a: 1}
+    level: 0
+  - name: Serializers
+    enabled: 1
+    color: {r: 0.64005864, g: 0.763579, b: 0.6002131, a: 1}
+    level: 0
+  - name: ServerSystem
+    enabled: 1
+    color: {r: 0.97956324, g: 0.5045795, b: 0.96460456, a: 1}
+    level: 0
+  - name: SoundFXInitializerSystem
+    enabled: 1
+    color: {r: 0.4313798, g: 0.8899981, b: 0.94886386, a: 1}
+    level: 0
+  - name: SoundFXSystem
+    enabled: 1
+    color: {r: 0.6040868, g: 0.7569338, b: 0.6884429, a: 1}
+    level: 0
+  - name: SpawnerSystem
+    enabled: 1
+    color: {r: 0.6606183, g: 0.6063039, b: 0.43797204, a: 1}
+    level: 0
+  - name: WorldManager
+    enabled: 1
+    color: {r: 0.88687813, g: 0.6008193, b: 0.62376523, a: 1}
+    level: 0

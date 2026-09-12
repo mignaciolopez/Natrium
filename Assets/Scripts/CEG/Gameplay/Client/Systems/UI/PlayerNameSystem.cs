@@ -1,5 +1,6 @@
 using CEG.Gameplay.Client.Components.UI;
 using CEG.Gameplay.Shared.Components;
+using CyberEntt.Logging;
 using TMPro;
 using Unity.Entities;
 using Unity.Transforms;

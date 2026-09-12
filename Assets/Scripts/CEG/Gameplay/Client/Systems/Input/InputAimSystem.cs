@@ -6,6 +6,7 @@ using Unity.NetCode;
 using UnityEngine;
 using CEG.Gameplay.Shared.Components.Input;
 using CEG.Settings.Input;
+using CyberEntt.Logging;
 using Unity.Collections;
 
 namespace CEG.Gameplay.Client.Systems.Input

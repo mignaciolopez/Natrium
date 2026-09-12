@@ -1,5 +1,6 @@
 using CEG.Gameplay.Shared.Components;
 using System;
+using CyberEntt.Logging;
 using Unity.Entities;
 using Unity.NetCode;
 

@@ -1,4 +1,5 @@
 using CEG.Gameplay.Client.Components;
+using CyberEntt.Logging;
 using Unity.Entities;
 using UnityEngine;
 

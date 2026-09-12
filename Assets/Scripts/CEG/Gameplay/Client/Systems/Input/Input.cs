@@ -1,6 +1,7 @@
 using CEG.Gameplay.Client.Components;
 using CEG.Gameplay.Shared.Components;
 using CEG.Settings.Input;
+using CyberEntt.Logging;
 using Unity.Entities;
 using UnityEngine;
 

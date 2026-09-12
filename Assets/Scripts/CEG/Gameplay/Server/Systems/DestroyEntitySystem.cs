@@ -1,4 +1,5 @@
 using CEG.Gameplay.Shared.Components;
+using CyberEntt.Logging;
 using Unity.Burst;
 using Unity.Entities;
 

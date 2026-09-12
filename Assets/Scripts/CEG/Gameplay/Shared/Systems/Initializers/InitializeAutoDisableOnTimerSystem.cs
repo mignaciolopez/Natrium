@@ -1,6 +1,9 @@
 using CEG.Gameplay.Shared.Components;
+using CyberEntt.Logging;
+using Unity.Burst;
 using Unity.Entities;
 using Unity.NetCode;
+using static Unity.Entities.SystemAPI;
 
 namespace CEG.Gameplay.Shared.Systems.Initializers
 {
@@ -8,43 +11,43 @@ namespace CEG.Gameplay.Shared.Systems.Initializers
     {
         private int _simulationTickRate;
         
-        //[BurstCompile]
+        [BurstCompile]
         public void OnCreate(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnCreate");
+            Log.Verbose("OnCreate", ref state);
             state.RequireForUpdate<NetworkTime>();
         }
 
         //[BurstCompile]
         public void OnStartRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStartRunning");
+            Log.Verbose("OnStartRunning", ref state);
             _simulationTickRate = NetCodeConfig.Global.ClientServerTickRate.SimulationTickRate;
         }
 
-        //[BurstCompile]
+        [BurstCompile]
         public void OnStopRunning(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnStopRunning");
+            Log.Verbose("OnStopRunning", ref state);
         }
 
-        //[BurstCompile]
+        [BurstCompile]
         public void OnDestroy(ref SystemState state)
         {
-            Log.Verbose($"[{state.WorldUnmanaged.Name}] OnDestroy");
+            Log.Verbose("OnDestroy", ref state);
         }
 
-        //[BurstCompile]
+        [BurstCompile]
         public void OnUpdate(ref SystemState state)
         {
             var ecb = new EntityCommandBuffer(state.WorldUpdateAllocator);
             
-            var networkTime = SystemAPI.GetSingleton<NetworkTime>();
+            var networkTime = GetSingleton<NetworkTime>();
             var currentTick = state.WorldUnmanaged.IsServer() ? networkTime.ServerTick : networkTime.InterpolationTick;
 
-            foreach (var (dot, e) in SystemAPI.Query<RefRO<DisableOnTimer>>().WithNone<DisableAtTick>().WithEntityAccess())
+            foreach (var (dot, e) in Query<RefRO<DisableOnTimer>>().WithNone<DisableAtTick>().WithEntityAccess())
             {
-                Log.Debug($"[{state.WorldUnmanaged.Name}] | Initializing {e} DisableOnTimer on tick: {currentTick}");
+                Log.Debug($"Initializing DisableOnTimer on Entity:'{e.Index}' on tick:'{currentTick}'", ref state);
                 var lifeTimeInTicks = (uint)(dot.ValueRO.Value * _simulationTickRate);
                 var targetTick = currentTick;
                 targetTick.Add(lifeTimeInTicks);

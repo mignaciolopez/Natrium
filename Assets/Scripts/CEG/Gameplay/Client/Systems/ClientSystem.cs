@@ -6,6 +6,7 @@ using Unity.Networking.Transport;
 using System;
 using System.Net;
 using System.Net.Sockets;
+using CyberEntt.Logging;
 
 namespace CEG.Gameplay.Client.Systems
 {
@@ -106,12 +107,12 @@ namespace CEG.Gameplay.Client.Systems
                 }
                 else
                 {
-                    Log.Fatal($"Dns.GetHostEntry could not resolve name {ss.Fqdn} to any valid ipv4");
+                    Log.Exception(new Exception($"Dns.GetHostEntry could not resolve name {ss.Fqdn} to any valid ipv4"));
                 }
             }
             else
             {
-                Log.Fatal($"SystemsSettings Singleton not present!!!");
+                Log.Exception(new Exception("SystemsSettings Singleton not present!!!"));
             }
         }
 

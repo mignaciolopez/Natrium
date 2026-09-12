@@ -7,6 +7,7 @@ using Unity.NetCode;
 using Unity.Mathematics;
 using Unity.Transforms;
 using CEG.Extensions;
+using CyberEntt.Logging;
 using Unity.Physics;
 
 namespace CEG.Gameplay.Client.Systems.UI.Debug

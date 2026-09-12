@@ -4,6 +4,7 @@ using CEG.Gameplay.Shared.Components;
 using System;
 using System.Net;
 using System.Net.Sockets;
+using CyberEntt.Logging;
 using Unity.Collections;
 using Unity.Entities;
 using Unity.Mathematics;
@@ -88,12 +89,12 @@ namespace CEG.Gameplay.Server.Systems
                 }
                 else
                 {
-                    Log.Fatal($"Dns.GetHostEntry could not resolve name {ss.Fqdn} to any valid ipv4");
+                    Log.Exception(new Exception($"Dns.GetHostEntry could not resolve name {ss.Fqdn} to any valid ipv4"));
                 }
             }
             else
             {
-                Log.Fatal($"SystemsSettings Singleton not present!!!");
+                Log.Exception(new Exception("SystemsSettings Singleton not present!!!"));
             }
 
             foreach (var networkStreamRequestListenResult in SystemAPI.Query<RefRO<NetworkStreamRequestListenResult>>())

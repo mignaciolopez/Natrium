@@ -2,6 +2,7 @@ using CEG.Extensions;
 using CEG.Gameplay.Shared.Components;
 using CEG.Gameplay.Shared.Components.Input;
 using System;
+using CyberEntt.Logging;
 using Unity.Burst;
 using Unity.Collections;
 using Unity.Entities;

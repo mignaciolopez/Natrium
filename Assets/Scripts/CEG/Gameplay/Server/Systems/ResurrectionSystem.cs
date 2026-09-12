@@ -1,5 +1,6 @@
 using CEG.Gameplay.Shared.Components;
 using CEG.Extensions;
+using CyberEntt.Logging;
 using Unity.Entities;
 using Unity.NetCode;
 using Unity.Physics;
