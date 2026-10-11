@@ -11,12 +11,12 @@ namespace CEG.Gameplay.Client.Systems.Initializers
         {
             Log.Verbose("OnCreate");
         }
-
-        protected override void OnStartRunning()
+        
+        protected override void OnUpdate()
         {
-            Log.Verbose("OnStartRunning");
+            Log.Verbose("OnUpdate");
             Enabled = false;
-            
+
             if (!SystemAPI.TryGetSingletonEntity<MainCameraTag>(out var mainCameraEntity))
             {
                 Log.Error($"MainCameraTag not found: {mainCameraEntity}");
@@ -26,24 +26,9 @@ namespace CEG.Gameplay.Client.Systems.Initializers
             var mainCamera = EntityManager.GetComponentObject<MainCamera>(mainCameraEntity);
             if (!mainCamera.Camera)
             {
-                Log.Info($"No Camera specified on CameraAuthoring, setting up Camera.main on: {mainCameraEntity}");
+                Log.Warning($"No Camera specified on CameraAuthoring, setting up Camera.main on: {mainCameraEntity}");
                 mainCamera.Camera = Camera.main;
             }
-        }
-
-        protected override void OnStopRunning()
-        {
-            Log.Verbose("OnStopRunning");
-        }
-
-        protected override void OnDestroy()
-        {
-            Log.Verbose("OnDestroy");
-        }
-        
-        protected override void OnUpdate()
-        {
-            
         }
     }
 }
