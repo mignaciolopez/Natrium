@@ -1,12 +1,13 @@
 {
-    "name": "InputActions",
+    "version": 1,
+    "name": "Actions",
     "maps": [
         {
-            "name": "Map_Gameplay",
+            "name": "Gameplay",
             "id": "b17f6048-0eca-48d4-80d5-e61756f314da",
             "actions": [
                 {
-                    "name": "Axn_PlayerMove",
+                    "name": "PlayerMove",
                     "type": "Value",
                     "id": "ead4689b-9687-4efe-bdf4-69a9d8774a0e",
                     "expectedControlType": "Vector2",
@@ -15,16 +16,16 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Axn_MouseRealease",
+                    "name": "MouseRealease",
                     "type": "Button",
                     "id": "0992c1a8-b81a-4613-94c5-64d8ad09b1d9",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Axn_MousePosition",
+                    "name": "MousePosition",
                     "type": "Value",
                     "id": "25bbc420-1c2b-43d9-bd49-31887ee5e81d",
                     "expectedControlType": "Vector2",
@@ -33,18 +34,27 @@
                     "initialStateCheck": true
                 },
                 {
-                    "name": "Axn_Ping",
+                    "name": "Ping",
                     "type": "Button",
                     "id": "1bb8d660-6a67-4b1a-bb63-55d62869092b",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Axn_MeleePrimary",
+                    "name": "MeleePrimary",
                     "type": "Button",
                     "id": "a0d66f20-144f-42e6-b4a2-3af70f8c6d20",
+                    "expectedControlType": "",
+                    "processors": "",
+                    "interactions": "",
+                    "initialStateCheck": false
+                },
+                {
+                    "name": "ToggleFullScreen",
+                    "type": "Button",
+                    "id": "fa11b82c-488d-4665-8f09-cd9ee3153378",
                     "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
@@ -59,7 +69,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Axn_PlayerMove",
+                    "action": "PlayerMove",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -70,7 +80,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Axn_PlayerMove",
+                    "action": "PlayerMove",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -81,7 +91,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Axn_PlayerMove",
+                    "action": "PlayerMove",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -92,7 +102,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Axn_PlayerMove",
+                    "action": "PlayerMove",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -103,7 +113,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Axn_PlayerMove",
+                    "action": "PlayerMove",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -114,7 +124,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Axn_PlayerMove",
+                    "action": "PlayerMove",
                     "isComposite": true,
                     "isPartOfComposite": false
                 },
@@ -125,7 +135,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Axn_PlayerMove",
+                    "action": "PlayerMove",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -136,7 +146,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Axn_PlayerMove",
+                    "action": "PlayerMove",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -147,7 +157,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Axn_PlayerMove",
+                    "action": "PlayerMove",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -158,7 +168,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Axn_PlayerMove",
+                    "action": "PlayerMove",
                     "isComposite": false,
                     "isPartOfComposite": true
                 },
@@ -169,7 +179,7 @@
                     "interactions": "Press(behavior=1)",
                     "processors": "",
                     "groups": "",
-                    "action": "Axn_MouseRealease",
+                    "action": "MouseRealease",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -180,7 +190,7 @@
                     "interactions": "",
                     "processors": "",
                     "groups": "",
-                    "action": "Axn_MousePosition",
+                    "action": "MousePosition",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -191,7 +201,7 @@
                     "interactions": "Press(behavior=1)",
                     "processors": "",
                     "groups": "",
-                    "action": "Axn_Ping",
+                    "action": "Ping",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -202,18 +212,29 @@
                     "interactions": "Press(behavior=1)",
                     "processors": "",
                     "groups": "",
-                    "action": "Axn_MeleePrimary",
+                    "action": "MeleePrimary",
+                    "isComposite": false,
+                    "isPartOfComposite": false
+                },
+                {
+                    "name": "",
+                    "id": "467b6236-8f6c-4add-8421-70a829c0b749",
+                    "path": "<Keyboard>/f11",
+                    "interactions": "",
+                    "processors": "",
+                    "groups": "",
+                    "action": "ToggleFullScreen",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
             ]
         },
         {
-            "name": "Map_Login",
+            "name": "Login",
             "id": "f1016748-525e-4398-93dd-e678078e2d06",
             "actions": [
                 {
-                    "name": "Axn_Enter",
+                    "name": "Enter",
                     "type": "Button",
                     "id": "97754822-0dc1-40d0-a5ad-e5013e2e3528",
                     "expectedControlType": "",
@@ -222,10 +243,10 @@
                     "initialStateCheck": false
                 },
                 {
-                    "name": "Axn_Escape",
+                    "name": "Escape",
                     "type": "Button",
                     "id": "8716fad9-d1d3-4b1b-9306-4f9e8b430605",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -239,7 +260,7 @@
                     "interactions": "Press(behavior=1)",
                     "processors": "",
                     "groups": "",
-                    "action": "Axn_Enter",
+                    "action": "Enter",
                     "isComposite": false,
                     "isPartOfComposite": false
                 },
@@ -250,7 +271,7 @@
                     "interactions": "Press(behavior=1)",
                     "processors": "",
                     "groups": "",
-                    "action": "Axn_Escape",
+                    "action": "Escape",
                     "isComposite": false,
                     "isPartOfComposite": false
                 }
@@ -282,7 +303,7 @@
                     "name": "Submit",
                     "type": "Button",
                     "id": "e8d537d0-f56b-4b5a-98e6-c255f02cc074",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false
@@ -291,7 +312,7 @@
                     "name": "Cancel",
                     "type": "Button",
                     "id": "945081d1-354c-4296-a11e-bbed393efba8",
-                    "expectedControlType": "Button",
+                    "expectedControlType": "",
                     "processors": "",
                     "interactions": "",
                     "initialStateCheck": false

@@ -1,6 +1,5 @@
 using CEG.Gameplay.Shared.Components;
 using CEG.Gameplay.Shared.Components.Input;
-using CEG.Settings.Input;
 using CyberEntt.Logging;
 using UnityEngine;
 using Unity.Collections;
@@ -13,13 +12,13 @@ namespace CEG.Gameplay.Client.Systems.Input
     [UpdateInGroup(typeof(GhostInputSystemGroup))]
     public partial class InputMoveSystem : SystemBase
     {
-        private InputActions _inputActions;
+        private Settings.Input.Actions _inputActions;
         private Entity _entityLocalPlayer;
 
         protected override void OnCreate()
         {
             Log.Verbose("OnCreate");
-            _inputActions = new InputActions();
+            _inputActions = new Settings.Input.Actions();
 
             RequireForUpdate<LocalTransform>();
             
@@ -65,7 +64,7 @@ namespace CEG.Gameplay.Client.Systems.Input
         protected override void OnUpdate()
         {
             var inputMove = SystemAPI.GetComponentRW<InputMove>(_entityLocalPlayer);
-            inputMove.ValueRW.Value = _inputActions.Map_Gameplay.Axn_PlayerMove.ReadValue<Vector2>();
+            inputMove.ValueRW.Value = _inputActions.Gameplay.PlayerMove.ReadValue<Vector2>();
         }
     }
 }

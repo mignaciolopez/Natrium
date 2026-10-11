@@ -1,6 +1,5 @@
 using CEG.Gameplay.Client.Components;
 using CEG.Gameplay.Shared.Components;
-using CEG.Settings.Input;
 using CyberEntt.Logging;
 using Unity.Entities;
 using UnityEngine;
@@ -9,52 +8,51 @@ namespace CEG.Gameplay.Client.Systems.Input
 {
     [WorldSystemFilter(WorldSystemFilterFlags.ClientSimulation)]
     [UpdateBefore(typeof(ClientSystem))]
-    public partial class Input : SystemBase
+    public partial class InputSystem : SystemBase
     {
-        private InputActions _inputActions;
+        private Settings.Input.Actions _actions;
         
         protected override void OnCreate()
         {
             Log.Verbose("OnCreate");
-            _inputActions = new InputActions();
+            _actions = new Settings.Input.Actions();
         }
 
         protected override void OnStartRunning()
         {
             Log.Verbose("OnStartRunning");
-            _inputActions.Enable();
+            _actions.Enable();
         }
 
         protected override void OnStopRunning()
         {
             Log.Verbose("OnStopRunning");
-            _inputActions.Disable();
+            _actions.Disable();
         }
 
         protected override void OnDestroy()
         {
             Log.Verbose("OnDestroy");
             base.OnDestroy();
-            _inputActions.Dispose();
+            _actions.Dispose();
         }
         protected override void OnUpdate()
         {
             var ecb = new EntityCommandBuffer(WorldUpdateAllocator);
             
-            //Todo: Move all the following stuff to another system.
-            if (UnityEngine.Input.GetKeyUp(KeyCode.Return))
+            if (_actions.Login.Enter.WasPerformedThisFrame())
             {
                 var entity = ecb.CreateEntity();
                 ecb.AddComponent<ConnectRequest>(entity);
             }
 
-            if (UnityEngine.Input.GetKeyUp(KeyCode.Escape))
+            if (_actions.Login.Escape.WasPerformedThisFrame())
             {
                 var entity = ecb.CreateEntity();
                 ecb.AddComponent<DisconnectRequest>(entity);
             }
 
-            if (UnityEngine.Input.GetKeyUp(KeyCode.F11))
+            if (_actions.Gameplay.ToggleFullScreen.WasPerformedThisFrame())
             {
                 if (Screen.fullScreen)
                     Screen.fullScreenMode = FullScreenMode.Windowed;
@@ -62,12 +60,11 @@ namespace CEG.Gameplay.Client.Systems.Input
                     Screen.fullScreenMode = FullScreenMode.ExclusiveFullScreen;
             }
 
-            if (UnityEngine.Input.GetKeyUp(KeyCode.F2))
+            if (_actions.Gameplay.Ping.WasPerformedThisFrame())
             {
                 var entity = ecb.CreateEntity();
                 ecb.AddComponent<PingRequest>(entity);
             }
-            //End //Todo: Move all the following stuff to another system.
             
             ecb.Playback(EntityManager);
         }

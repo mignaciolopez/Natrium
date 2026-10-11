@@ -2,7 +2,6 @@ using CEG.Gameplay.Shared.Components;
 using Unity.Entities;
 using Unity.NetCode;
 using CEG.Gameplay.Shared.Components.Input;
-using CEG.Settings.Input;
 using CyberEntt.Logging;
 using Unity.Collections;
 
@@ -11,13 +10,13 @@ namespace CEG.Gameplay.Client.Systems.Input
     [UpdateInGroup(typeof(GhostInputSystemGroup))] //This group only executes on Client.
     public partial class InputMeleeSystem : SystemBase
     {
-        private InputActions _inputActions;
+        private Settings.Input.Actions _inputActions;
         private Entity _entityLocalPlayer;
         protected override void OnCreate()
         {
             base.OnCreate();
             Log.Verbose("OnCreate");
-            _inputActions = new InputActions();
+            _inputActions = new Settings.Input.Actions();
             RequireForUpdate<GhostOwnerIsLocal>();
             RequireForUpdate<PlayerTag>();
             RequireForUpdate<InputMelee>();
@@ -70,7 +69,7 @@ namespace CEG.Gameplay.Client.Systems.Input
             inputMelee.ValueRW.ServerTick = networkTime.ServerTick;
             inputMelee.ValueRW.InputEvent = default;
 
-            if (_inputActions.Map_Gameplay.Axn_MeleePrimary.WasPerformedThisFrame())
+            if (_inputActions.Gameplay.MeleePrimary.WasPerformedThisFrame())
             {
                 inputMelee.ValueRW.InputEvent.Set();
                 Log.Verbose($"OnPrimaryMeleeAction@{networkTime.ServerTick}");

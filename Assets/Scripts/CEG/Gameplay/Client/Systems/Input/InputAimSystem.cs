@@ -5,7 +5,6 @@ using Unity.Entities;
 using Unity.NetCode;
 using UnityEngine;
 using CEG.Gameplay.Shared.Components.Input;
-using CEG.Settings.Input;
 using CyberEntt.Logging;
 using Unity.Collections;
 
@@ -14,14 +13,14 @@ namespace CEG.Gameplay.Client.Systems.Input
     [UpdateInGroup(typeof(GhostInputSystemGroup))] //This group only executes on Client.
     public partial class InputAimSystem : SystemBase
     {
-        private InputActions _inputActions;
+        private Settings.Input.Actions _inputActions;
         private MainCamera _mainCamera;
         private Entity _entityLocalPlayer;
         protected override void OnCreate()
         {
             base.OnCreate();
             Log.Verbose("OnCreate");
-            _inputActions = new InputActions();
+            _inputActions = new Settings.Input.Actions();
             RequireForUpdate<GhostOwnerIsLocal>();
             RequireForUpdate<PlayerTag>();
             RequireForUpdate<InputAim>();
@@ -79,9 +78,9 @@ namespace CEG.Gameplay.Client.Systems.Input
             inputAim.ValueRW.ServerTick = networkTime.ServerTick;
             inputAim.ValueRW.InputEvent = default;
 
-            if (_inputActions.Map_Gameplay.Axn_MouseRealease.WasReleasedThisFrame())
+            if (_inputActions.Gameplay.MouseRealease.WasReleasedThisFrame())
             {
-                var mouseInputPosition = _inputActions.Map_Gameplay.Axn_MousePosition.ReadValue<Vector2>();
+                var mouseInputPosition = _inputActions.Gameplay.MousePosition.ReadValue<Vector2>();
                 var ray = _mainCamera.Camera.ScreenPointToRay(mouseInputPosition);
                 inputAim.ValueRW.InputEvent.Set();
                 inputAim.ValueRW.Origin = ray.origin;
