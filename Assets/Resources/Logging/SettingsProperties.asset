@@ -18,7 +18,7 @@ MonoBehaviour:
   environment: 5
   level: 0
   stackTrace:
-    log: 0
+    log: 1
     warning: 1
     error: 2
     exception: 2
@@ -28,8 +28,36 @@ MonoBehaviour:
     enabled: 1
     color: {r: 0.44920933, g: 0.48303917, b: 0.71816176, a: 1}
     level: 0
+  - name: Unknown
+    enabled: 1
+    color: {r: 0.8087613, g: 0.67928714, b: 0.8688377, a: 1}
+    level: 0
+  - name: Default World
+    enabled: 1
+    color: {r: 0.8044994, g: 0.6174385, b: 0.70835257, a: 1}
+    level: 0
   systems:
   - name: Log
     enabled: 1
     color: {r: 0.6210063, g: 0.46215242, b: 0.97065806, a: 1}
+    level: 0
+  - name: Registry
+    enabled: 1
+    color: {r: 0.49787664, g: 0.46320027, b: 0.7385837, a: 1}
+    level: 0
+  - name: DeferredLoggingSystem
+    enabled: 1
+    color: {r: 0.88757014, g: 0.6988637, b: 0.53078717, a: 1}
+    level: 0
+  - name: ProgressBarInitializerSystem
+    enabled: 1
+    color: {r: 0.408706, g: 0.85386366, b: 0.6348801, a: 1}
+    level: 0
+  - name: PhysicalDefenseSystem
+    enabled: 1
+    color: {r: 0.8636073, g: 0.47441685, b: 0.42405942, a: 1}
+    level: 0
+  - name: HealthSystem
+    enabled: 1
+    color: {r: 0.65902704, g: 0.44024423, b: 0.7895556, a: 1}
     level: 0
