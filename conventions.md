@@ -5,6 +5,11 @@ Types and methods are generally named according to the Microsoft C# standard nam
 
 Here is a list of domain-specific naming patterns used throughout this project:
 
+- Data components used for RPCs end with the word "Rpc"
+    ```c#
+    public struct AttackRpc : IRpcCommand {}
+    ```
+
 - Data components with no fields end with the word "Tag"
     ```c#
     public struct CooldownTag : IComponentData {}

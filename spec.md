@@ -38,6 +38,7 @@
 - Other players and NPCs are interpolated, not predicted
 - The server rejects blocked tiles (walls, water, other entities) and moves sent faster than the move cooldown
 - Entities within view range are visible and update in near real time
+- When player is in a death state can freely move, and has lower netcode priority.
 ### US-004: Chat
 **As a** player
 **I want** to talk to nearby players
