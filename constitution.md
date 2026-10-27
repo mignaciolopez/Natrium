@@ -13,7 +13,10 @@ An MMORPG in the style of Argentum Online: 2D, top-down, tile-based, server-auth
 
 ## Architecture Principles
 - Layered runtime: Authoring (MonoBehaviour, edit-time) → Baker → ECS data (components) → Systems (behavior) → Netcode transport
-- Server-authoritative: the server owns all game state. Clients send requests; the server validates, simulates, and broadcasts results, using client side prediction on movement.
+- Server-authoritative: the server owns all game state. Clients send requests; the server validates, simulates, and broadcasts results.
+  - Client-side prediction applies only to the local player's movement.
+  - Other entities are interpolated.
+  - Damage, death, and other mechanics are never predicted; they wait for server authorization.
 - Data-oriented: components hold data only; logic lives in systems and jobs.
 - Single Responsibility Principle for every system, job, and class.
 - Dependency injection where applicable. In ECS, prefer passing dependencies through singletons or system parameters over static access.
@@ -35,7 +38,7 @@ An MMORPG in the style of Argentum Online: 2D, top-down, tile-based, server-auth
 ### ⚠️ ASK FIRST:
 - Before adding any new third-party package or library (including any package outside `Packages/manifest.json`)
 - Before choosing or changing the persistence technology
-- Before modifying the database schema or the persisted save format
+- Before modifying the persisted save format (LoadSave file layout, serialized components, or save version)
 - Before adding new persistent components, networked messages, or RPCs
 - Before changing the network protocol, message formats, or the server endpoint (the default is `0.0.0.0:7979` in `ServerSystem`)
 - Before changing architectural patterns, including the server-authority model
@@ -46,7 +49,7 @@ An MMORPG in the style of Argentum Online: 2D, top-down, tile-based, server-auth
 - Never skip writing tests for gameplay logic
 - Never trust client-provided state (position, damage, gold, item counts, cooldowns) without server validation
 - Never store passwords in plain text. Store salted hashes only.
-- Never use `SELECT *` in persistence queries
+- Never overwrite a save file in place. Write to a temporary file, then replace the original.
 - Never allocate managed objects in per-frame hot paths (ECS systems and jobs)
 - Never commit generated or cache folders (`Library/`, `obj/`, `Temp/`, `Logs/`, `UserSettings/`)
 - Never add features not defined in the Natrium spec (see `spec.md`)
@@ -81,7 +84,7 @@ An MMORPG in the style of Argentum Online: 2D, top-down, tile-based, server-auth
 - Log timestamps are ISO-8601 UTC.
 
 ## Testing Requirements
-- Minimum 80% code coverage for gameplay and server logic. The Unity Code Coverage package is not yet in the manifest (see Open Decisions).
+- Minimum 80% code coverage for gameplay and server logic. Measured with the Unity Code Coverage package (`com.unity.testtools.codecoverage`, already in the manifest).
 - Test file naming: `[Name]Test.cs`, in `Tests/Runtime` (play-mode) or `Tests/Editor` (edit-mode) of the owning package or assembly, with an `.asmdef` in each folder.
 - Use AAA pattern: Arrange, Act, Assert.
 - Test pure logic (combat math, inventory rules, validation) in edit-mode tests where possible.
@@ -97,17 +100,10 @@ An MMORPG in the style of Argentum Online: 2D, top-down, tile-based, server-auth
 - Every server response carries a result or error code (see Error Handling Standards).
 - Messages carry only the data the client needs. Never send server-only state.
 
-## Open Decisions
-These are not decided. Each one needs an answer before the related work begins.
-1. **Persistence:** which database and hosting model (for example SQLite for development, PostgreSQL in production). Blocks US-009 in `spec.md`.
-   answer: Filesystem with CyberEntt.LoadSave systems. Will need to extend its functionality.
-2. **Spec confirmation:** `spec.md` holds the Natrium Phase 1 spec. Its decisions are marked "Proposed" until confirmed.
-3. **Coverage tooling:** add the Unity Code Coverage package to measure the 80% target.
-    Done. Is Installed. Check Manifest.
-4. **File length limit:** confirm whether the 300-line limit applies to CyberEntt packages or only Natrium code.
-    500 lines for both.
-5. **Server authority model:** confirm server-authoritative, with or without client prediction.
-    with client side prediction only for movement on the local player, others will be interpolated. Mechanics like death or damage can not be predicted they are subject to server authorization.
-
-
-
+## Decisions
+Resolved decisions that shape the rest of this document. Changing any of them is an ASK FIRST item.
+1. **Persistence:** filesystem, using the CyberEntt LoadSave systems (`com.cyberentt.tools`). LoadSave will be extended for Natrium. See US-009 in `spec.md`.
+2. **Spec:** `spec.md` is the Natrium spec.
+3. **Coverage tooling:** Unity Code Coverage is installed (see the manifest).
+4. **File length limit:** 500 lines, for Natrium code and for new functionality added to packages.
+5. **Server authority:** server-authoritative. Client-side prediction applies only to the local player's movement; other entities are interpolated. Damage, death, and similar mechanics are never predicted.
