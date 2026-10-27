@@ -36,6 +36,18 @@ MonoBehaviour:
     enabled: 1
     color: {r: 0.8044994, g: 0.6174385, b: 0.70835257, a: 1}
     level: 0
+  - name: HostWorld
+    enabled: 1
+    color: {r: 0.5062162, g: 0.6570017, b: 0.775664, a: 1}
+    level: 0
+  - name: ServerWorld
+    enabled: 1
+    color: {r: 0.69759023, g: 0.9262982, b: 0.99839956, a: 1}
+    level: 0
+  - name: ClientWorld
+    enabled: 1
+    color: {r: 0.68992215, g: 0.46299765, b: 0.7876597, a: 1}
+    level: 0
   systems:
   - name: Log
     enabled: 1
@@ -60,4 +72,56 @@ MonoBehaviour:
   - name: HealthSystem
     enabled: 1
     color: {r: 0.65902704, g: 0.44024423, b: 0.7895556, a: 1}
+    level: 0
+  - name: ClientSystem
+    enabled: 1
+    color: {r: 0.890498, g: 0.9511833, b: 0.7245083, a: 1}
+    level: 0
+  - name: ObjectRefDestroySystem
+    enabled: 1
+    color: {r: 0.8868136, g: 0.69762635, b: 0.56852937, a: 1}
+    level: 0
+  - name: DeathSystem
+    enabled: 1
+    color: {r: 0.77531105, g: 0.921276, b: 0.8538018, a: 1}
+    level: 0
+  - name: DestroyEntitySystem
+    enabled: 1
+    color: {r: 0.6639351, g: 0.88969225, b: 0.73236805, a: 1}
+    level: 0
+  - name: PrefabObjectRefInitializerSystem
+    enabled: 1
+    color: {r: 0.5221466, g: 0.6419008, b: 0.68038106, a: 1}
+    level: 0
+  - name: DisableEntitySystem
+    enabled: 1
+    color: {r: 0.5962179, g: 0.70095235, b: 0.53635216, a: 1}
+    level: 0
+  - name: ReceiveRpcCommandRequestJob
+    enabled: 1
+    color: {r: 0.71663046, g: 0.9746133, b: 0.813785, a: 1}
+    level: 0
+  - name: RigidBodyConstraintsSystemJob
+    enabled: 1
+    color: {r: 0.7141273, g: 0.5633445, b: 0.42163962, a: 1}
+    level: 3
+  - name: DebugPhysicalDamageSystem
+    enabled: 1
+    color: {r: 0.79396784, g: 0.8346962, b: 0.9243224, a: 1}
+    level: 0
+  - name: PopupTextInitializerSystem
+    enabled: 1
+    color: {r: 0.48966622, g: 0.6786923, b: 0.7026411, a: 1}
+    level: 0
+  - name: CollisionCheckSystem
+    enabled: 1
+    color: {r: 0.65345675, g: 0.8739348, b: 0.47715926, a: 1}
+    level: 0
+  - name: ObjectRefDisableSystem
+    enabled: 1
+    color: {r: 0.7709537, g: 0.72559434, b: 0.50623906, a: 1}
+    level: 0
+  - name: ServerSystem
+    enabled: 1
+    color: {r: 0.97956324, g: 0.5045795, b: 0.96460456, a: 1}
     level: 0
